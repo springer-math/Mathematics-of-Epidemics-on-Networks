@@ -1,6 +1,6 @@
 {
-  "name": "EpidemicsOnNetworks.GitHub.io",
+  "name": "EpidemicsOnNetworks",
   "tagline": "epidemics on networks",
-  "body": "### Epidemics on Networks\r\nThe software provided on this site is based on the forthcoming book **Mathematics of network epidemics: from exact to approximate models** by Kiss, Miller, and Simon.  At present it contains a nearly complete collection of Python code for simulating the spread of SIS and SIR disease in networks.  It relies on the NetworkX package.\r\n\r\nAs we develop this further, we plan to include other languages.  We also hope to add code which solves the differential equation systems developed in the book.\r\n",
+  "body": "### Epidemics on Networks\r\nThis project is intended to provide a range of software that is helpful for users of the forthcoming book **Mathematics of network epidemics: from exact to approximate models** by Kiss, Miller, and Simon.\r\n\r\nAt present the project is limited to a (nearly) complete python module which provides tools for simulating epidemics in networks.  As the project progresses we anticipate including other languages and hope to also provide tools for numerical solution of the various differential equation approximations.",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
