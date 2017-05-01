@@ -12,7 +12,7 @@
 
  - In Figure 4.7c: \tau is actually 1.1\tau_c, not 1.2\tau_c
 
- - In Figure 4.11: tau is actually 1.5 \tau_c = 1.5 \gamma/ <K>  (the factor of
+ - In Figure 4.11: tau is actually 1.5 \tau_c = 1.5 \gamma/ \<K\>  (the factor of
 2 should be 1.5)
 
 ## Chapter 5 
