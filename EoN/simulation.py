@@ -1505,9 +1505,9 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
         #strip pred_inf_time and rec_time down to just the values for nodes 
         #that became infected
         infection_time = {node:time for (node,time) in 
-                            pred_inf_time.iteritems() if status[node]!='S'}
+                            pred_inf_time.items() if status[node]!='S'}
         recovery_time = {node:time for (node,time) in 
-                                rec_time.iteritems() if status[node] !='S'}
+                                rec_time.items() if status[node] !='S'}
         return scipy.array(times), scipy.array(S), scipy.array(I), \
                 scipy.array(R), infection_time, recovery_time
 
