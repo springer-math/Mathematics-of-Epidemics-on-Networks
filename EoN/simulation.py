@@ -1686,7 +1686,11 @@ def _find_next_trans_SIS_(Q, time, tau, source, target, status, rec_time,
     if rec_time[target]<rec_time[source]: 
         #if target is susceptible, then rec_time[target]<time
         delay = random.expovariate(tau)
-        transmission_time = max(time, rec_time[target]) + delay
+        #transmission_time = max(time, rec_time[target]) + delay
+        transmission_time = time + delay
+        if transmission_time<rec_time[target]:
+            delay = random.expovariate(tau)
+            transmission_time = rec_time[target]+delay
         if transmission_time < rec_time[source] and transmission_time < Q.tmax:
             newEvent = Event(transmission_time, _process_trans_SIS_, 
                                 args = trans_event_args
