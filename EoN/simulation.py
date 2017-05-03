@@ -50,19 +50,21 @@ class myQueue(object):
     def __init__(self, tmax=float("Inf")):
         self._Q_ = []
         self.tmax=tmax
-    def add(self, event):
-        if event.time<self.tmax:   
-            heapq.heappush(self._Q_, (event.time,event))
+        self.counter = 0 #tie-breaker for putting things in priority queue
+    def add(self, time, function, args = ()):
+        if time<self.tmax:   
+            heapq.heappush(self._Q_, (time, self.counter, function, args))
+            self.counter += 1
     def pop_and_run(self):
-        t, event = heapq.heappop(self._Q_)
-        event.function(t, *event.args)
+        t, counter, function, args = heapq.heappop(self._Q_)
+        function(t, *args)
     def __len__(self): #this will allow for something like "while Q:" 
         return len(self._Q_)
 
 class _ListDict_(object):
     r'''
     The Gillespie algorithm with rejection-sampling will involve a step 
-    that samples a random element from the set.  This is slow in Python.  
+    that samples a random element from a set.  This is slow in Python.  
     So I'm introducing a new class based on a stack overflow answer by
     Amber (http://stackoverflow.com/users/148870/amber) 
     for a question by
@@ -1106,9 +1108,10 @@ def _find_trans_SIR_(Q, t, tau, source, target, status, pred_inf_time,
     delay = random.expovariate(tau)
     inf_time = t + delay
     if inf_time< source_rec_time and inf_time<pred_inf_time[target]:
-        event = Event(inf_time, _process_trans_SIR_, 
-                      args = trans_event_args)
-        Q.add(event)
+        #event = Event(inf_time, _process_trans_SIR_, 
+        #              args = trans_event_args)
+        #Q.add(event)
+        Q.add(inf_time, _process_trans_SIR_, args = trans_event_args)
         pred_inf_time[target] = inf_time
 
 def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status, rec_time, 
@@ -1169,25 +1172,30 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status, rec_time,
         rec_time[node] = time + random.expovariate(rec_rate_fxn(node))
         
         if rec_time[node]<Q.tmax:
-            newevent = Event(rec_time[node], _process_rec_SIR_, 
+            #newevent = Event(rec_time[node], _process_rec_SIR_, 
+            #                args = (node, times, S, I, R, status))
+            #Q.add(newevent) #note Q.add tests that event is before tmax
+            Q.add(rec_time[node], _process_rec_SIR_, 
                             args = (node, times, S, I, R, status))
-            Q.add(newevent) #note Q.add tests that event is before tmax
-        
         suscep_neighbors = [v for v in G.neighbors(node) if status[v]=='S']
         for v in suscep_neighbors:
-            if status[v] != 'S':
-                continue
             tau = trans_rate_fxn(node, v)
             delay = random.expovariate(tau)
             inf_time = time + delay
             if inf_time< rec_time[node] and inf_time < pred_inf_time[v] and inf_time<Q.tmax:
-                event = Event(inf_time, _process_trans_SIR_, 
+                #event = Event(inf_time, _process_trans_SIR_, 
+                #              args = (G, v, times, S, I, R, Q, 
+                #                        status, rec_time, pred_inf_time, 
+                #                        trans_rate_fxn, rec_rate_fxn
+                #                     )
+                #             )
+                #Q.add(event)
+                Q.add(inf_time, _process_trans_SIR_, 
                               args = (G, v, times, S, I, R, Q, 
                                         status, rec_time, pred_inf_time, 
                                         trans_rate_fxn, rec_rate_fxn
                                      )
                              )
-                Q.add(event)
                 pred_inf_time[v] = inf_time
 #            if status[v] != 'S':
 #                continue
@@ -1486,14 +1494,18 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
         times, S, I, R= ([0], [G.order()], [0], [0])  
 
         for u in initial_infecteds:
-            newevent = Event(0, process_trans, args=(G, u, times, S, I, R, Q, 
+            #newevent = Event(0, process_trans, args=(G, u, times, S, I, R, Q, 
+            #                                            status, rec_time, 
+            #                                            pred_inf_time
+            #                                        ) + args
+            #                )
+            pred_inf_time[u] = 0
+            #Q.add(newevent)
+            Q.add(0, process_trans, args=(G, u, times, S, I, R, Q, 
                                                         status, rec_time, 
                                                         pred_inf_time
                                                     ) + args
                             )
-            pred_inf_time[u] = 0
-            Q.add(newevent)
-
     else:
         raise EoN.EoNError("inputting Q is not currently tested.\n \
                         Email joel.c.miller.research@gmail.com for help.\n \
@@ -1615,9 +1627,11 @@ def _process_trans_SIS_(time, G, source, target, times, infection_times, recover
         rec_time[target] = time + random.expovariate(rec_rate_fxn(target))
         
         if rec_time[target]<Q.tmax:
-            newevent = Event(rec_time[target], _process_rec_SIS_, 
-                                args = (target, times, recovery_times, S, I, status))
-            Q.add(newevent) #refuses to add if time>tmax
+            #newevent = Event(rec_time[target], _process_rec_SIS_, 
+            #                    args = (target, times, recovery_times, S, I, status))
+            #Q.add(newevent) #refuses to add if time>tmax
+            Q.add(rec_time[target], _process_rec_SIS_, 
+                    args = (target, times, recovery_times, S, I, status))
         for v in G.neighbors(target): #target plays role of source here
             _find_next_trans_SIS_(Q, time, trans_rate_fxn(target, v), target, v, 
                                     status, rec_time,
@@ -1692,11 +1706,13 @@ def _find_next_trans_SIS_(Q, time, tau, source, target, status, rec_time,
             delay = random.expovariate(tau)
             transmission_time = rec_time[target]+delay
         if transmission_time < rec_time[source] and transmission_time < Q.tmax:
-            newEvent = Event(transmission_time, _process_trans_SIS_, 
+            #newEvent = Event(transmission_time, _process_trans_SIS_, 
+            #                    args = trans_event_args
+            #                )
+            #Q.add(newEvent) #note Q checks that it's before tmax, but added the test above to savoid even getting here
+            Q.add(transmission_time, _process_trans_SIS_, 
                                 args = trans_event_args
                             )
-            Q.add(newEvent) #note Q checks that it's before tmax, but added the test above to savoid even getting here
-
  
 def _process_rec_SIS_(time, node, times, recovery_times, S, I, status):
     r'''From figure A.6 of Kiss, Miller, & Simon.  Please cite the
@@ -1823,15 +1839,21 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
     infection_times = defaultdict(lambda: []) #defaults to empty list
     recovery_times = defaultdict(lambda: [])
     for u in initial_infecteds:
-        newevent = Event(0, _process_trans_SIS_, 
+        #newevent = Event(0, _process_trans_SIS_, 
+        #                    args = (G, 'initial_condition', u, times, 
+        #                            infection_times, recovery_times, 
+        #                            S, I, Q, 
+        #                            status, rec_time, trans_rate_fxn, 
+        #                            rec_rate_fxn)
+        #                )
+        #Q.add(newevent)  #fails if >tmax
+        Q.add(0, _process_trans_SIS_, 
                             args = (G, 'initial_condition', u, times, 
                                     infection_times, recovery_times, 
                                     S, I, Q, 
                                     status, rec_time, trans_rate_fxn, 
                                     rec_rate_fxn)
                         )
-        Q.add(newevent)  #fails if >tmax
-        
     while Q:
         Q.pop_and_run()
 
@@ -1858,7 +1880,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
 
 #####Now dealing with Gillespie code#####
 
-def _Gillespie_Initialize_(G, initial_infecteds, infection_times, 
+def _Gillespie_initialize_(G, initial_infecteds, infection_times, 
                             return_full_data, SIR = True):
     '''Initializes the network'''
     times = [0]
@@ -1889,7 +1911,7 @@ def _Gillespie_Initialize_(G, initial_infecteds, infection_times,
         return times, S, I, status, infected, infected_neighbor_count, \
                 risk_group
     
-def _Gillespie_Infect_(G, S, I, R, times, infected, current_time, 
+def _Gillespie_infect_(G, S, I, R, times, infected, current_time, 
                         infected_neighbor_count, risk_group, status, 
                         infection_times, return_full_data, SIR=True):
     '''
@@ -1945,7 +1967,7 @@ def _Gillespie_Infect_(G, S, I, R, times, infected, current_time,
     
             
 
-def _Gillespie_Recover_SIR_(G, S, I, R, times, infected, current_time, status,
+def _Gillespie_recover_SIR_(G, S, I, R, times, infected, current_time, status,
                             infected_neighbor_count, risk_group, 
                             recovery_times, return_full_data):
     r''' Changes: S, I, R, infected, times'''
@@ -1970,7 +1992,7 @@ def _Gillespie_Recover_SIR_(G, S, I, R, times, infected, current_time, status,
     if return_full_data:
         recovery_times[recovering_node].append(current_time)
 
-def _Gillespie_Recover_SIS_(G, S, I, times, infected, current_time, status, 
+def _Gillespie_recover_SIS_(G, S, I, times, infected, current_time, status, 
                             infected_neighbor_count, risk_group, 
                             recovery_times, return_full_data):
     r''' From figure A.5 of Kiss, Miller, & Simon.  Please cite the
@@ -2016,18 +2038,23 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
     However, Gillespie_SIR relies on the lack of edge/node weights in order
     to achieve a significant improvement.  fast_SIR permits weighted networks.
     
-    From figure A.1 of Kiss, Miller, & Simon.  Please cite the
+    Adapted from figure A.1 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-
+    A significant improvement compared to the obvious implementation of
+    figure A.1 is that at_risk_nodes is actually broken into multiple risk 
+    groups based on what the nodes' risks are.  This allows for a more 
+    efficient step to correctly choose a random node to be infected.  
+    
     To handle weighted networks would prevent us from having the risk 
-    groups.  Currently a major speed up comes in choosing which node is being
-    infected by first choosing which risk group the node is in, and then
-    choosing a random node from that group.  If we modify the code to have 
-    weights, then we cannot (easily) put nodes into separate risk groups.  This
-    will dramatically slow down the calculation because it becomes much harder
-    to choose which node becomes infected.
+    groups.  If we modify the code to have weights, then we cannot (easily) 
+    put nodes into separate risk groups.  This will dramatically slow down 
+    the calculation because it becomes much harder to choose which node 
+    becomes infected.
             
+    This code will not work for nonMarkovian transmission.  There is ongoing
+    work by Boguna and collaborators on how to do Gillespie algorithms for
+    nonMarkovian transmission.
     
     :SEE ALSO:
 
@@ -2119,7 +2146,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
         initial_infecteds=[initial_infecteds]
 
     times, S, I, R, status, infected, infected_neighbor_count, risk_group = \
-                    _Gillespie_Initialize_(G, initial_infecteds, 
+                    _Gillespie_initialize_(G, initial_infecteds, 
                                             infection_times, return_full_data)
 
     total_trans_rate = tau*sum(n*len(risk_group[n]) 
@@ -2131,14 +2158,14 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
         r = random.random()*total_rate
         if r<total_rec_rate:
             #a recovery occurs
-            _Gillespie_Recover_SIR_(G, S, I, R, times, infected, next_time, 
+            _Gillespie_recover_SIR_(G, S, I, R, times, infected, next_time, 
                                     status, infected_neighbor_count, 
                                     risk_group, recovery_times, 
                                     return_full_data)
             total_rec_rate = gamma*I[-1]
         else:
             #an infection occurs
-            _Gillespie_Infect_(G, S, I, R, times, infected, next_time, 
+            _Gillespie_infect_(G, S, I, R, times, infected, next_time, 
                                 infected_neighbor_count, risk_group, status, 
                                 infection_times, return_full_data, SIR=True)
         total_trans_rate = tau*sum(n*len(risk_group[n]) 
@@ -2162,16 +2189,17 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
 def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100, 
                     return_full_data = False):
     r'''
+    Performs SIS simulations for epidemics on unweighted
+    networks.  The run time is slower than fast_SIR, but they are comparable.
+    However, Gillespie_SIS relies on the lack of edge/node weights in order
+    to achieve a significant improvement.  fast_SIS permits weighted networks.
     
     Based on figure A.1 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
     
-    This could be made more efficient if we divide the at_risk nodes 
-    into groups based on how at risk they are. 
+    See comments in Gillespie_SIR for limitations in weighted and nonMarkovian
+    models.
     
-    This would not be as good if the edges were weighted, but we could 
-    put the at_risk nodes into bands.
-
     :WARNING: 
         
     self-edges will cause this to die.  
@@ -2268,7 +2296,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
         initial_infecteds=[initial_infecteds]
 
     times, S, I, status, infected, infected_neighbor_count, risk_group = \
-                _Gillespie_Initialize_(G, initial_infecteds,  infection_times,  
+                _Gillespie_initialize_(G, initial_infecteds,  infection_times,  
                                         return_full_data, SIR=False)
     #note that at this point times, S, and I must all be lists 
     #since we will be appending to them
@@ -2282,14 +2310,14 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
         r = random.random()*total_rate
         if r<total_rec_rate:
             #a recovery occurs
-            _Gillespie_Recover_SIS_(G, S, I, times, infected, next_time, 
+            _Gillespie_recover_SIS_(G, S, I, times, infected, next_time, 
                                     status, infected_neighbor_count, 
                                     risk_group, recovery_times, 
                                     return_full_data)
             total_rec_rate = gamma*I[-1]
         else:
             #an infection occurs
-            _Gillespie_Infect_(G, S, I, [], times, infected, next_time, 
+            _Gillespie_infect_(G, S, I, [], times, infected, next_time, 
                                 infected_neighbor_count, risk_group, status, 
                                 infection_times, return_full_data, SIR=False)
             #updates variables as needed and calculates new max_trans_rate
@@ -2309,5 +2337,99 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
                 infection_times, recovery_times
 
 
+"""
+What follows is code from a first step towards a weighted Gillespie algorithm
+This is a low priority since it will be much slower than fast_SIR.
 
 
+def randomlychoose(D, r):
+    r'''
+    Arguments:
+        D : defaultdict of rates
+        r : number 
+        
+    Returns:
+        node : the node for which the action is occuring
+    
+    Modifies:
+        D : removes node.
+    '''
+    for node in D:
+        if r< D[node]:
+            break
+        else:
+            r-= D[node]
+    D.pop(node)
+    return node
+    
+def update_infected_neighbors(G, node, status, infection_rate, total_infection_rate)
+    for neighbor in G.neighbors(node):
+        if status[neighbor]=='S':
+            infection_rate[neighbor] = infection_rate[neighbor]+trans_rate_fxn(node, neighbor)
+            total_infection_rate += trans_rate_fxn(node, neighbor)
+    return total_infection_rate
+    
+def Gillespie_weighted_SIR(G, tau, gamma, initial_infecteds = None, rho = None,
+                tmax=float('Inf'), transmission_weight = None, 
+                recovery_weight = None, return_full_data = False):
+    
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+
+    
+    infection_times = defaultdict(lambda: []) #defaults to an empty list for each node
+    recovery_times = defaultdict(lambda: [])
+
+    tau = float(tau)  #just to avoid integer division problems in python 2.
+    gamma = float(gamma)
+
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+                                                transmission_weight,
+                                                recovery_weight)
+    
+    if initial_infecteds is None:
+        if rho is None:
+            initial_number = 1
+        else:
+            initial_number = int(round(G.order()*rho))
+        initial_infecteds=random.sample(G.nodes(), initial_number)
+    elif G.has_node(initial_infecteds):
+        initial_infecteds=[initial_infecteds]
+    
+    times = [0]
+    S = [G.order()-len(initial_infecteds)]
+    I = [len(initial_infecteds)]
+    R = [0]
+    status = defaultdict(lambda:'S') #by default all are susceptible
+    infection_rate = defaultdict(lambda: 0)
+    recovery_rate = defaultdict(lambda: 0)
+    infecteds = list(initial_infecteds)
+    
+    total_infection_rate=0
+    total_recovery_rate = 0
+    
+    for node in infecteds:
+        status[node]='I'
+        recovery_rate[node] = rec_rate_fxn(node)
+        total_recovery_rate += recovery_rate[node]
+    for node in infecteds:
+        total_infection_rate = update_infected_neighbors(G, node, status, 
+                                    infection_rate, total_infection_rate)
+                            
+    total_rate = total_infection_rate + total_recovery_rate
+    
+    time = random.expovariate(total_rate)
+    
+    while time<tmax and infecteds:
+        r = total_rate*random.random()
+        if r< total_recovery_rate: #a recovery happens
+            u = randomlychoose(infection_rate, r)
+            for nbr in G.neighbors(u):
+                localtau = trans_rate_fxn(node, neighbor)
+                total_infection_rate[nbr] -= localtau
+                total_infection_rate -= localtau
+        else: # a transmission happens.
+            r -= total_recovery_rate
+            u = randomlychoose(recovery_rate, r)
+        
+"""
