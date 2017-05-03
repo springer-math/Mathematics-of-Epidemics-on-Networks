@@ -41,16 +41,21 @@ class myQueue(object):
     r'''
     This class is used to store and act on a priority queue of events
     for event-driven simulations.
+    
+    Actually this is a priority queue of 2-tuples of the form (t, event)
+    because the popping and pushing are much faster with a tuple whose first 
+    entry is time than if it has to go through the __lt__ of the Event
+    class.
     '''
     def __init__(self, tmax=float("Inf")):
         self._Q_ = []
         self.tmax=tmax
     def add(self, event):
-        if event.time<self.tmax:
-            heapq.heappush(self._Q_, event)
+        if event.time<self.tmax:   
+            heapq.heappush(self._Q_, (event.time,event))
     def pop_and_run(self):
-        event = heapq.heappop(self._Q_)
-        event.function(event.time, *event.args)
+        t, event = heapq.heappop(self._Q_)
+        event.function(t, *event.args)
     def __len__(self): #this will allow for something like "while Q:" 
         return len(self._Q_)
 
@@ -1096,14 +1101,15 @@ def _find_trans_SIR_(Q, t, tau, source, target, status, pred_inf_time,
     Q : Adds transmission events to Q
      pred_inf_time : updates predicted infection time of target.
     '''
-    if status[target] == 'S':
-        delay = random.expovariate(tau)
-        inf_time = t + delay
-        if inf_time< min(source_rec_time, pred_inf_time[target]):
-            event = Event(inf_time, _process_trans_SIR_, 
-                          args = trans_event_args)
-            Q.add(event)
-            pred_inf_time[target] = inf_time
+    
+    #we've checked before entering that it is susceptible.
+    delay = random.expovariate(tau)
+    inf_time = t + delay
+    if inf_time< source_rec_time and inf_time<pred_inf_time[target]:
+        event = Event(inf_time, _process_trans_SIR_, 
+                      args = trans_event_args)
+        Q.add(event)
+        pred_inf_time[target] = inf_time
 
 def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status, rec_time, 
                             pred_inf_time, trans_rate_fxn, 
@@ -1166,14 +1172,31 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status, rec_time,
                             args = (node, times, S, I, R, status))
         Q.add(newevent) #note Q.add tests that event is before tmax
         
-        for v in G.neighbors(node):
-            _find_trans_SIR_(Q, time, trans_rate_fxn(node,v), node, v, status, 
-                                pred_inf_time, rec_time[node],
-                                trans_event_args = (G, v, times, S, I, R, Q, 
+        suscep_neighbors = [v for v in G.neighbors(node) if status[v]=='S']
+        for v in suscep_neighbors:
+            if status[v] != 'S':
+                continue
+            tau = trans_rate_fxn(node, v)
+            delay = random.expovariate(tau)
+            inf_time = time + delay
+            if inf_time< rec_time[node] and inf_time < pred_inf_time[v]:
+                event = Event(inf_time, _process_trans_SIR_, 
+                              args = (G, v, times, S, I, R, Q, 
                                         status, rec_time, pred_inf_time, 
                                         trans_rate_fxn, rec_rate_fxn
-                                    )
-                            )
+                                     )
+                             )
+                Q.add(event)
+                pred_inf_time[v] = inf_time
+#            if status[v] != 'S':
+#                continue
+#            _find_trans_SIR_(Q, time, trans_rate_fxn(node,v), node, v, status, 
+#                                pred_inf_time, rec_time[node],
+#                                trans_event_args = (G, v, times, S, I, R, Q, 
+#                                        status, rec_time, pred_inf_time, 
+#                                        trans_rate_fxn, rec_rate_fxn
+#                                    )
+#                            )
     
 def _process_rec_SIR_(time, node, times, S, I, R, status):
     r'''From figure A.3 of Kiss, Miller, & Simon.  Please cite the
@@ -1313,6 +1336,11 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
                         tmax = float('Inf'), return_full_data = False, 
                         Q=None):
     r'''
+    Performs SIR simulations for epidemics on weighted or unweighted
+    networks, allowing edge and node weights to scale the transmission
+    and recovery rates.  Assumes exponentially distributed times to recovery
+    and to transmission.
+    
     A modification of the algorithm in figure A.3 of Kiss, Miller, & 
     Simon to allow for user-defined rules governing time of 
     transmission.  
@@ -1416,6 +1444,18 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
             recovery_time[node] is time of recovery
 
     :SAMPLE USE:
+        
+        import EoN
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        
+        N=1000000
+        G = nx.fast_gnp_random_graph(N, 5/(N-1.))
+        tau = 0.3
+        gamma = 1
+        rho=0.0001
+        t, S, I, R = EoN.fast_SIR(G, tau, gamma, rho=rho)
+        plt.plot(t,I)
 
     
     '''
@@ -1504,6 +1544,8 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
     else:
         #strip pred_inf_time and rec_time down to just the values for nodes 
         #that became infected
+        
+        #could use iteritems for Python 2, by   try ... except AttributeError
         infection_time = {node:time for (node,time) in 
                             pred_inf_time.items() if status[node]!='S'}
         recovery_time = {node:time for (node,time) in 
@@ -1638,11 +1680,11 @@ def _find_next_trans_SIS_(Q, time, tau, source, target, status, rec_time,
 
     '''
     
-    assert(status[source]=='I')
+    #assert(status[source]=='I')
     if rec_time[target]<rec_time[source]: 
         #if target is susceptible, then rec_time[target]<time
-        transmission_time = max(time, rec_time[target]) \
-                            + random.expovariate(tau)
+        delay = random.expovariate(tau)
+        transmission_time = max(time, rec_time[target]) + delay
         if transmission_time < rec_time[source]:
             newEvent = Event(transmission_time, _process_trans_SIS_, 
                                 args = trans_event_args
@@ -1658,14 +1700,19 @@ def _process_rec_SIS_(time, node, times, recovery_times, S, I, status):
 
     times.append(time)
     recovery_times[node].append(time)
-    S.append(S[-1]+1)   #no change to number susceptible
+    S.append(S[-1]+1)   #one more susceptible
     I.append(I[-1]-1) #one less infected
     status[node] = 'S'
 
 def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100, 
                 transmission_weight = None, recovery_weight = None, 
                 return_full_data = False):
-    r'''From figure A.5 of Kiss, Miller, & Simon.  Please cite the
+    r'''Performs SIS simulations for epidemics on weighted or unweighted
+    networks, allowing edge and node weights to scale the transmission
+    and recovery rates.  Assumes exponentially distributed times to recovery
+    and to transmission.
+    
+    From figure A.5 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     Arguments:
@@ -1958,17 +2005,20 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
                     return_full_data = False):
     #tested in test_SIR_dynamics
     r'''
+    Performs SIR simulations for epidemics on unweighted
+    networks.  Unlike fast_SIR, this is unable to handle weighted networks.
+    
     From figure A.1 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Assumes that the network is unweighted.  
+    Assumes that the network is unweighted.  Thus the risks are quantized: 
+    equal to tau times the number of infected neighbors of a node.
+
+    To handle weighted networks would prevent us from having the large risk 
+    groups, and this would lose a major speed up that comes through randomly 
+    selecting from a risk group.
     
-    Thus the risks are quantized: equal to tau times the number of 
-    infected neighbors of a node.
-    
-    This would not be as good if the edges were weighted, but we could 
-    put the at_risk nodes into bands.
-    
+        
     The event-driven simulation is almost certainly faster in all cases, 
     and the benefit would increase if the network were weighted.  
 
@@ -1980,7 +2030,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
     :SEE ALSO:
 
     fast_SIR which has the same inputs but uses a different method to 
-    run much faster
+    run faster (and can handle weighted networks).
     
     
     
@@ -2054,7 +2104,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
     infection_times = defaultdict(lambda: []) #defaults to an empty list for each node
     recovery_times = defaultdict(lambda: [])
 
-    tau = float(tau)  #just to avoid integer division problems.
+    tau = float(tau)  #just to avoid integer division problems in python 2.
     gamma = float(gamma)
     
     if initial_infecteds is None:
