@@ -1168,9 +1168,10 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status, rec_time,
         R.append(R[-1])   #no change to recovered
         rec_time[node] = time + random.expovariate(rec_rate_fxn(node))
         
-        newevent = Event(rec_time[node], _process_rec_SIR_, 
+        if rec_time[node]<Q.tmax:
+            newevent = Event(rec_time[node], _process_rec_SIR_, 
                             args = (node, times, S, I, R, status))
-        Q.add(newevent) #note Q.add tests that event is before tmax
+            Q.add(newevent) #note Q.add tests that event is before tmax
         
         suscep_neighbors = [v for v in G.neighbors(node) if status[v]=='S']
         for v in suscep_neighbors:
@@ -1179,7 +1180,7 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status, rec_time,
             tau = trans_rate_fxn(node, v)
             delay = random.expovariate(tau)
             inf_time = time + delay
-            if inf_time< rec_time[node] and inf_time < pred_inf_time[v]:
+            if inf_time< rec_time[node] and inf_time < pred_inf_time[v] and inf_time<Q.tmax:
                 event = Event(inf_time, _process_trans_SIR_, 
                               args = (G, v, times, S, I, R, Q, 
                                         status, rec_time, pred_inf_time, 
@@ -1613,9 +1614,10 @@ def _process_trans_SIS_(time, G, source, target, times, infection_times, recover
         times.append(time)
         rec_time[target] = time + random.expovariate(rec_rate_fxn(target))
         
-        newevent = Event(rec_time[target], _process_rec_SIS_, 
+        if rec_time[target]<Q.tmax:
+            newevent = Event(rec_time[target], _process_rec_SIS_, 
                                 args = (target, times, recovery_times, S, I, status))
-        Q.add(newevent) #fails if time>tmax
+            Q.add(newevent) #refuses to add if time>tmax
         for v in G.neighbors(target): #target plays role of source here
             _find_next_trans_SIS_(Q, time, trans_rate_fxn(target, v), target, v, 
                                     status, rec_time,
@@ -1685,11 +1687,11 @@ def _find_next_trans_SIS_(Q, time, tau, source, target, status, rec_time,
         #if target is susceptible, then rec_time[target]<time
         delay = random.expovariate(tau)
         transmission_time = max(time, rec_time[target]) + delay
-        if transmission_time < rec_time[source]:
+        if transmission_time < rec_time[source] and transmission_time < Q.tmax:
             newEvent = Event(transmission_time, _process_trans_SIS_, 
                                 args = trans_event_args
                             )
-            Q.add(newEvent) #note Q checks that it's before tmax
+            Q.add(newEvent) #note Q checks that it's before tmax, but added the test above to savoid even getting here
 
  
 def _process_rec_SIS_(time, node, times, recovery_times, S, I, status):
@@ -2006,26 +2008,22 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
     #tested in test_SIR_dynamics
     r'''
     Performs SIR simulations for epidemics on unweighted
-    networks.  Unlike fast_SIR, this is unable to handle weighted networks.
+    networks.  The run time is slower than fast_SIR, but they are comparable.
+    However, Gillespie_SIR relies on the lack of edge/node weights in order
+    to achieve a significant improvement.  fast_SIR permits weighted networks.
     
     From figure A.1 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Assumes that the network is unweighted.  Thus the risks are quantized: 
-    equal to tau times the number of infected neighbors of a node.
 
-    To handle weighted networks would prevent us from having the large risk 
-    groups, and this would lose a major speed up that comes through randomly 
-    selecting from a risk group.
-    
-        
-    The event-driven simulation is almost certainly faster in all cases, 
-    and the benefit would increase if the network were weighted.  
-
-    At present, this does not accept recovery or transmission weights.
-    This is because including that will force us to sum up these weights
-    more frequently rather than just counting how many exist
-    which will slow the code down.  For weights, try fast_SIR
+    To handle weighted networks would prevent us from having the risk 
+    groups.  Currently a major speed up comes in choosing which node is being
+    infected by first choosing which risk group the node is in, and then
+    choosing a random node from that group.  If we modify the code to have 
+    weights, then we cannot (easily) put nodes into separate risk groups.  This
+    will dramatically slow down the calculation because it becomes much harder
+    to choose which node becomes infected.
+            
     
     :SEE ALSO:
 
