@@ -1796,7 +1796,7 @@ def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100,
     
     A dict like this can be converted into an array by
     Sk0 = scipy.array([Sk0dict.get(k,0) 
-                       for k in xrange(max(Sk0dict.keys())+1)])
+                       for k in range(max(Sk0dict.keys())+1)])
 
     Ik0 is similar to Sk0.
 
@@ -2747,9 +2747,11 @@ def _dSIS_super_compact_pairwise_(X, t, tau, gamma, N, k_ave, ksquare_ave,
     [\dot{SS}] = 2 gamma [SI] - 2 tau [SI] [SS] Q
     [\dot{SI}] = gamma ([II]-[SI]) + tau [SI] ([SS]-[SI])Q - tau [SI]
     [\dot{II}] = -2 gamma [II] + 2 tau [SI]^2 Q + 2 tau [SI]
+    
     Q = ((<K^2>(<K^2>-n_S<K>) + <K^3>(n_S-<K>))
-        /
-        (n_S(<K^2>-<K>^2)) - 1)/n_S[S]
+        /(n_S(<K^2>-<K>^2)) - 1)/n_S[S]
+        
+        
     n_S = ([SI] + [SS])/(N-[I])
     '''
 
@@ -2759,7 +2761,7 @@ def _dSIS_super_compact_pairwise_(X, t, tau, gamma, N, k_ave, ksquare_ave,
     n_S = (SS+SI)/(S)
     
     Q = ((ksquare_ave*(ksquare_ave-n_S*k_ave) \
-            + kcube_ave*(n_S-k_ave)) *(n_S*(ksquare_ave-k_ave**2))-1)/(S*n_S)
+            + kcube_ave*(n_S-k_ave))/(n_S*(ksquare_ave-k_ave**2))-1)/(S*n_S)
     dIdt = tau*SI - gamma*I
     dSSdt = 2*gamma*SI - 2*tau*SI*SS*Q
     dSIdt = gamma*(II - SI) + tau*SI*(SS-SI)*Q - tau*SI
@@ -3018,8 +3020,8 @@ def _dSIS_effective_degree_(X, t, original_shape, tau, gamma):
     
     dSsi = scipy.zeros(original_shape)
     dIsi = scipy.zeros(original_shape)
-    for s in xrange(original_shape[0]):
-        for i in xrange(original_shape[1]):
+    for s in range(original_shape[0]):
+        for i in range(original_shape[1]):
             if s==0 or i+1 == original_shape[1]:
                 Ssm1ip1 = 0
                 Ism1ip1 = 0
@@ -3075,8 +3077,8 @@ def _dSIR_effective_degree_(X, t, N, original_shape, tau, gamma):
     #       + tau *ISS*((svec+1)*Sp1im1 - svec*Ssi)/SS
 
     dSsi = scipy.zeros(original_shape)
-    for s in xrange(original_shape[0]):
-        for i in xrange(original_shape[1]):
+    for s in range(original_shape[0]):
+        for i in range(original_shape[1]):
             if i+1 == original_shape[1]:
                 Ssip1 = 0
             else:
@@ -3516,7 +3518,7 @@ def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001,
     alpha = scipy.e**(-tau*us/gamma)  #initial guess for alpha(u)
     p = 1- scipy.e**(-tau*us/gamma)    #initial guess for p(u)
     exp_neg_u = scipy.e**(-us)        #e^{-u}
-    for counter in xrange(number_its):
+    for counter in range(number_its):
         alpha = 1 - p + p* (psiPrime(alpha)/kave).dot(exp_neg_u)/(ucount-1.)
     return 1 - psi(alpha).dot(exp_neg_u)/(ucount - 1)
 
@@ -3550,7 +3552,7 @@ def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
     
     xis = Pxidxi.keys()
     alpha = {xi: 1-po(xi) for xi in xis}
-    for counter in xrange(number_its):
+    for counter in range(number_its):
         newalpha = {}
         for xi in xis:
             newalpha[xi] = 1 - po(xi)  \
@@ -3615,7 +3617,7 @@ def Attack_rate_discrete(Pk, p, number_its=100, rho = None, Sk0=None,
         phiR0 = 0
 
     theta  = 1
-    for counter in xrange(number_its):
+    for counter in range(number_its):
         theta = 1-p + p*(phiR0 +  phiS0*psihatPrime(theta)/psihatPrime(1))
     return 1 - psihat(theta)
 
