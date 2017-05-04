@@ -851,7 +851,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None):
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     H = directed_percolate_network(G, tau, gamma)
-    infected_nodes = _out_component_(G, initial_infecteds)
+    infected_nodes = _out_component_(H, initial_infecteds)
     return infected_nodes
 
 
