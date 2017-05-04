@@ -739,12 +739,13 @@ def _out_component_(G, source):
     else:
         source_nodes = set(source)
         
-    reachable_nodes = set()
+    reachable_nodes = set().union(source_nodes)
 
     for node in source_nodes:
         reachable_nodes = reachable_nodes.union(
                                         set(nx.descendants(G, node)))
 
+    
     return reachable_nodes
 
 def _in_component_(G, target):
@@ -783,7 +784,7 @@ def _in_component_(G, target):
     else:
         target_nodes = set(target)
 
-    source_nodes = set()
+    source_nodes = set().union(target_nodes)
     
     for node in target_nodes:
         source_nodes = source_nodes.union(set(nx.ancestors(G, node)))
