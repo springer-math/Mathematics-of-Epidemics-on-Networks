@@ -2,9 +2,9 @@
 
 ## Chapter 1 
 
-- In Proposition 2.4, in equations for k=1,...,N-1, the value Y_2^0 should be interpreted as the same as Y^0 and Y_1^{N}  should be interpreted as the same as Y^N.
-
 ## Chapter 2 
+
+- In Proposition 2.4, in equations for k=1,...,N-1, the value Y_2^0 should be interpreted as the same as Y^0 and Y_1^{N}  should be interpreted as the same as Y^N.
 
 ## Chapter 3
 
