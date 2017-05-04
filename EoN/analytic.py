@@ -2118,10 +2118,14 @@ def _dSIS_heterogeneous_pairwise_(X, t, Nk, NkNl, tau, gamma, Ks):
     ISk = SkI
 
     tmpSk = 1.*Sk #the 1.* is to make it a copy, not the same object
-    tmpSk[tmpSk==0] = 1
-
-    SkSlI = SkSl * ((Ls-1))*SlI/ (Ls*tmpSk)
-    ISkIl = (ISk * ((Ks-1))*SkIl.T/ (Ks*tmpSk)).T
+    kxSk = Ks*tmpSk  # k [S_k]
+    lxSl = Ls*tmpSk  # l [S_l]
+    
+    kxSk[kxSk==0] = 1#avoid division by 0. This is okay since those places
+    lxSl[lxSl==0] = 1#where it is 0 will have 0 numerator, and the whole
+                     #expression should evaluate to 0.
+    SkSlI = SkSl * ((Ls-1))*SlI/ (lxSl)
+    ISkIl = (ISk * ((Ks-1))*SkIl.T/ (kxSk)).T
     ISkSl = SkSlI.T 
     IkSlI = ISkIl.T 
     
@@ -2281,6 +2285,7 @@ def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma,
     SkIl0 = SkIl0.copy()
     SkSl0.shape = (kcount**2,1)
     SkIl0.shape = (kcount**2,1)
+
     X0 = scipy.concatenate((Sk0[:,None], SkSl0, SkIl0), axis=0).T[0]
 
     X = my_odeint(_dSIS_heterogeneous_pairwise_, X0, times, 
