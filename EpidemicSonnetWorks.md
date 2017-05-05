@@ -1,0 +1,1 @@
+For our book on EpidemicsOnNetworks, we are collecting poetry (in particular sonnets) at
