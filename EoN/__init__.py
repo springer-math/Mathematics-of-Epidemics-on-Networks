@@ -103,36 +103,7 @@ from EoN.auxiliary import *
 
 
 '''
-These are the systems I want to include based on their numbering in the 
-book:
-
-coded (3.7) SIS individual based
-(3.30) SIR individual based
-NOT coded (3.26) SIS pair based
-(3.39) SIR pair based
-
-chapter 4?
-
-(5.13) SIS heterogeneous pairwise
-(5.15) SIR heterogeneous pairwise
-(5.18) SIS compact pairwise
-(5.19) SIR compact pairwise
-(5.20) SIS super compact pairwise
-(5.22) SIR super compact pairwise
-(5.36) SIS effective degree
-(5.38) SIR effective degree
-(5.43) SIR compact effective degree
-(5.44) SIS compact effective degree = SIS compact pairwise
-
-(6.2) Epidemic probability discrete time
-(6.3) Epidemic probability continuous time
-(6.5) Epidemic probability non-Markovian
-(6.6) Epidemic size discrete time
-(6.7) Epidemic size continuous time
-(6.8) Epidemic size non-Markovian
-(6.10) Epidemic size discrete time (large IC)
-(6.11) Discrete-time EBCM model
-(6.12) Continuous time EBCM model
+These are the systems I want to include:
 
 (8.1) SIS pairwise contact conserving rewiring
 (8.5) SIS eff. deg. contact conserving rewiring
