@@ -6,6 +6,10 @@ This repository accompanies [*Mathematics of Epidemics on Networks*](http://www.
 
 Download the files as a zip using the green button at the top of [the github page](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks), or clone the repository to your machine using Git.
 
+## Documentation
+
+Documentation is available at http://epidemicsonnetworks.readthedocs.io/en/latest/
+
 ## Releases
 
 
