@@ -4,14 +4,17 @@ This repository accompanies [*Mathematics of Epidemics on Networks*](http://www.
 
 ![Cover image](https://images.springer.com/sgw/books/medium/9783319508047.jpg)
 
-Download the files as a zip using the green button, or clone the repository to your machine using Git.
+Download the files as a zip using the green button at the top of [the github page](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks), or clone the repository to your machine using Git.
 
 ## Releases
 
 
 ## Corrections
 
-For corrections to the content in the published book, see the file errata.md.
+For corrections to the content in the published book, see the file [errata.md](errata.md).
+
+To report a bug in the code or an error in the book, please use the Issues option
+at the top of [the github page](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks).  Please check the [errata](errata.md) before reporting a mistake in the book.
 
 ## Contributions
 
