@@ -35,7 +35,7 @@ def generate_network(Pk, N, ntries = 100):
     while counter< ntries:
         counter += 1
         ks = []
-        for ctr in xrange(N):
+        for ctr in range(N):
             ks.append(Pk())
         if sum(ks)%2 == 0:
             break
@@ -68,7 +68,7 @@ def DPsiHomogeneous(x):
 
 
 
-#The following 30 lines or so are devoted to defining the degree distribution
+#The following 30 - 40 lines or so are devoted to defining the degree distribution
 #and the generating function of the truncated power law network.
 
 #defining the power law degree distribution here:
@@ -129,20 +129,20 @@ networktypes = [NetworkType(PkPowLaw, PsiPowLaw, DPsiPowLaw,
                 NetworkType(PkPoisson, PsiPoisson, 
                                         DPsiPoisson, 
                                         r'Erd\H{o}s-R\'{e}nyi',
-                                        '^', colors[1]),
+                                        '^', colors[0]),
                 NetworkType(PkHomogeneous, PsiHomogeneous,
                                            DPsiHomogeneous, r'Homogeneous',
                                            's', colors[2])]
 report_times = scipy.linspace(0,30,3000)
 figures = {}
-plt.figure()
+plt.figure(figsize=(4,8))
     
     
     
 for networktype in networktypes:
     sums = 0*report_times
     for cnt in range(count):#do the light-colored cloud.
-        print cnt
+        #print(cnt)
         G = generate_network(networktype.Pk, N)
         t, S, I, R = EoN.fast_SIR(G, tau, gamma, rho=rho)
         plt.plot(t, I*1./N, '-', color = networktype.color, 
@@ -152,22 +152,24 @@ for networktype in networktypes:
     ave = sums/count
     plt.plot(report_times, ave, color = 'k')
 
-    for cnt in range(3):  #do 3 highlighted simulations
-        G = generate_network(networktype.Pk, N)
-        t, S, I, R = EoN.fast_SIR(G, tau, gamma, rho=rho)
-        plt.plot(t, I*1./N, '-', color = 'k', linewidth=0.1)
     
     #now do the EBCM solution
     t, S, I, R, = EoN.EBCM_uniform_introduction(N, networktype.Psi, 
                                                networktype.DPsi, tau, 
                                                gamma, rho, tmin=0, 
                                                tmax=20, tcount=201)
-    plt.plot(t, I/N, networktype.symbol, mfc = 'w', 
-             label = networktype.label, markersize = 4)
-    plt.xlabel(r'$t$', fontsize=12)
-    plt.ylabel(r'Proportion infected', fontsize=12)
-    plt.legend(loc = 'upper right', numpoints = 1)
+    plt.plot(t, I/N, networktype.symbol, markerfacecolor = networktype.color, 
+            label = networktype.label, markersize = 4, markeredgecolor='k')
 
-plt.axis(xmax=10)
+    for cnt in range(3):  #do 3 highlighted simulations
+        G = generate_network(networktype.Pk, N)
+        t, S, I, R = EoN.fast_SIR(G, tau, gamma, rho=rho)
+        plt.plot(t, I*1./N, '-', color = 'k', linewidth=0.1)
+
+plt.xlabel(r'$t$', fontsize=12)
+plt.ylabel(r'Proportion infected', fontsize=12)
+plt.legend(loc = 'upper right', numpoints = 1)
+
+plt.axis(xmax=10, xmin=0, ymin=0)
 plt.savefig('fig1p2.pdf')
 
