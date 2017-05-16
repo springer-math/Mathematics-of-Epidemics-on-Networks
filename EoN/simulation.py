@@ -1496,8 +1496,8 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
     rec_time = defaultdict(lambda: tmin-1) #node recovery time defaults to -1
     if initial_recovereds is not None:
         for node in initial_recovereds:
-                status[node] = 'R'
-                rec_time[node] = tmin-1 #default value for these.  Ensures that the recovered nodes appear with a time in 
+            status[node] = 'R'
+            rec_time[node] = tmin-1 #default value for these.  Ensures that the recovered nodes appear with a time
     pred_inf_time = defaultdict(lambda: float('Inf')) 
         #infection time defaults to \infty  --- this could be set to tmax, 
         #probably with a slight improvement to performance.
@@ -1907,8 +1907,9 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
 
 #####Now dealing with Gillespie code#####
 
-def _Gillespie_initialize_(G, initial_infecteds, infection_times, 
-                            tmin, return_full_data, SIR = True):
+def _Gillespie_initialize_(G, initial_infecteds, initial_recovereds, 
+                            infection_times, recovery_times, tmin, 
+                            return_full_data, SIR = True):
     '''Initializes the network'''
     times = [tmin]
     S = [G.order()-len(initial_infecteds)]
@@ -1920,6 +1921,11 @@ def _Gillespie_initialize_(G, initial_infecteds, infection_times,
     risk_group = defaultdict(lambda:_ListDict_()) 
     for node in initial_infecteds:
         status[node]='I'
+    if initial_recovereds is not None:
+        for node in initial_recovereds:
+            status[node] = 'R'
+            if return_full_data:
+                recovery_times[node] = [tmin-1]
     for node in initial_infecteds:
         for neighbor in G.neighbors(node):
             if status[neighbor]=='S':
@@ -1928,9 +1934,10 @@ def _Gillespie_initialize_(G, initial_infecteds, infection_times,
                     risk_group[infected_neighbor_count[neighbor]-1].remove(
                                                                     neighbor)
                 risk_group[infected_neighbor_count[neighbor]].add(neighbor)
+
     if return_full_data:
         for node in initial_infecteds:
-            infection_times[node].append(tmin)
+            infection_times[node] = [tmin]
     if SIR:
         return times, S, I, R, status, infected, infected_neighbor_count, \
                 risk_group
@@ -2056,7 +2063,8 @@ def _Gillespie_recover_SIS_(G, S, I, times, infected, current_time, status,
     if return_full_data:
         recovery_times[recovering_node].append(current_time)
 
-def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0, 
+def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, 
+                    initial_recovereds = None,rho = None, tmin = 0, 
                     tmax=float('Inf'), return_full_data = False):
     #tested in test_SIR_dynamics
     r'''
@@ -2107,6 +2115,12 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             If both initial_infecteds and rho are assigned, then there
             is an error.
        
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
+
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
 
@@ -2175,9 +2189,11 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
 
+
     times, S, I, R, status, infected, infected_neighbor_count, risk_group = \
-                    _Gillespie_initialize_(G, initial_infecteds, 
-                                            infection_times, tmin, return_full_data)
+                    _Gillespie_initialize_(G, initial_infecteds, initial_recovereds,
+                                            infection_times, recovery_times, 
+                                            tmin, return_full_data)
 
     total_trans_rate = tau*sum(n*len(risk_group[n]) 
                                     for n in risk_group.keys())
