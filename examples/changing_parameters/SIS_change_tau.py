@@ -49,7 +49,7 @@ infected = set(node for node in infection_time if node not in recovery_time or i
 times2, S2, I2, infection_time, recovery_time = EoN.fast_SIS(G, tau1, gamma, initial_infecteds= infected, tmin=t1, tmax=tmax, return_full_data=True)
 
 plt.plot(times0, I0)
-plt.plot(times1, I1)
-plt.plot(times2, I2)
+plt.plot(times1, I1)#the first two have the same parameters, so the transition should be as if it were a single simulation
+plt.plot(times2, I2)#the infectiousness reduced, so a sharp change should be visible
 
 plt.savefig('SIS_change_tau.pdf')

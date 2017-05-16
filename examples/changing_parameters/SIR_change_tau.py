@@ -46,6 +46,6 @@ times2, S2, I2, R2 = EoN.fast_SIR(G, tau1, gamma, initial_infecteds = infected, 
 
 
 plt.plot(times0, I0)
-plt.plot(times1, I1)
-plt.plot(times2, I2)
+plt.plot(times1, I1)#the first two have the same parameters, so the transition should be as if it were a single simulation
+plt.plot(times2, I2)#the infectiousness reduced, so a sharp change should be visible
 plt.savefig('SIR_change_tau.pdf')
