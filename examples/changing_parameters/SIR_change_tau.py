@@ -26,7 +26,7 @@ gamma = 1
 tau0 = 1
 tau1 = 0.5
 
-N= 100000
+N= 1000000
 kave = 4
 rho = 0.001
 
@@ -45,7 +45,28 @@ infected, recovered = get_affected_nodes_at_end(infection_time, recovery_time)
 times2, S2, I2, R2 = EoN.fast_SIR(G, tau1, gamma, initial_infecteds = infected, initial_recovereds=recovered, tmin=t1, tmax=tmax)
 
 
-plt.plot(times0, I0)
+plt.plot(times0, I0, label = 'fast_SIR')
 plt.plot(times1, I1)#the first two have the same parameters, so the transition should be as if it were a single simulation
 plt.plot(times2, I2)#the infectiousness reduced, so a sharp change should be visible
+
+times0, S0, I0, R0, infection_time, recovery_time = EoN.Gillespie_SIR(G, tau0, gamma, rho = rho, tmax = t0, return_full_data=True)
+
+infected, recovered = get_affected_nodes_at_end(infection_time, recovery_time)
+
+
+times1, S1, I1, R1, infection_time, recovery_time = EoN.Gillespie_SIR(G, tau0, gamma, initial_infecteds = infected, initial_recovereds = recovered, tmin = t0, tmax = t1, return_full_data=True)
+
+infected, recovered = get_affected_nodes_at_end(infection_time, recovery_time)
+
+
+times2, S2, I2, R2 = EoN.Gillespie_SIR(G, tau1, gamma, initial_infecteds = infected, initial_recovereds=recovered, tmin=t1, tmax=tmax)
+
+
+plt.plot(times0, I0, '-.', label = 'Gillespie_SIR')
+plt.plot(times1, I1, '-.')
+plt.plot(times2, I2, '-.')
+
+plt.legend(loc = 'upper right')
 plt.savefig('SIR_change_tau.pdf')
+
+

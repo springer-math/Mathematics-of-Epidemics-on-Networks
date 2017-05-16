@@ -29,7 +29,7 @@ tau1 = 0.5
 
 N= 100000
 kave = 4
-rho = 0.001
+rho = 0.01
 
 G = nx.fast_gnp_random_graph(N, kave/(N-1.))
 
@@ -48,8 +48,23 @@ times1, S1, I1, infection_time, recovery_time = EoN.fast_SIS(G, tau0, gamma, ini
 infected = set(node for node in infection_time if node not in recovery_time or infection_time[node][-1]> recovery_time[node][-1])
 times2, S2, I2, infection_time, recovery_time = EoN.fast_SIS(G, tau1, gamma, initial_infecteds= infected, tmin=t1, tmax=tmax, return_full_data=True)
 
-plt.plot(times0, I0)
+plt.plot(times0, I0, label = 'fast_SIS')
 plt.plot(times1, I1)#the first two have the same parameters, so the transition should be as if it were a single simulation
 plt.plot(times2, I2)#the infectiousness reduced, so a sharp change should be visible
 
+
+#now for fun, redo with Gillespie
+times0, S0, I0, infection_time, recovery_time = EoN.Gillespie_SIS(G, tau0, gamma, rho = rho, tmax = t0, return_full_data=True)
+
+infected = set(node for node in infection_time if node not in recovery_time or infection_time[node][-1]> recovery_time[node][-1])
+times1, S1, I1, infection_time, recovery_time = EoN.Gillespie_SIS(G, tau0, gamma, initial_infecteds= infected, tmin=t0, tmax=t1, return_full_data=True)
+
+infected = set(node for node in infection_time if node not in recovery_time or infection_time[node][-1]> recovery_time[node][-1])
+times2, S2, I2, infection_time, recovery_time = EoN.Gillespie_SIS(G, tau1, gamma, initial_infecteds= infected, tmin=t1, tmax=tmax, return_full_data=True)
+
+plt.plot(times0, I0, '-.', label = 'Gillespie_SIS')
+plt.plot(times1, I1, '-.')#the first two have the same parameters, so the transition should be as if it were a single simulation
+plt.plot(times2, I2, '-.')#the infectiousness reduced, so a sharp change should be visible
+
+plt.legend(loc = 'lower right')
 plt.savefig('SIS_change_tau.pdf')
