@@ -107,13 +107,13 @@ Additional Examples
 Sometimes you might want to have the values of parameters change at different 
 times.
 
-:download: `SIS varying tau <../examples/changing_parameters/SIS_change_tau.py>`
+:download:`SIS varying tau <../examples/changing_parameters/SIS_change_tau.py>`
 
-:download: `SIR varying tau <../examples/changing_parameters/SIR_change_tau.py>`
+:download:`SIR varying tau <../examples/changing_parameters/SIR_change_tau.py>`
 
 You may have edges (or nodes) with weights affecting transmission or recovery
 rates.
 
-:download: `SIS weighted edges <../examples/weighted_graph/SIS_weighted.py>`
+:download:`SIS weighted edges <../examples/weighted_graph/SIS_weighted.py>`
 
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
