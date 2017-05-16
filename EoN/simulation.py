@@ -1243,8 +1243,8 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
     status[node] = 'R'
     
     
-def fast_SIR(G, tau, gamma, initial_infecteds = None, rho = None,
-                tmax=float('Inf'), transmission_weight = None, 
+def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None, 
+                rho = None, tmax=float('Inf'), transmission_weight = None, 
                 recovery_weight = None, return_full_data = False):
     #tested in test_SIR_dynamics
     r'''From figure A.3 of Kiss, Miller, & Simon.  Please cite the
@@ -1273,6 +1273,12 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, rho = None,
             If both initial_infecteds and rho are assigned, then there
             is an error.
        
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
+
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
 
@@ -1337,12 +1343,13 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, rho = None,
     return fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_, 
                             args = (trans_rate_fxn, rec_rate_fxn), 
                             initial_infecteds=initial_infecteds, 
-                            rho=rho, tmax=tmax, 
-                            return_full_data=return_full_data)
+                            initial_recovereds=initial_recovereds, rho=rho, 
+                            tmax=tmax, return_full_data=return_full_data)
 
 
 def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_, 
-                        args = (), initial_infecteds = None, rho=None,
+                        args = (), initial_infecteds = None, 
+                        initial_recovereds = None, rho=None,
                         tmax = float('Inf'), return_full_data = False, 
                         Q=None):
     r'''
@@ -1398,6 +1405,12 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.
+            
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
        
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
@@ -1474,6 +1487,9 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
 
 
     status = defaultdict(lambda: 'S') #node status defaults to 'S'
+    if initial_recovereds is not None:
+        for node in initial_recovereds:
+                status[node] = 'R'
     rec_time = defaultdict(lambda: -1) #node recovery time defaults to -1
     pred_inf_time = defaultdict(lambda: float('Inf')) 
         #infection time defaults to \infty  --- this could be set to tmax, 
