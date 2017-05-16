@@ -1244,7 +1244,7 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
     
     
 def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None, 
-                rho = None, tmax=float('Inf'), transmission_weight = None, 
+                rho = None, tmin = 0, tmax=float('Inf'), transmission_weight = None, 
                 recovery_weight = None, return_full_data = False):
     #tested in test_SIR_dynamics
     r'''From figure A.3 of Kiss, Miller, & Simon.  Please cite the
@@ -1282,6 +1282,9 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
 
+        tmin : number (default 0)
+            starting time
+            
         tmax : number   (default float('Inf'))
             maximum time after which simulation will stop.
             the default of running to infinity is okay for SIR, 
@@ -1344,13 +1347,13 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
                             args = (trans_rate_fxn, rec_rate_fxn), 
                             initial_infecteds=initial_infecteds, 
                             initial_recovereds=initial_recovereds, rho=rho, 
-                            tmax=tmax, return_full_data=return_full_data)
+                            tmin=tmin, tmax=tmax, return_full_data=return_full_data)
 
 
 def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_, 
                         args = (), initial_infecteds = None, 
                         initial_recovereds = None, rho=None,
-                        tmax = float('Inf'), return_full_data = False, 
+                        tmin = 0, tmax = float('Inf'), return_full_data = False, 
                         Q=None):
     r'''
     Performs SIR simulations for epidemics on weighted or unweighted
@@ -1415,6 +1418,9 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
 
+        tmin : number (default 0)
+            starting time
+            
         tmax : (default infinity)
             final time
 
@@ -1487,10 +1493,11 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
 
 
     status = defaultdict(lambda: 'S') #node status defaults to 'S'
+    rec_time = defaultdict(lambda: tmin-1) #node recovery time defaults to -1
     if initial_recovereds is not None:
         for node in initial_recovereds:
                 status[node] = 'R'
-    rec_time = defaultdict(lambda: -1) #node recovery time defaults to -1
+                rec_time[node] = tmin-1 #default value for these.  Ensures that the recovered nodes appear with a time in 
     pred_inf_time = defaultdict(lambda: float('Inf')) 
         #infection time defaults to \infty  --- this could be set to tmax, 
         #probably with a slight improvement to performance.
@@ -1508,7 +1515,7 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
             initial_infecteds=[initial_infecteds]
         #else it is assumed to be a list of nodes.
         
-        times, S, I, R= ([0], [G.order()], [0], [0])  
+        times, S, I, R= ([tmin], [G.order()], [0], [0])  
 
         for u in initial_infecteds:
             #newevent = Event(0, process_trans, args=(G, u, times, S, I, R, Q, 
@@ -1516,9 +1523,9 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
             #                                            pred_inf_time
             #                                        ) + args
             #                )
-            pred_inf_time[u] = 0
+            pred_inf_time[u] = tmin
             #Q.add(newevent)
-            Q.add(0, process_trans, args=(G, u, times, S, I, R, Q, 
+            Q.add(tmin, process_trans, args=(G, u, times, S, I, R, Q, 
                                                         status, rec_time, 
                                                         pred_inf_time
                                                     ) + args
@@ -1549,7 +1556,7 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
             elif event.action == 'recover':
                 rec_time[event.node] = event.time
         heapq.heapify(Q)            
-        times, S, I, R= ([0], [G.order()-len(initial_infecteds)], [0], [0])  
+        times, S, I, R= ([tmin], [G.order()-len(initial_infecteds)], [0], [0])  
         
     
     #Note that when finally infected, pred_inf_time is correct
@@ -1579,7 +1586,7 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
         infection_time = {node:time for (node,time) in 
                             pred_inf_time.items() if status[node]!='S'}
         recovery_time = {node:time for (node,time) in 
-                                rec_time.items() if status[node] !='S'}
+                                rec_time.items() if status[node] =='R'}
         return scipy.array(times), scipy.array(S), scipy.array(I), \
                 scipy.array(R), infection_time, recovery_time
 
@@ -1743,7 +1750,7 @@ def _process_rec_SIS_(time, node, times, recovery_times, S, I, status):
     I.append(I[-1]-1) #one less infected
     status[node] = 'S'
 
-def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100, 
+def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100, 
                 transmission_weight = None, recovery_weight = None, 
                 return_full_data = False):
     r'''Performs SIS simulations for epidemics on weighted or unweighted
@@ -1776,6 +1783,9 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
         rho : number
             initial fraction infected. number infected is int(round(G.order()*rho))
        
+        tmin : number (default 0)
+            starting time
+            
         tmax : number
             stop time
 
@@ -1845,13 +1855,13 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
 
-    times = [0]
+    times = [tmin]
     S = [G.order()]
     I = [0]
     Q = myQueue(tmax)
     status = defaultdict(lambda: 'S') #node status defaults to 'S'
-    rec_time = defaultdict(lambda: -1) #node recovery time defaults to -1
-    rec_time['initial_condition'] = 0
+    rec_time = defaultdict(lambda: tmin-1) #node recovery time defaults to -1
+    rec_time['initial_condition'] = tmin
 
     infection_times = defaultdict(lambda: []) #defaults to empty list
     recovery_times = defaultdict(lambda: [])
@@ -1864,7 +1874,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
         #                            rec_rate_fxn)
         #                )
         #Q.add(newevent)  #fails if >tmax
-        Q.add(0, _process_trans_SIS_, 
+        Q.add(tmin, _process_trans_SIS_, 
                             args = (G, 'initial_condition', u, times, 
                                     infection_times, recovery_times, 
                                     S, I, Q, 
@@ -1876,7 +1886,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
 
     #the initial infections were treated as ordinary infection events at 
     #time 0.
-    #So each initial infection added an entry at time 0 to lists.
+    #So each initial infection added an entry at time tmin to lists.
     #We'd like to get rid these excess events.
     times = times[len(initial_infecteds):]
     S=S[len(initial_infecteds):]
@@ -1898,9 +1908,9 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
 #####Now dealing with Gillespie code#####
 
 def _Gillespie_initialize_(G, initial_infecteds, infection_times, 
-                            return_full_data, SIR = True):
+                            tmin, return_full_data, SIR = True):
     '''Initializes the network'''
-    times = [0]
+    times = [tmin]
     S = [G.order()-len(initial_infecteds)]
     I = [len(initial_infecteds)]
     R = [0]
@@ -1920,7 +1930,7 @@ def _Gillespie_initialize_(G, initial_infecteds, infection_times,
                 risk_group[infected_neighbor_count[neighbor]].add(neighbor)
     if return_full_data:
         for node in initial_infecteds:
-            infection_times[node].append(0)
+            infection_times[node].append(tmin)
     if SIR:
         return times, S, I, R, status, infected, infected_neighbor_count, \
                 risk_group
@@ -2046,8 +2056,8 @@ def _Gillespie_recover_SIS_(G, S, I, times, infected, current_time, status,
     if return_full_data:
         recovery_times[recovering_node].append(current_time)
 
-def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float('Inf'), 
-                    return_full_data = False):
+def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0, 
+                    tmax=float('Inf'), return_full_data = False):
     #tested in test_SIR_dynamics
     r'''
     Performs SIR simulations for epidemics on unweighted
@@ -2100,6 +2110,9 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
 
+        tmin : number (default 0)
+            starting time
+            
         tmax : number
             stop time
 
@@ -2164,7 +2177,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
 
     times, S, I, R, status, infected, infected_neighbor_count, risk_group = \
                     _Gillespie_initialize_(G, initial_infecteds, 
-                                            infection_times, return_full_data)
+                                            infection_times, tmin, return_full_data)
 
     total_trans_rate = tau*sum(n*len(risk_group[n]) 
                                     for n in risk_group.keys())
@@ -2203,8 +2216,8 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, rho = None, tmax=float(
 
 
 
-def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100, 
-                    return_full_data = False):
+def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
+                    tmax=100, return_full_data = False):
     r'''
     Performs SIS simulations for epidemics on unweighted
     networks.  The run time is slower than fast_SIR, but they are comparable.
@@ -2252,6 +2265,9 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
 
+        tmin : number (default 0)
+            starting time
+            
         tmax : number
             stop time
 
@@ -2314,7 +2330,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmax=100,
 
     times, S, I, status, infected, infected_neighbor_count, risk_group = \
                 _Gillespie_initialize_(G, initial_infecteds,  infection_times,  
-                                        return_full_data, SIR=False)
+                                        tmin, return_full_data, SIR=False)
     #note that at this point times, S, and I must all be lists 
     #since we will be appending to them
 
