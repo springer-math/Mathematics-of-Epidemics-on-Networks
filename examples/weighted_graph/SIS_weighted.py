@@ -2,6 +2,19 @@ import networkx as nx
 import EoN
 import matplotlib.pyplot as plt
 
+r'''This code simulates an SIS epidemic in a graph.  The edges are weighted by 
+two methods: the product of the degrees, or the inverse of that product.
+
+I then run simulations with the transmission rates scaled by the edge weights
+such that a random edge would have expected transmission weight 1 (though since
+there will be biases in which nodes are most likely to be infected, the
+random edge that has an infected node will have higher transmission weight).
+
+At present (16 May 2017) the Gillespie code cannot run weighted networks.  I 
+am considering adding that, but it would DRAMATICALLY slow down the simulations,
+so it won't be even close to competitive with the event-driven versions.  So it's
+a low priority.
+'''
 
 N= 100000
 rho = 0.001
