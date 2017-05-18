@@ -2,6 +2,9 @@ Getting Started
 ===============
 EoN consists of two broad types of algorithms.  One set of algorithms is used to simulate epidemics on networks, and the others solve analytic ODE models that attempt to approximate the disease dynamics.
 
+Installation
+------------
+To install EoN, you need the folder EoN and its contents to either be in the directory you are using or somewhere in your Python path.
 
 QuickStart Guide
 ----------------
