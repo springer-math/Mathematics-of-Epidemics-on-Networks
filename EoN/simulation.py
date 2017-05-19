@@ -2344,10 +2344,10 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         initial_infecteds=random.sample(G.nodes(), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
-
+        
     times, S, I, status, infected, infected_neighbor_count, risk_group = \
                 _Gillespie_initialize_SIS_(G, initial_infecteds, infection_times,  
-                                        tmin, return_full_data)
+                                        recovery_times, tmin, return_full_data)
     #note that at this point times, S, and I must all be lists 
     
     #since we will be appending to them
