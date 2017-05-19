@@ -412,7 +412,7 @@ def SIS_individual_based(G, nodelist, Y0, tau, gamma, tmin = 0,
         t, S, I = EoN.SIS_individual_based(G, nodelist, Y, 0.3, gamma=1, 
                     tmax = 20)
     '''
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
 
@@ -515,7 +515,7 @@ def SIR_individual_based(G, nodelist, X0, Y0, tau, gamma, tmin = 0,
         plt.plot(t,I)
     '''
 
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
 
@@ -999,7 +999,7 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
     if len(Y0) != N:
         raise EoN.EoNError("incompatible length for Y0")            
 
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
 
@@ -1231,7 +1231,7 @@ def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None,
     if len(Y0) != N:
         raise EoN.EoNError("incompatible length for Y0")            
 
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
 

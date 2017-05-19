@@ -6,6 +6,7 @@ import scipy
 import EoN
 import matplotlib.pyplot as plt
 
+
 #######################
 #                     #
 #   Auxiliary stuff   #
@@ -1316,7 +1317,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         plt.plot(t, I)
     '''
     
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
     return fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_, 
@@ -1818,7 +1819,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
     
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
 
@@ -1883,9 +1884,9 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
 
 #####Now dealing with Gillespie code#####
 
-def _Gillespie_initialize_(G, initial_infecteds, initial_recovereds, 
+def _Gillespie_initialize_SIR_(G, initial_infecteds, initial_recovereds, 
                             infection_times, recovery_times, tmin, 
-                            return_full_data, SIR = True):
+                            return_full_data):
     '''Initializes the network'''
     times = [tmin]
     S = [G.order()-len(initial_infecteds)]
@@ -1914,12 +1915,35 @@ def _Gillespie_initialize_(G, initial_infecteds, initial_recovereds,
     if return_full_data:
         for node in initial_infecteds:
             infection_times[node] = [tmin]
-    if SIR:
-        return times, S, I, R, status, infected, infected_neighbor_count, \
-                risk_group
-    else:
-        return times, S, I, status, infected, infected_neighbor_count, \
-                risk_group
+
+    return times, S, I, R, status, infected, infected_neighbor_count, risk_group
+
+        
+def _Gillespie_initialize_SIS_(G, initial_infecteds, infection_times, 
+                                recovery_times, tmin, return_full_data):
+    '''Initializes the network'''
+    times = [tmin]
+    S = [G.order()-len(initial_infecteds)]
+    I = [len(initial_infecteds)]
+    status = defaultdict(lambda:'S') #by default all are susceptible
+    infected = list(initial_infecteds)
+    infected_neighbor_count = defaultdict(lambda:0)#
+    risk_group = defaultdict(lambda:_ListDict_()) 
+    for node in initial_infecteds:
+        status[node]='I'
+    for node in initial_infecteds:
+        for neighbor in G.neighbors(node):
+            if status[neighbor]=='S':
+                infected_neighbor_count[neighbor] += 1
+                if infected_neighbor_count[neighbor]>1:
+                    risk_group[infected_neighbor_count[neighbor]-1].remove(
+                                                                    neighbor)
+                risk_group[infected_neighbor_count[neighbor]].add(neighbor)
+
+    if return_full_data:
+        for node in initial_infecteds:
+            infection_times[node] = [tmin]
+    return times, S, I, status, infected, infected_neighbor_count, risk_group
     
 def _Gillespie_infect_(G, S, I, R, times, infected, current_time, 
                         infected_neighbor_count, risk_group, status, 
@@ -2167,7 +2191,8 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
 
 
     times, S, I, R, status, infected, infected_neighbor_count, risk_group = \
-                    _Gillespie_initialize_(G, initial_infecteds, initial_recovereds,
+                    _Gillespie_initialize_SIR_(G, initial_infecteds, 
+                                            initial_recovereds,
                                             infection_times, recovery_times, 
                                             tmin, return_full_data)
 
@@ -2212,7 +2237,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
                     tmax=100, return_full_data = False):
     r'''
     Performs SIS simulations for epidemics on unweighted
-    networks.  The run time is slower than fast_SIR, but they are comparable.
+    networks.  The run time is slower than fast_SIS, but they are comparable.
     However, Gillespie_SIS relies on the lack of edge/node weights in order
     to achieve a significant improvement.  fast_SIS permits weighted networks.
     
@@ -2321,9 +2346,10 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         initial_infecteds=[initial_infecteds]
 
     times, S, I, status, infected, infected_neighbor_count, risk_group = \
-                _Gillespie_initialize_(G, initial_infecteds,  infection_times,  
-                                        tmin, return_full_data, SIR=False)
+                _Gillespie_initialize_SIS_(G, initial_infecteds, infection_times,  
+                                        tmin, return_full_data)
     #note that at this point times, S, and I must all be lists 
+    
     #since we will be appending to them
 
     total_trans_rate = tau*sum(n*len(risk_group[n]) 
@@ -2408,7 +2434,7 @@ def Gillespie_weighted_SIR(G, tau, gamma, initial_infecteds = None, rho = None,
     tau = float(tau)  #just to avoid integer division problems in python 2.
     gamma = float(gamma)
 
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions(G, tau, gamma, 
+    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
     

@@ -53,7 +53,7 @@ class EoNError(Exception):
     '''
     pass
 
-def _get_rate_functions(G, tau, gamma, transmission_weight = None, 
+def _get_rate_functions_(G, tau, gamma, transmission_weight = None, 
                         recovery_weight=None):
     r'''
     Arguments:
