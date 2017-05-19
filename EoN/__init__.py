@@ -43,19 +43,64 @@ print("Warning - although this has been tested in Python 3, it was originally"
       +" written in Python 2, so some compatibility issues may remain")
 
 __author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
-__version__ = "0.95alpha"
+__version__ = "0.95"
 
 #__all__ = 
 
+class EoNError(Exception):
+    r'''
+    this will be the basic error type for EoN
+    '''
+    pass
+
+def _get_rate_functions(G, tau, gamma, transmission_weight = None, 
+                        recovery_weight=None):
+    r'''
+    Arguments:
+        G : networkx Graph
+            the graph disease spread on
+
+        tau : number
+            disease parameter giving edge transmission rate (subject to edge scaling)
+
+        gamma : number (default None)
+            disease parameter giving typical recovery rate, 
+        
+        transmission_weight : string (default None)
+            `G.edge[u][v][transmission_weight]` scales up or down the recovery rate.
+
+        recovery_weight : string       (default None)
+            a label for a weight given to the nodes to scale their 
+            recovery rates
+                `gamma_i = G.node[i][recovery_weight]*gamma`
+    Returns:
+        : trans_rate_fxn, rec_rate_fxn
+            Two functions such that 
+            - `trans_rate_fxn(u,v)` is the transmission rate from u to v and
+            - `rec_rate_fxn(u)` is the recovery rate of u.
+'''
+    if transmission_weight is None:
+        trans_rate_fxn = lambda x, y: tau
+    else:
+        trans_rate_fxn = lambda x, y: tau*G.edge[x][y][transmission_weight]
+
+    if recovery_weight is None:
+        rec_rate_fxn = lambda x : gamma
+    else:
+        rec_rate_fxn = lambda x : gamma*G.node[x][recovery_weight]
+
+
+    return trans_rate_fxn, rec_rate_fxn
 
 
 
+
+import EoN.auxiliary
+from EoN.auxiliary import *
 import EoN.simulation
 from EoN.simulation import *
 import EoN.analytic
 from EoN.analytic import *
-import EoN.auxiliary
-from EoN.auxiliary import *
 
 
 '''

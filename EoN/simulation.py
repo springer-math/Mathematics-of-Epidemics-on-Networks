@@ -12,31 +12,7 @@ import matplotlib.pyplot as plt
 #                     #
 #######################
 
-class Event(object): #for fast_SIR and fast_SIS
-    r'''
-    This class is used in event-driven simulations (fast_SIR and 
-    fast_SIS) as an event which will be put into a priority queue.  
-    
-    It is sortable based on event time.
-    
-    An event object consists of
-    self.time 
-    self.function
-    self.args
-    
-    
-    When self.function is called, it is called by:
-        self.function(self.time, *self.args)
-    '''
-    def __init__(self, time, function, args = ()):
-        self.time = time
-        self.function = function
-        self.args = args
-        
-
-    def __lt__(self, other): #used to sort Q
-        return self.time < other.time
-    
+   
 class myQueue(object):
     r'''
     This class is used to store and act on a priority queue of events
