@@ -43,7 +43,7 @@ print("Warning - although this has been tested in Python 3, it was originally"
       +" written in Python 2, so some compatibility issues may remain")
 
 __author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
-__version__ = "0.95"
+__version__ = "0.96rc1"
 
 #__all__ = 
 
