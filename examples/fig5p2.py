@@ -5,16 +5,16 @@ import scipy
 
 
 
-N=1000
+N=100000  #100 times as large as the value given in the text
 gamma = 1.
-iterations = 2#00
+iterations = 1
 rho = 0.05
 tmax = 20
 tcount = 1001
 kave = 20.
 ksqave = (5**2 + 35**2)/2.
 
-tau_c = 2*gamma*kave/ksqave
+tau_c = gamma*kave/ksqave
 
 ksmall = 5
 kbig = 35
@@ -22,7 +22,7 @@ deg_dist = [ksmall, kbig]*int(N/2)
 
 report_times = scipy.linspace(0, tmax, tcount)
 
-for tau, label in zip([0.9*tau_c, tau_c, 1.2*tau_c, 1.5*tau_c],['a', 'b', 'c', 'd']):
+for tau, label in zip([0.9*tau_c, tau_c, 1.1*tau_c, 1.5*tau_c],['a', 'b', 'c', 'd']):
     print(str(tau_c)+" "+str(tau))
     plt.clf()
     
@@ -40,27 +40,31 @@ for tau, label in zip([0.9*tau_c, tau_c, 1.2*tau_c, 1.5*tau_c],['a', 'b', 'c', '
     degree_array[ksmall]=N/2
     Sk0 = degree_array*(1-rho)
     Ik0 = degree_array*rho
-    SkSl0 = scipy.zeros((kbig+1,kbig+1))
-    IkIl0 = scipy.zeros((kbig+1,kbig+1))
-    SkIl0 = scipy.zeros((kbig+1,kbig+1))
+    #SkSl0 = scipy.zeros((kbig+1,kbig+1))
+    #IkIl0 = scipy.zeros((kbig+1,kbig+1))
+    #SkIl0 = scipy.zeros((kbig+1,kbig+1))
     
-    for k1, k2 in zip([ksmall, kbig], [ksmall,kbig]):
-        SkSl0[k1, k2] = k1*(1-rho)*(N/2.) * (k2/kave)*(1-rho)
-        IkIl0[k1, k2] = k1*rho*(N/2.) * (k2/kave)*rho
-        SkIl0[k1, k2] = k1*(1-rho)*(N/2.)*(k2/kave)*(rho)
+    #for k1, k2 in zip([ksmall, kbig], [ksmall,kbig]):
+    #    SkSl0[k1, k2] = k1*(1-rho)*(N/2.) * (k2/kave)*(1-rho)
+    #    IkIl0[k1, k2] = k1*rho*(N/2.) * (k2/kave)*rho
+    #    SkIl0[k1, k2] = k1*(1-rho)*(N/2.)*(k2/kave)*(rho)
             
-    t, S, I = EoN.SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma, tmax=tmax, 
-                                tcount=tcount)
+    t, S, I = EoN.SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmax=tmax,
+                                                tcount=tcount)
     plt.plot(t, I/N, '--')
+    
     
     SI0 = ((kbig + ksmall)*N/2.)*(1-rho)*rho
     SS0 = ((kbig+ksmall)*N/2.)*(1-rho)*(1-rho)
-    I0 = N*rho
-    II0 = N*rho*((kbig+ksmall)*N/2.)*rho*rho
+    II0 = ((kbig+ksmall)*N/2.)*rho*rho
     
+    t, S, I = EoN.SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, 
+                                   tmax=tmax, tcount=tcount)
+    plt.plot(t, I/N)
     #t, S, I = EoN.SIS_compact_pairwise(Sk0, I0, SI0, SS0, II0, tau, gamma, tmax=tmax, tcount=tcount)
     #plt.plot(t, I/N)
     
+    I0 = N*rho
     S0 = N*(1-rho)
     kave = (kbig+ksmall)/2.
     

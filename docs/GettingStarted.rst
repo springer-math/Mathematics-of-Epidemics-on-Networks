@@ -103,6 +103,14 @@ Here are examples to generate (close approximations to) many of the figures in
 
 :download:`figure 4.13 <../examples/fig4p13.py>`
 
+:download:`figure 5.2 <../examples/fig5p2.py>` (Note that the book has a typo.  As with fig 4.7, for (c), $\\tau = 1.1\\tau_c$.  It's worth looking at $1.2\\tau_c$ as well.  The code provided uses a larger population than the text suggested.)
+
+:download:`figure 5.3 <../examples/fig5p3.py>` (Runs for a population of 10000 nodes.  Demonstrates the ease of the *_from_graph versions of the analytic equations).
+
+:download:`figure 5.4 <../examples/fig5p4.py>` (Runs for a population of 10000 nodes.  Demonstrates the ease of the *_from_graph versions of the analytic equations).
+
+:download:`figure 5.5 <../examples/fig5p5.py>` (Runs for a population of 50000 nodes.  Demonstrates the ease of the *_from_graph versions of the analytic equations).
+
 
 Additional Examples
 ^^^^^^^^^^^^^^^^^^^

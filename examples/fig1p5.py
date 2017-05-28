@@ -20,8 +20,7 @@ for counter in range(iterations):
 
 fig = plt.figure(1)
 main = plt.axes()
-print H.items()
-print zip(*H.items())
+
 main.bar(*zip(*H.items()), width = binwidth, linewidth=0)
 main.axis(xmax=1000, ymax = 0.7)
 plt.xlabel('Final Epidemic Size')
