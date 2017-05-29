@@ -23,9 +23,7 @@ def get_deg_seq(N, Pk):
         
 
 def sim_and_plot(G, tau, gamma, rho, tmax, tcount, ax):
-    print(rho)
     t, S, I = EoN.fast_SIS(G, tau, gamma, rho = rho, tmax = tmax)
-    print(I[0])
     report_times = scipy.linspace(0, tmax, tcount)
     I = EoN.subsample(report_times, t, I)
     ax.plot(report_times, I/N, color='grey', linewidth=5, alpha=0.3)
@@ -58,7 +56,6 @@ for k in Pk:
 
 deg_seq = get_deg_seq(N, Pk)
 G = nx.configuration_model(deg_seq)
-print(G.order())
 kave = sum(deg_seq)/N
 
 tau = 1.5*gamma/kave

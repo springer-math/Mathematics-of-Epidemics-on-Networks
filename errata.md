@@ -19,6 +19,8 @@
 
 ## Chapter 6 
 
+- In Figure 6.7, it was not made clear that the percolation is performed on a single network for each N, and all edges are given a weight uniformly in (0,1) and kept only if the weight is less than p.  The edge weights are kept constant as p changes.
+
 - equation 6.8a, \xi should be \zeta.
 
 - displayed equation for example 6.3 \xi should be \zeta

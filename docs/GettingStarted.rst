@@ -105,11 +105,23 @@ Here are examples to generate (close approximations to) many of the figures in
 
 :download:`figure 5.2 <../examples/fig5p2.py>` (Note that the book has a typo.  As with fig 4.7, for (c), $\\tau = 1.1\\tau_c$.  It's worth looking at $1.2\\tau_c$ as well.  The code provided uses a larger population than the text suggested.)
 
-:download:`figure 5.3 <../examples/fig5p3.py>` (Runs for a population of 10000 nodes.  Demonstrates the ease of the *_from_graph versions of the analytic equations).
+From this point farther down, many of these simulations use reduced sizes or numbers of iterations compared to the published figure.  This is to save time.
 
-:download:`figure 5.4 <../examples/fig5p4.py>` (Runs for a population of 10000 nodes.  Demonstrates the ease of the *_from_graph versions of the analytic equations).
+:download:`figure 5.3 <../examples/fig5p3.py>` (Demonstrates the ease of the *_from_graph versions of the analytic equations).
 
-:download:`figure 5.5 <../examples/fig5p5.py>` (Runs for a population of 50000 nodes.  Demonstrates the ease of the *_from_graph versions of the analytic equations).
+:download:`figure 5.4 <../examples/fig5p4.py>` (Demonstrates the ease of the *_from_graph versions of the analytic equations).
+
+:download:`figure 5.5 <../examples/fig5p5.py>` (Demonstrates the ease of the *_from_graph versions of the analytic equations).
+
+:download:`figure 6.1 <../examples/fig6p1.py>`  (This also does figure 6.3)
+
+:download:`figure 6.2 <../examples/fig6p2.py>` 
+
+figure 6.3 See figure 6.1
+
+:download:`figure 6.4 <../examples/fig6p4.py>` 
+
+:download:`figure 6.24 <../examples/fig6p24.py>` 
 
 
 Additional Examples
