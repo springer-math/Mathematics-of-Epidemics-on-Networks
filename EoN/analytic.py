@@ -51,8 +51,47 @@ def my_odeint(dfunc, V0, times, args=()):
     V = scipy.array(V)
     return V
 
+def _initialize_node_status_(G, initial_infecteds, initial_recovereds = None):
+    if initial_recovereds is None:
+        initial_recovereds = []
+    intersection = set(initial_infecteds).intersection(set(initial_recovereds))
+    if  intersection:
+        raise EoN.EoNError("{} are in both initial_infecteds and initial_recovereds".format(intersection))
+        
+    status = defaultdict(lambda : 'S')
+    for node in initial_infecteds:
+        if not G.has_node(node):
+            raise EoN.EoNError("{} not in G".format(node))
+        status[node] = 'I'
+    for node in initial_recovereds:
+        if not G.has_node(node):
+            raise EoN.EoNError("{} not in G".format(node))
+        status[node] = 'R'
+    return status
 
-def get_Nk_and_IC_as_arrays(G, rho, SIR=True):
+def _count_edge_types_(G, initial_infecteds, initial_recovereds = None, SIR=True):
+    status = _initialize_node_status_(G, initial_infecteds, initial_recovereds)
+    SS0 = 0
+    SI0 = 0
+    II0 = 0
+    for u,v in G.edges():
+        if status[u] == 'S':
+            if status[v] == 'S':
+                SS0 += 2
+            elif status[v] == 'I':
+                SI0 += 1
+        elif status[u]=='I':
+            if status[v] == 'S':
+                SI0 += 1
+            elif status[v] == 'I':
+                II0 += 2
+    if SIR:
+        return SS0, SI0
+    else:
+        return SS0, SI0, II0
+        
+    
+def get_Nk_and_IC_as_arrays(G, initial_infecteds = None, initial_recovereds = None, rho=None, SIR=True):
     r'''
     Given the graph and initial proportion infected this finds the 
     initial conditions and number of nodes of each degree as needed
@@ -62,8 +101,23 @@ def get_Nk_and_IC_as_arrays(G, rho, SIR=True):
 
         G : networkx graph
 
-        rho : number between 0 and 1
-            fraction of nodes to infect at time 0.
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.    
+               
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
+            
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
 
         SIR : boolean
             says whether the system will be SIR or SIS.
@@ -86,21 +140,42 @@ def get_Nk_and_IC_as_arrays(G, rho, SIR=True):
             NUMBER of recovered nodes of each degree at t=0,    
             = 0 Nk
     '''
-    
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+    if SIR is False and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define initial_recovereds for SIS")
+        
     Nk = Counter(G.degree().values())
     maxk = max(Nk.keys())
-    
     Nk = scipy.array([Nk[k] for k in range(maxk+1)])
-    Sk0 = (1-rho)*Nk
-    Ik0 = rho*Nk
-    Rk0 = 0*Nk
+    
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds, initial_recovereds)
+        Sk0 = 0*Nk
+        Ik0 = 0*Nk
+        Rk0 = 0*Nk
+        for node in G.nodes():
+            k = G.degree(node)
+            if status[node] == 'S':
+                Sk0[k] += 1
+            elif status[node] == 'I':
+                Ik0[k] += 1
+            else:# status[node] == 'R'
+                Rk0[k] += 1  
+    else:
+        Sk0 = (1-rho)*Nk
+        Ik0 = rho*Nk
+        Rk0 = 0*Nk
     
     if SIR:
         return Nk, Sk0, Ik0, Rk0
     else:
         return Nk, Sk0, Ik0
 
-def get_NkNl_and_IC_as_arrays(G, rho, withKs = False, SIR=True):
+def get_NkNl_and_IC_as_arrays(G, initial_infecteds=None, initial_recovereds = None, 
+                                rho=None, withKs = False, SIR=True):
     r'''
     In some of the differential equations models, we need to know how
     many edges exist between nodes of given degrees in a graph.  
@@ -110,8 +185,21 @@ def get_NkNl_and_IC_as_arrays(G, rho, withKs = False, SIR=True):
     
     Arguments:
         G : networkx graph
-        rho : number between 0 and 1
-            fraction of nodes to infect at time 0.
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
         withKs : boolean
             flag to say whether we are restricting our attention to 
             just those degrees observed in the network or to all 
@@ -148,6 +236,11 @@ def get_NkNl_and_IC_as_arrays(G, rho, withKs = False, SIR=True):
             Ks : scipy array
             The observed degrees in the population.
         ''' 
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+
     if withKs:
         Ks = sorted(list(set(G.degree().values())))
         klength = len(Ks)
@@ -156,14 +249,38 @@ def get_NkNl_and_IC_as_arrays(G, rho, withKs = False, SIR=True):
     NkNl = scipy.zeros(shape=(klength,klength))
     NkNl = scipy.zeros(shape=(klength,klength))
     NkNl = scipy.zeros(shape=(klength,klength))
+
     for u,v in G.edges():
         k = G.degree(u)
         l = G.degree(v)
         NkNl[Ks.index(k)][Ks.index(l)] += 1
         NkNl[Ks.index(l)][Ks.index(k)] += 1
-    SkSl0 = (1-rho)*(1-rho)*NkNl
-    SkIl0 = (1-rho)*rho*NkNl
-    IkIl0 = rho*rho*NkNl
+
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds, initial_recovereds)
+        SkSl0 = 0*NkNl
+        SkIl0 = 0*NkNl
+        IkIl0 = 0*NkNl
+        for u,v in G.edges():
+            k = G.degree(u)
+            l = G.degree(v)
+            if status[u] == 'S':
+                if status[v] == 'S':
+                    SkSl0[Ks.index(k)][Ks.index(l)] += 1
+                    SkSl0[Ks.index(l)][Ks.index(k)] += 1
+                elif status[v] == 'I':
+                    SkIl0[Ks.index(k)][Ks.index(l)] +=1
+            elif status[u] == 'I':
+                if status[v] == 'S':
+                    SkIl0[Ks.index(l)][Ks.index(k)] += 1
+                elif status[v] == 'I':
+                    IkIl0[Ks.index(k)][Ks.index(l)] += 1
+                    IkIl0[Ks.index(l)][Ks.index(k)] += 1
+    else: #rho is not None      
+        SkSl0 = (1-rho)*(1-rho)*NkNl
+        SkIl0 = (1-rho)*rho*NkNl
+        IkIl0 = rho*rho*NkNl
+        
     if withKs:
         if SIR:
             return NkNl, SkSl0, SkIl0, scipy.array(Ks)
@@ -1324,7 +1441,7 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
         I0 : number
             initial number infected
         n : integer
-            degree of all nodes.
+            (average) degree of all nodes.
         tau : number
             transmission rate
         gamma : number
@@ -1627,9 +1744,9 @@ def SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin = 0,
         return times, S, I, R
 
 
-def SIS_homogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0, 
-                                        tmax=100, tcount=1001, 
-                                        return_full_data=False):
+def SIS_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                        rho = None, tmin = 0, tmax=100, 
+                                        tcount=1001, return_full_data=False):
     r'''
     Calls SIS_homogeneous_pairwise after calculating S0, I0, SI0, SS0, n based
     on the graph G and initial fraction infected rho.
@@ -1641,8 +1758,16 @@ def SIS_homogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
             transmission rate
         gamma : number
             recovery rate
-        rho : number (default 1/N)
-            initial fraction infected 
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
             minimum report time
         tmax : number (default 100)
@@ -1673,24 +1798,45 @@ def SIS_homogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
         rho = 0.02
         t, S, I = EoN.SIS_homogeneous_pairwise_from_graph(G, tau, gamma, rho, tmax = 20)
     '''
-    
-    if rho is None:
-        rho = 1./G.order()
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+
     Pk = get_Pk(G)
     n = sum(k*Pk[k] for k in Pk.keys())
     N=G.order()
-    S0 = (1-rho)*N
-    I0 = rho*N
-    SI0 = (1-rho)*N*n*rho
-    SS0 = (1-rho)*N*n*(1-rho)
+
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds)
+        I0= len(initial_infecteds)
+        S0 = N-I0
+        SS0=0
+        II0=0
+        SI0=0
+        for edge in G.edges():
+            if status[edge[0]]==status[edge[1]]:
+                if status[edge[0]]=='S':
+                    SS0 += 2
+                else:
+                    II0 += 2
+            else:
+                SI0 += 1
+    else:
+        if rho is None:
+            rho = 1./G.order()
+        S0 = (1-rho)*N
+        I0 = rho*N
+        SI0 = (1-rho)*N*n*rho
+        SS0 = (1-rho)*N*n*(1-rho)
     return SIS_homogeneous_pairwise(S0, I0, SI0, SS0, n, tau, gamma, tmin, 
                                         tmax, tcount, return_full_data)
 
-def SIR_homogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0, 
+def SIR_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                        initial_recovereds = None,
+                                        rho = None, tmin = 0, 
                                         tmax=100, tcount=1001, 
                                         return_full_data=False):
     r'''
-    Calls SIS_homogeneous_pairwise after calculating S0, I0, R0, SI0, SS0, n, 
+    Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, SI0, SS0, n, 
     based on the graph G and initial fraction infected rho.
 
     Arguments:
@@ -1700,8 +1846,21 @@ def SIR_homogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
             transmission rate
         gamma : number
             recovery rate
-        rho : number (default 1/N)
-            initial fraction infected 
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
             minimum report time
         tmax : number (default 100)
@@ -1733,16 +1892,40 @@ def SIR_homogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
         t, S, I, R = EoN.SIR_homogeneous_pairwise_from_graph(G, tau, gamma, rho, 
                                                                 tmax = 20)
     '''
-    if rho is None:
-        rho = 1./G.order()
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+    
+    
     Pk = get_Pk(G)
     n = sum(k*Pk[k] for k in Pk.keys())
     N=G.order()
-    S0 = (1-rho)*N
-    I0 = rho*N
-    SI0 = (1-rho)*N*n*rho
-    SS0 = (1-rho)*N*n*(1-rho)
-    R0=0
+
+    if initial_infecteds is not None:
+        if initial_recovereds is None:
+            initial_recovereds = []
+        status = _initialize_node_status_(G, initial_infecteds, initial_recovereds)
+        I0 = len(initial_infecteds)
+        R0 = len(initial_recovereds)
+        S0 = N-I0-R0
+        SS0 = 0
+        SI0 = 0
+        for edge in G.edges():
+            if status[edge[0]] == 'S' and status[edge[1]] == 'S':
+                SS0 += 2
+            else:
+                if ((status[edge[0]] == 'S' and status[edge[1]] == 'I') or
+                    (status[edge[0]] == 'I' and status[edge[1]] == 'S')):
+                    SI0 += 1
+    else:
+        if rho is None:
+            rho = 1./G.order()
+        S0 = (1-rho)*N
+        I0 = rho*N
+        SI0 = (1-rho)*N*n*rho
+        SS0 = (1-rho)*N*n*(1-rho)
+        R0=0
     return SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin,
                                     tmax, tcount, return_full_data)
 
@@ -1953,9 +2136,9 @@ def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100,
     else:
         return times, Sk, Ik, Rk
     
-def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma, rho = None, 
-                                            tmin = 0, tmax=100, tcount=1001, 
-                                            return_full_data=False):
+def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=None, 
+                                            rho = None, tmin = 0, tmax=100, 
+                                            tcount=1001, return_full_data=False):
     r'''
     Calls SIS_heterogeneous_meanfield after calculating Sk0, Ik0 based on 
     the graph G and random fraction infected rho.
@@ -1966,6 +2149,13 @@ def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma, rho = None,
             transmission rate
         gamma : number
             recovery rate
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
         rho : number between 0 and 1  (default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
@@ -1999,14 +2189,15 @@ def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma, rho = None,
                                                                 tmax = 15)
 
     '''
-    if rho is None:
-        rho = 1./G.order()
-    #Pk = get_Pk(G)
-    #maxk = max(Pk.keys())
-    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, rho, SIR=False)#G.order()*scipy.array([Pk.get(k,0) for k in range(maxk+1)])
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+
+    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds,
+                                            rho=rho, SIR=False)
     return SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin, tmax, tcount, return_full_data)
 
-def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma, rho = None, 
+def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=None, 
+                                            initial_recovereds = None, rho = None, 
                                             tmin = 0, tmax=100, tcount=1001, 
                                             return_full_data=False):
     r'''
@@ -2020,6 +2211,18 @@ def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma, rho = None,
             transmission rate
         gamma : number
             recovery rate
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
         rho : number between 0 and 1  (default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
@@ -2053,9 +2256,10 @@ def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma, rho = None,
                                                                 tmax = 10)
     
     '''
-    if rho is None:
-        rho = 1./G.order()
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, rho, SIR=True)
+    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, 
+                                                intial_infecteds = initial_infecteds, 
+                                                initial_recoverds = initial_recovereds,
+                                                rho=rho, SIR=True)
     
     return SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin, tmax, 
                                         tcount, return_full_data=False)
@@ -2155,12 +2359,22 @@ def _dSIR_heterogeneous_pairwise_(X, t, tau, gamma, Nk, Ks):
     SlI = SkI
     ISk = SkI
 
+    #the tmp variables defined below are used because in some places
+    #the denominator becomes zero, but in those places the numerator
+    #also becomes zero in such a way that the ratio should be 0.
+    #making the terms in the denominator become 1 make the division go okay.
+    
     tmpSk = 1.*Sk #the 1.* is to make it a copy, not the same object
-    tmpSk[tmpSk==0] = 1
+    tmpSk[tmpSk==0] = 1  
     tmpSl = tmpSk
+    
+    tmpKs = 1.*Ks
+    tmpKs[tmpKs==0] = 1
+    tmpLs = tmpKs
 
-    SkSlI = SkSl * ((Ls-1))*SlI/ (Ls*tmpSl)
-    ISkIl = (ISk * ((Ks-1))*SkIl.T/ (Ks*tmpSk)).T
+    
+    SkSlI = SkSl * ((Ls-1))*SlI/ (tmpLs*tmpSl)
+    ISkIl = (ISk * ((Ks-1))*SkIl.T/ (tmpKs*tmpSk)).T
     ISkSl = SkSlI.T 
     IkSlI = ISkIl.T 
 
@@ -2420,7 +2634,8 @@ def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma,
         return times, S, I, R
 
 
-def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0, 
+def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = None,
+                                            rho = None, tmin = 0, 
                                             tmax=100, tcount=1001, 
                                             return_full_data = False):
     r'''
@@ -2434,8 +2649,16 @@ def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
             transmission rate
         gamma : number
             recovery rate
-        rho : number (default 1/N)
-            initial fraction infected 
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
             minimum report time
         tmax : number (default 100)
@@ -2468,12 +2691,12 @@ def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
     
     '''
     
-    if rho is None:
-        rho = 1./G.order()
-    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, rho, SIR=False)
+    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds = initial_infecteds,
+                                            rho=rho, SIR=False)
 
     NkNl, SkSl0, SkIl0, IkIl0, Ks = \
-                get_NkNl_and_IC_as_arrays(G, rho, withKs = True, SIR=False)
+                get_NkNl_and_IC_as_arrays(G, initial_infecteds = initial_infecteds,
+                                            rho=rho, withKs = True, SIR=False)
 
     Sk0 = scipy.array([Sk0[k] for k in Ks])
     Ik0 = scipy.array([Ik0[k] for k in Ks])
@@ -2483,17 +2706,18 @@ def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
                                         Ks = scipy.array(Ks))
 
     
-def SIR_heterogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin=0, 
+def SIR_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                        initial_recovereds = None, rho = None, tmin=0, 
                                             tmax=100, tcount = 1001, 
                                             return_full_data=False):
     r'''Calls SIR_heterogeneous_pairwise after calculating Sk0, Ik0, Rk0, SkSl0, SkIl0
     from a graph G and initial fraction infected rho. 
     '''
     
-    if rho==None:
-        rho = 1./G.order()    
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, rho, SIR=True)
-    NkNl, SkSl0, SkIl0, Ks = get_NkNl_and_IC_as_arrays(G, rho, withKs = True, 
+    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, 
+                                        initial_recovereds = initial_recovereds, rho=rho, SIR=True)
+    NkNl, SkSl0, SkIl0, Ks = get_NkNl_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, 
+                                        initial_recovereds = initial_recovereds, rho=rho, withKs = True, 
                                                         SIR = True)
 
     Sk0 = scipy.array([Sk0[k] for k in Ks])
@@ -2511,14 +2735,14 @@ def SIR_heterogeneous_pairwise_from_graph(G, tau, gamma, rho = None, tmin=0,
 
 
 def _dSIS_compact_pairwise_(X, t, Nk, twoM, tau, gamma):
-    SI, SS= X[-2:]
     Sk = X[:-2]
+    SI, SS= X[-2:]
 
     Ik = Nk - Sk
     II = twoM - SS - 2*SI
 
     ks = scipy.arange(len(Sk))
-    SX = float(SI + SS)
+    SX = ks.dot(Sk)#float(SI + SS)
     Q = (1./SX**2) * (ks*(ks-1)).dot(Sk)
 
     dSk = gamma *Ik - tau * ks *Sk *SI/SX
@@ -2529,8 +2753,8 @@ def _dSIS_compact_pairwise_(X, t, Nk, twoM, tau, gamma):
     return dX
 
 def _dSIR_compact_pairwise_(X, t, N, tau, gamma):
-    SS, SI, R = X[-3:]
     Sk = X[:-3]
+    SS, SI, R = X[-3:]
     ks = scipy.arange(len(Sk))
     SX = ks.dot(Sk)
     Q = (ks*(ks-1)).dot(Sk)/SX**2
@@ -2607,22 +2831,22 @@ def SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, tmin = 0,
         
     '''
     Nk = Sk0+Ik0
-    twoM = SS0+II0+2*SI0
+    twoM = SS0+II0+2*SI0 #each of the M edges counted twice
     times = scipy.linspace(tmin,tmax,tcount)
     X0 = scipy.concatenate((Sk0, [SI0,SS0]), axis=0)
     X = integrate.odeint(_dSIS_compact_pairwise_, X0, times, 
                             args = (Nk, twoM, tau, gamma))
 
-    SI, SS = X.T[-2:]
     Sk = X.T[:-2]
     S = Sk.sum(axis=0)
 
     Ik = Nk[:,None] - Sk
     I = Ik.sum(axis=0)
 
-    II = twoM - SS - 2*SI
 
     if return_full_data:
+        SI, SS = X.T[-2:]
+        II = twoM - SS - 2*SI
         return times, S, I, Sk, Ik, SI, SS, II
     else:
         return times, S, I
@@ -2697,44 +2921,57 @@ def SIR_compact_pairwise(Sk0, I0, R0, SS0, SI0, tau, gamma, tmin=0, tmax=100,
         return times, S, I, R
 
 
-def SIS_compact_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0, 
+def SIS_compact_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0, 
                                     tmax=100, tcount=1001, 
                                     return_full_data=False):
     r'''Calls SIS_compact_pairwise after calculating Sk0, Ik0, SI0, SS0, II0
     from the graph G and initial fraction infected rho.'''
     
-    if rho is None:
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is None and initial_infecteds is None:
         rho = 1./G.order()
-    Pk = get_Pk(G)
-    N = G.order()
-    maxk = max(Pk.keys())
-    Nk = G.order()*scipy.array([Pk.get(k,0) for k in range(maxk+1)])
-    Sk0 = (1-rho)*Nk
-    Ik0 = rho*Nk
-    SI0 = sum(Nk[k]*k*(1-rho)*rho for k in range(maxk+1))
-    SS0 = sum(Nk[k]*k*(1-rho)*(1-rho) for k in range(maxk+1))
-    II0 = sum(Nk[k]*k*rho*rho for k in range(maxk+1))
+
+    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, rho=rho, SIR=False)
+    
+    if initial_infecteds is not None:
+        SS0, SI0, II0 = _count_edge_types_(G, initial_infecteds, SIR=False)   
+    else:
+        maxk = max(G.degree().values())
+        SS0 = sum(Nk[k]*k*(1-rho)*(1-rho) for k in range(maxk+1))
+        SI0 = sum(Nk[k]*k*(1-rho)*rho for k in range(maxk+1))
+        II0 = sum(Nk[k]*k*rho*rho for k in range(maxk+1))
     return SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, tmin, 
                                     tmax, tcount, return_full_data)
 
     
-def SIR_compact_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0, 
-                                    tmax=100, tcount=1001, 
+def SIR_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None, 
+                                    initial_recovereds = None, rho = None, 
+                                    tmin = 0, tmax=100, tcount=1001,
                                     return_full_data=False):
     r'''Calls SIR_compact_pairwise after calculating Sk0, I0, R0, SS0, SI0
     from the graph G and initial fraction infected rho.'''
     
-    if rho is None:
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is None and initial_infecteds is None:
         rho = 1./G.order()
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, rho, SIR=True)
-    ks = scipy.array(range(len(Nk))) #[0,1,2,3,...,k]
+
+    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, 
+                                                initial_recovereds=initial_recovereds, 
+                                                rho=rho, SIR=True)
     
     I0 = sum(Ik0)
-    R0 = 0
+    R0 = sum(Rk0)
 
-    SX0 = scipy.dot(Sk0,ks)
-    SS0 = (1-rho)*SX0
-    SI0 = rho*SX0
+
+    if initial_infecteds is not None:
+        SS0, SI0 = _count_edge_types_(G, initial_infecteds, initial_recovereds, SIR=True)   
+    else: 
+        ks = scipy.array(range(len(Nk))) #[0,1,2,3,...,k]
+        SX0 = scipy.dot(Sk0,ks)
+        SS0 = (1-rho)*SX0
+        SI0 = rho*SX0
     
     return SIR_compact_pairwise(Sk0, I0, R0, SS0, SI0, tau, gamma, tmin=tmin,
                                 tmax=tmax, tcount=tcount, 
@@ -2919,25 +3156,36 @@ def SIR_super_compact_pairwise(R0, SS0, SI0,  N, tau, gamma, psihat,
     else:
         return times, S, I, R
 
-def SIS_super_compact_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
+def SIS_super_compact_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                            rho = None, tmin = 0,
                                             tmax=100, tcount=1001, 
                                             return_full_data=False):
     r'''Calls SIS_super_compact_pairwise after calculating S0, I0, SS0, SI0, II0
     from the graph G and initial fraction infected rho'''
+
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
     
-    if rho is None:
-        rho = 1./G.order()
-    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, rho, SIR=False)
+    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds = initial_infecteds, 
+                                            rho=rho, SIR=False)
+
     ks = scipy.array(range(len(Nk))) #[0,1,2,3,...,k]
 
     S0 = sum(Sk0)
     I0 = sum(Ik0)
-    R0 = 0
 
-    SX0 = scipy.dot(Sk0,ks)
-    SS0 = (1-rho)*SX0
-    SI0 = rho*SX0
-    II0 = scipy.dot(Nk,ks)-SX0
+    if initial_infecteds is not None:
+        SS0, SI0, II0 = _count_edge_types_(G, initial_infecteds, SIR=False)   
+    else:    
+        if rho is None:
+            rho = 1./G.order()
+    
+
+        SX0 = scipy.dot(Sk0,ks)
+        SS0 = (1-rho)*SX0
+        SI0 = rho*SX0
+        II0 = scipy.dot(Nk,ks)-SX0
+        
     Pk = get_Pk(G)
     Pks = scipy.array([Pk.get(k,0) for k in ks])
     k_ave = scipy.dot(Pks, ks)
@@ -2949,31 +3197,51 @@ def SIS_super_compact_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
                                         tmin=tmin, tmax=tmax, tcount=tcount, 
                                         return_full_data=return_full_data)
 
-def SIR_super_compact_pairwise_from_graph(G, tau, gamma, rho = None, tmin = 0,
+def SIR_super_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None, 
+                                            initial_recovereds = None, 
+                                            rho = None, tmin = 0,
                                             tmax=100, tcount=1001, 
                                             return_full_data=False):
     r'''Calls SIR_super_compact_pairwise after calculating R0, SS0, SI0
     from the graph G and initial fraction infected rho'''
-    if rho is None:
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is None and initial_infecteds is None:
         rho = 1./G.order()
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, rho, SIR=True)
-    ks = scipy.array(range(len(Nk))) #[0,1,2,3,...,k]
-
-    N = G.order()
-    R0 = 0
-
-    SX0 = Sk0.dot(ks)
-    SS0 = (1-rho)*SX0
-    SI0 = rho*SX0
+    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, initial_infecteds = initial_infecteds, 
+                                                initial_recovereds = initial_recovereds,
+                                                rho=rho, SIR=True)
 
     Pk = get_Pk(G)
-    def psihat(x): #probably faster if vectorized, 
+    
+    N = G.order()
+    
+    R0 = sum(Rk0)
+
+    if initial_infecteds is not None:
+        SS0, SI0 = _count_edge_types_(G, initial_infecteds, initial_recovereds, SIR=True)
+        def psihat(x): #probably faster if vectorized, 
                    #but need to be careful with broadcasting...
-        return (1-rho)*sum(Pk[k]*x**k for k in Pk)
-    def psihatPrime(x):
-        return (1-rho)*sum(k*Pk[k]*x**(k-1) for k in Pk)
-    def psihatDPrime(x):
-        return (1-rho)*sum(k*(k-1)*Pk[k]*x**(k-2) for k in Pk)
+            return sum((Sk0[k]*(x**k)) for k in Pk)/N
+        def psihatPrime(x):
+            return sum(k*Sk0[k]*x**(k-1) for k in Pk)/N
+        def psihatDPrime(x):
+            return sum(k*(k-1)*Sk0[k]*x**(k-2) for k in Pk)/N
+
+    else:       
+        ks = scipy.array(range(len(Nk))) #[0,1,2,3,...,k]
+        SX0 = scipy.dot(Sk0,ks)
+        SS0 = (1-rho)*SX0
+        SI0 = rho*SX0
+
+        
+        def psihat(x): #probably faster if vectorized, 
+                   #but need to be careful with broadcasting...
+            return (1-rho)*sum(Pk[k]*x**k for k in Pk)
+        def psihatPrime(x):
+            return (1-rho)*sum(k*Pk[k]*x**(k-1) for k in Pk)
+        def psihatDPrime(x):
+            return (1-rho)*sum(k*(k-1)*Pk[k]*x**(k-2) for k in Pk)
 
     return  SIR_super_compact_pairwise(R0, SS0, SI0, N, tau, gamma, psihat, 
                                         psihatPrime, psihatDPrime, 
@@ -3091,7 +3359,7 @@ def _dSIR_effective_degree_(X, t, N, original_shape, tau, gamma):
             if s+1 == original_shape[0] or i == 0:
                 Ssp1im1=0
             else:
-                Ssp1im1 = Ssi[s+1,i-1]            
+                Ssp1im1 = Ssi[s+1,i-1]    
             dSsi[s,i] = -tau*i*Ssi[s,i] + gamma*((i+1)*Ssip1 - i*Ssi[s,i]) \
                         + tau*ISS*((s+1)*Ssp1im1 - s*Ssi[s,i])/SS
     S = Ssi.sum() 
@@ -3239,48 +3507,91 @@ def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100,
         return times, S, I, R
 
 
-def SIS_effective_degree_from_graph(G, tau, gamma, rho = None, tmin = 0, 
+def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                    rho = None, tmin = 0, 
                                     tmax=100, tcount=1001, 
                                     return_full_data=False):
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, rho, SIR=True)
+                                    
+
     r'''Calls SIS_effective_degree after calculating Ssi0, Isi0 from
     the graph G and initialf fraction infected rho'''
 
-    if rho is None:
-        rho = 1./G.order()
-    
-    S_si0 = scipy.zeros((len(Sk0),len(Sk0)))
-    I_si0 = scipy.zeros((len(Sk0),len(Sk0)))
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    for s in range(len(Sk0)):
-        for i in range(len(Sk0)-s):
-            S_si0[s,i] = Sk0[s+i] * scipy.special.binom(s+i,i) \
-                            * (rho**i) * (1-rho)**s
-            I_si0[s,i] = Ik0[s+i] * scipy.special.binom(s+i,i) \
-                            * (rho**i) * (1-rho)**s
+    Nk = Counter(G.degree().values())
+    maxk = max(Nk.keys())
+    
+
+    S_si0 = scipy.zeros((maxk+1,maxk+1))
+    I_si0 = scipy.zeros((maxk+1,maxk+1))
+
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds)
+        for node in G.nodes():
+            s = sum(1 for nbr in G.neighbors(node) if status[nbr]=='S')
+            i = G.degree(node)-s
+            if status[node] == 'S':
+                S_si0[s][i] += 1
+            else:
+                I_si0[s][i] += 1
+    else:  
+        if rho is None:
+            rho = 1./G.order()
+        Nk = scipy.array([Nk[k] for k in range(maxk+1)])       
+        for s in range(maxk+1):
+            for i in range(maxk+1-s):
+                S_si0[s,i] = (1-rho)*Nk[s+i] * scipy.special.binom(s+i,i) \
+                                * (rho**i) * (1-rho)**s
+                I_si0[s,i] = rho*Nk[s+i] * scipy.special.binom(s+i,i) \
+                                * (rho**i) * (1-rho)**s
 
     return SIS_effective_degree(S_si0, I_si0, tau, gamma, tmin = tmin, 
                                 tmax=tmax, tcount=tcount, 
                                 return_full_data=return_full_data)
 
 
-def SIR_effective_degree_from_graph(G, tau, gamma, rho = None, tmin = 0, 
+def SIR_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                    initial_recovereds = None, rho = None, 
+                                    tmin = 0, 
                                     tmax=100, tcount=1001, 
                                     return_full_data=False):
     r'''Calls SIR_effective_degree after calculating S_si0, I0, R0 from the
     graph G and initial fraction infected rho'''
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
     
-    if rho is None:
-        rho = 1./G.order()
 
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, rho, SIR=True)
-    S_si0= scipy.zeros((len(Sk0),len(Sk0)))
-    for s in range(len(Sk0)):
-        for i in range(len(Sk0)-s):
-            S_si0[s,i] = Sk0[s+i] * scipy.special.binom(s+i,i) \
-                            * (rho**i) * (1-rho)**s
-    I0 = sum(Ik0)
-    R0 = sum(Rk0)
+    Nk = Counter(G.degree().values())
+    maxk = max(Nk.keys())
+    S_si0 = scipy.zeros((maxk+1,maxk+1))
+    I0 = 0
+    R0 = 0
+
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds)
+        for node in G.nodes():
+            s = sum(1 for nbr in G.neighbors(node) if status[nbr] == 'S')
+            i = sum(1 for nbr in G.neighbors(node) if status[nbr] == 'I')
+            if status[node] == 'S':
+                S_si0[s][i] += 1
+            elif status[node] == 'I':
+                I0 += 1
+            else:
+                R0 += 1
+    else:  
+        if rho is None:
+            rho = 1./G.order()
+        Nk = scipy.array([Nk[k] for k in range(maxk+1)])       
+        for s in range(maxk+1):
+            for i in range(maxk+1-s):
+                S_si0[s,i] = (1-rho)*Nk[s+i] * scipy.special.binom(s+i,i) \
+                                * (rho**i) * (1-rho)**s
+        I0 = rho*sum(Nk)
+        R0=0
+
     return SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=tmin, 
                                 tmax=tmax, tcount=tcount, 
                                 return_full_data=return_full_data)
@@ -3304,14 +3615,16 @@ def SIS_compact_effective_degree(Sk0, Ik0, SI0, SS0, II0, tau, gamma,
     return SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, tmin, 
                                     tmax, tcount, return_full_data)
 
-def SIS_compact_effective_degree_from_graph(G, tau, gamma, rho = None, 
+def SIS_compact_effective_degree_from_graph(G, tau, gamma, initial_infecteds = None,
+                                            rho = None, 
                                             tmin = 0, tmax=100, tcount=1001, 
                                             return_full_data=False):
     r'''because the SIS compact effective degree model is identical to the
     compact pairwise model, simply calls SIS_compact_pairwise_from_graph'''
                                             
-    return SIS_compact_pairwise_from_graph(G, tau, gamma, rho = rho, 
-                                            tmin = tmin, tmax=tmax, 
+    return SIS_compact_pairwise_from_graph(G, tau, gamma, 
+                                            initial_infecteds = initial_infecteds, 
+                                            rho = rho, tmin = tmin, tmax=tmax, 
                                             tcount=tcount, 
                                             return_full_data=return_full_data)
 
@@ -3410,19 +3723,47 @@ def SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, tmin=0,
     else:
         return times, S, I, R
 
-def SIR_compact_effective_degree_from_graph(G, tau, gamma, rho = None, 
+def SIR_compact_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                        initial_recovereds = None, rho = None, 
                                             tmin = 0, tmax=100, tcount=1001, 
                                             return_full_data=False):
     r'''Calls SIR_compact_effective_degree after calculating Skappa0, I0, R0, SI0
     from the graph G and initial fraction infected rho.'''
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
     
-    if rho is None:
-        rho = 1./G.order()
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, rho, SIR=True)
-    Skappa0 = Sk0
-    I0 = sum(Nk)*rho
-    R0 = 0
-    SI0 = sum([k*Skappa0[k]*rho for k in range(len(Sk0))])
+    
+    if initial_infecteds is not None:
+        Nk = Counter(G.degree().values())
+        maxk = max(Nk.keys())
+        Skappa0 = scipy.zeros(maxk+1)
+        I0=0
+        R0=0
+        SI0=0
+        status = _initialize_node_status_(G, initial_infecteds, 
+                                    initial_recovereds = initial_recovereds)
+                                    
+        for node in G.nodes():
+            if status[node] == 'S':
+                kappa = sum(1 for nbr in G.neighbors(node) if status[nbr] !='R')
+                Skappa0[kappa] += 1
+                SI0 += sum(1 for nbr in G.neighbors(node) if status[nbr] == 'I')
+            elif status[node] == 'I':
+                I0 += 1
+            else: #status[node]=='R'
+                R0 += 1            
+    else:
+        if rho is None:
+            rho = 1./G.order()
+        Nk = Counter(G.degree().values())
+        maxk = max(Nk.keys())
+        Nk = scipy.array([Nk[k] for k in range(maxk+1)])
+        Skappa0 = Nk*(1-rho)  #Skappa0 = Sk0
+        I0 = rho*sum(Nk)
+        R0=0
+        SI0 = sum([k*Skappa0[k]*rho for k in range(maxk+1)])
     return SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, 
                                         tmin=tmin, tmax=tmax, tcount=tcount, 
                                         return_full_data=return_full_data)
@@ -3566,8 +3907,8 @@ def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
         alpha = newalpha
     return 1 - sum(psi(alpha[xi])*Pxidxi[xi] for xi in xis)
 
-def Attack_rate_discrete(Pk, p, number_its=100, rho = None, Sk0=None, 
-                            phiS0=None, phiR0=0):
+def Attack_rate_discrete(Pk, p, rho = None, Sk0=None, 
+                            phiS0=None, phiR0=0, number_its=100):
     r'''
     Encodes systems (6.6) and (6.10) of Kiss, Miller, & Simon.  Please 
     cite the book if using this algorithm.
@@ -3626,11 +3967,48 @@ def Attack_rate_discrete(Pk, p, number_its=100, rho = None, Sk0=None,
         theta = 1-p + p*(phiR0 +  phiS0*psihatPrime(theta)/psihatPrime(1))
     return 1 - psihat(theta)
 
-def Attack_rate_discrete_from_graph(G, p, number_its = 100, rho = None, 
-                                       Sk0 = None):
-    Pk = get_Pks(G)
-    return Attack_rate_discrete(Pk, p, number_its = number_its, 
-                                            rho = rho, Sk0 = Sk0)
+def Attack_rate_discrete_from_graph(G, p, initial_infecteds=None, 
+                                        initial_recovereds = None, 
+                                        rho = None, number_its = 100 
+                                    ):
+    r''' if initial_infecteds and initial_recovereds is defined, then it
+    will find Sk0, phiS0, and phiR0 and then call Attack_rate_discrete.  
+    
+    Otherwise it calls attack_rate_discrete with rho.
+    '''
+    
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+    
+    Pk = get_Pk(G)
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds, 
+                                    initial_recovereds = initial_recovereds)
+        Nk = Counter(G.degree().values())
+        maxk = max(Nk.keys())
+        Nk = scipy.array([Nk[k] for k in range(maxk+1)])
+        SS=0
+        SX=0
+        for node in G.nodes():
+            if status[node] == 'S':
+                k = G.degree(node)
+                Sk0[k] += 1./Nk[k]
+                SS += sum(1 for nbr in G.neighbors(node) if status[nbr]=='S')
+                SR += sum(1 for nbr in G.neighbors(node) if status[nbr]=='R')
+                SX += k
+        phiS0 = SS*1./SX
+        phiR0 = SR*1./SX
+        
+    else:
+        Sk0=None
+        phiS0 = None
+        phiR0 = 0
+        
+    
+    return Attack_rate_discrete(Pk, p, rho = rho, Sk0=Sk0, phiS0=PhiS0, 
+                                phiR0=phiR0, number_its = number_its)
 
 def Attack_rate_cts_time(Pk, tau, gamma, number_its =100, rho = None, 
                             Sk0 = None, phiS0=None, phiR0=0):
@@ -3706,8 +4084,9 @@ def Attack_rate_cts_time(Pk, tau, gamma, number_its =100, rho = None,
                 + tau*phiR0/(gamma+tau)
     return 1 - psihat(omega)
 
-def Attack_rate_cts_time_from_graph(G,  tau, gamma, number_its =100, rho=None,
-                                    Sk0 = None):
+def Attack_rate_cts_time_from_graph(G,  tau, gamma, initial_infecteds=None, 
+                                        initial_recovereds = None, rho=None, 
+                                        number_its =100):
     r'''
     Given a graph, predicts the attack rate for Configuration Model 
     networks with the given degree distribution.  This does not account 
@@ -3720,9 +4099,36 @@ def Attack_rate_cts_time_from_graph(G,  tau, gamma, number_its =100, rho=None,
     `estimate_SIR_prob_size(G, p)` which accounts for entire structure of G, not just
     degree distribution.
     '''
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+    
     Pk = get_Pk(G)
-    return Attack_rate_cts_time(Pk, tau, gamma, number_its = number_its, 
-                                rho=rho, Sk0=Sk0)
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds, 
+                                    initial_recovereds = initial_recovereds)
+        Nk = Counter(G.degree().values())
+        maxk = max(Nk.keys())
+        Nk = scipy.array([Nk[k] for k in range(maxk+1)])
+        SS=0
+        SX=0
+        for node in G.nodes():
+            if status[node] == 'S':
+                k = G.degree(node)
+                Sk0[k] += 1./Nk[k]
+                SS += sum(1 for nbr in G.neighbors(node) if status[nbr]=='S')
+                SR += sum(1 for nbr in G.neighbors(node) if status[nbr]=='R')
+                SX += k
+        phiS0 = SS*1./SX
+        phiR0 = SR*1./SX
+    else:
+        Sk0=None
+        phiS0 = None
+        phiR0 = 0
+
+    return Attack_rate_cts_time(Pk, tau, gamma, rho=rho, Sk0=Sk0, phiS0 = phiS0,
+                                phiR0=phiR0, number_its=number_its)
     
 def Attack_rate_non_Markovian(Pk, Pzetadzeta, pi, number_its = 100):
     r'''
@@ -3754,7 +4160,7 @@ def Attack_rate_non_Markovian(Pk, Pzetadzeta, pi, number_its = 100):
     return Epi_Prob_non_Markovian(Pk, Pzetadzeta, pi, number_its = number_its)
 
 
-def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmax = 100,
+def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmin = 0, tmax = 100,
                     return_full_data = False):
     #tested in test_basic_discrete_SIR_epidemic
     r'''
@@ -3800,16 +4206,15 @@ def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmax = 100,
         if ...== True
             returns t, S, I, R and theta, all scipy arrays
     '''
-    times = [0]
+    times = [tmin]
     theta = [1]
     R = [R0]
     S = [N*psihat(1)]
     I = [N-S[-1]-R[-1]]
 
-    for time in range(1,tmax+1):
+    for time in range(tmin+1,tmax+1):
         times.append(time)
-        newtheta = (1-p) + p *(phiR0 
-                                + phiS0*psihatPrime(theta[-1])/psihatPrime(1))
+        newtheta = (1-p) + p *(phiR0 + phiS0*psihatPrime(theta[-1])/psihatPrime(1))
         newR = R[-1]+I[-1]
         newS = N*psihat(newtheta)
         newI = N-newR-newS
@@ -3824,6 +4229,108 @@ def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmax = 100,
         return scipy.array(times), scipy.array(S), scipy.array(I), \
                     scipy.array(R), scipy.array(theta)
 
+def EBCM_discrete_from_graph(G, p, initial_infecteds=None, 
+                                initial_recovereds = None, rho = None, 
+                                tmin = 0, tmax=100, 
+                                return_full_data=False):
+    #tested in test_basic_discrete_SIR_epidemic
+    '''
+    Takes a given graph, finds the degree distribution 
+    (from which it gets psi),
+    assumes a constant proportion of the population is infected at time 
+    0, 
+    and then uses the discrete EBCM model.
+    
+    Arguments:
+
+        G : Networkx Graph
+        p : number
+            per edge transmission probability
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
+        tmax : number
+            maximum time
+        return_full-data : boolean
+            if False, 
+                return t, S, I, R and if True return t, S, I, R, and theta
+
+    Returns:
+        :
+        if return_full_data == False:
+            returns t, S, I, R, all scipy arrays
+        if ...== True
+            returns t, S, I, R and theta, all scipy arrays
+            
+    
+ '''
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+
+    Pk = get_Pk(G)
+    N= G.order()
+
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds, 
+                                    initial_recovereds = initial_recovereds)
+        Nk = Counter(G.degree().values())
+        maxk = max(Nk.keys())
+        Nk = scipy.array([Nk[k] for k in range(maxk+1)])
+        Sk0 = 0*Nk
+        SS=0
+        SR=0
+        SX=0
+        R0=0
+        for node in G.nodes():
+            if status[node] == 'S':
+                k = G.degree(node)
+                #print(k, Sk0[k], 1./Nk[k])
+                Sk0[k] += 1
+                #print(k, Sk0[k], 1./Nk[k])
+                SS += sum(1 for nbr in G.neighbors(node) if status[nbr]=='S')
+                SR += sum(1 for nbr in G.neighbors(node) if status[nbr]=='R')
+                SX += k
+                #print(SS, SR, SX)
+            elif status[node] == 'R':
+                R0+=1
+        def psihat(x):
+            return sum(Pk[k]*Sk0[k]*x**k/Nk[k] for k in Pk)
+        def psihatPrime(x):
+            return sum(k*Pk[k]*Sk0[k]*x**(k-1)/Nk[k] for k in Pk)
+        phiS0 = SS*1./SX
+        phiR0 = SR*1./SX
+        #print('here',Sk0, len(initial_infecteds)/sum(Nk))
+        
+
+    else:
+        if rho is None:
+            rho = 1./N
+        def psihat(x):
+            return (1-rho)*sum(Pk[k]*x**k for k in Pk)
+        def psihatPrime(x):
+            return (1-rho)*sum(k*Pk[k]*x**(k-1) for k in Pk)
+        phiS0 = 1-rho
+        phiR0 = 0
+        R0 = 0
+    #print(phiS0, phiR0, R0, psihat(1), psihatPrime(1))
+    return EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=phiR0, R0=R0, 
+                        tmin = tmin, tmax = tmax, 
+                        return_full_data = return_full_data)
+                        
 def EBCM_discrete_uniform_introduction(N, psi, psiPrime, p, rho, tmax=100, 
                                         return_full_data=False):
     #tested in test_basic_discrete_SIR_epidemic
@@ -3867,48 +4374,6 @@ def EBCM_discrete_uniform_introduction(N, psi, psiPrime, p, rho, tmax=100,
                             return_full_data=return_full_data)
 
 
-def EBCM_discrete_from_graph(G, p, rho = None, tmin = 0, tmax=100, 
-                                tcount=1001, return_full_data=False):
-    #tested in test_basic_discrete_SIR_epidemic
-    '''
-    Takes a given graph, finds the degree distribution 
-    (from which it gets psi),
-    assumes a constant proportion of the population is infected at time 
-    0, 
-    and then uses the discrete EBCM model.
-    
-    Arguments:
-
-        G : Networkx Graph
-        p : number
-            per edge transmission probability
-        rho : number
-            initial proportion of infected nodes
-        tmax : number
-            maximum time
-        return_full-data : boolean
-            if False, 
-                return t, S, I, R and if True return t, S, I, R, and theta
-
-    Returns:
-        :
-        if return_full_data == False:
-            returns t, S, I, R, all scipy arrays
-        if ...== True
-            returns t, S, I, R and theta, all scipy arrays
-            
-    
- '''
-    if rho is None:
-        rho = 1./G.order()
-    Pk = get_Pk(G)
-    def psi(x):
-        return sum(Pk[k]*x**k for k in Pk)
-    def psiPrime(x):
-        return sum(k*Pk[k]*x**(k-1) for k in Pk)
-    return EBCM_discrete_uniform_introduction(G.order(), psi, psiPrime, p, 
-                                                rho, tmax=tmax, 
-                                                return_full_data=False)
 
 
 def _dEBCM_(X, t, N, tau, gamma, psihat, psihatPrime, phiS0, phiR0):
@@ -3985,6 +4450,63 @@ def EBCM(N, psihat, psihatPrime, tau, gamma, phiS0, phiR0=0, R0=0, tmin=0,
     else:
         return times, S, I, R, theta
 
+
+def EBCM_from_graph(G, tau, gamma, initial_infecteds=None, 
+                    initial_recovereds = None, rho = None, tmin = 0, tmax=100, 
+                    tcount=1001, return_full_data=False):
+    r'''
+    Given network G and rho, calculates N, psihat, psihatPrime, and calls EBCM.
+    '''
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+
+    Pk = get_Pk(G)
+    N = G.order()
+
+    if initial_infecteds is not None:
+        status = _initialize_node_status_(G, initial_infecteds, 
+                                    initial_recovereds = initial_recovereds)
+        Nk = Counter(G.degree().values())
+        maxk = max(Nk.keys())
+        Nk = scipy.array([Nk[k] for k in range(maxk+1)])
+        SS=0
+        SR=0
+        SX=0
+        R0=0
+        Sk0 = scipy.zeros(maxk+1)
+        for node in G.nodes():
+            if status[node] == 'S':
+                k = G.degree(node)
+                Sk0[k] += 1./Nk[k]
+                SS += sum(1 for nbr in G.neighbors(node) if status[nbr]=='S')
+                SR += sum(1 for nbr in G.neighbors(node) if status[nbr]=='R')
+                SX += k
+            elif status[node] == 'R':
+                R0+=1
+        def psihat(x):
+            return sum(Pk[k]*Sk0[k]*x**k for k in Pk)
+        def psihatPrime(x):
+            return sum(k*Pk[k]*Sk0[k]*x**(k-1) for k in Pk)
+        phiS0 = SS*1./SX
+        phiR0 = SR*1./SX
+
+    else:
+        if rho is None:
+            rho = 1./N
+        def psihat(x):
+            return (1-rho)*sum(Pk[k]*x**k for k in Pk)
+        def psihatPrime(x):
+            return (1-rho)*sum(k*Pk[k]*x**(k-1) for k in Pk)
+        phiS0 = 1-rho
+        phiR0 = 0
+        R0 = 0
+    return EBCM(N, psihat, psihatPrime, tau, gamma, phiS0, phiR0=phiR0, R0=R0, 
+                        tmin = tmin, tmax = tmax, tcount=tcount,
+                        return_full_data = return_full_data)
+                        
+
 def EBCM_uniform_introduction(N, psi, psiPrime, tau, gamma, rho, tmin=0, 
                                 tmax=100, tcount=1001, 
                                 return_full_data=False):
@@ -4032,24 +4554,6 @@ def EBCM_uniform_introduction(N, psi, psiPrime, tau, gamma, rho, tmin=0,
     
     return EBCM(N, psihat, psihatPrime, tau, gamma, 1-rho, tmin=tmin, 
                 tmax=tmax, tcount=tcount, return_full_data=return_full_data)
-
-def EBCM_from_graph(G, tau, gamma, rho = None, tmin = 0, tmax=100, 
-                        tcount=1001, return_full_data=False):
-    r'''
-    Given network G and rho, calculates N, psihat, psihatPrime, and calls EBCM.
-    '''
-    
-    #tested in test_SIR_dynamics
-    if rho is None:
-        rho = 1./G.order()
-    Pk = get_Pk(G)
-    def psi(x):
-        return sum(Pk[k]*x**k for k in Pk)
-    def psiPrime(x):
-        return sum(k*Pk[k]*x**(k-1) for k in Pk)
-    return EBCM_uniform_introduction(G.order(), psi, psiPrime, tau, gamma, 
-                                        rho, tmax=tmax, 
-                                        return_full_data=return_full_data)
 
     
 def _dEBCM_pref_mix_(X, t, rho, tau, gamma, Pk, Pnk):

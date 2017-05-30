@@ -1467,7 +1467,8 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
     '''
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
-
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
 
     status = defaultdict(lambda: 'S') #node status defaults to 'S'
     rec_time = defaultdict(lambda: tmin-1) #node recovery time defaults to -1
