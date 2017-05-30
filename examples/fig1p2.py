@@ -112,59 +112,44 @@ def DPsiPowLaw(x):
  
  
 
-class NetworkType(object):
-    r'''This class saves all the information needed about the network'''
-    def __init__(self, Pk, Psi, DPsi, label, symbol, color, ave = None):
-        self.Pk = Pk
-        self.Psi = Psi
-        self.DPsi = DPsi
-        self.label = label
-        self.symbol = symbol
-        self.color = color
-        self.ave = ave
-
-networktypes = [NetworkType(PkPowLaw, PsiPowLaw, DPsiPowLaw,
-                                       r'Truncated Power Law', 'd', 
-                                       colors[3]),
-                NetworkType(PkPoisson, PsiPoisson, 
-                                        DPsiPoisson, 
-                                        r'Erd\H{o}s-R\'{e}nyi',
-                                        '^', colors[0]),
-                NetworkType(PkHomogeneous, PsiHomogeneous,
-                                           DPsiHomogeneous, r'Homogeneous',
-                                           's', colors[2])]
-report_times = scipy.linspace(0,30,3000)
-figures = {}
-plt.figure(figsize=(4,8))
-    
-    
-    
-for networktype in networktypes:
+def process_degree_distribution(N, Pk, color, Psi, DPsi, symbol, label, count):
+    report_times = scipy.linspace(0,30,3000)
     sums = 0*report_times
-    for cnt in range(count):#do the light-colored cloud.
-        #print(cnt)
-        G = generate_network(networktype.Pk, N)
+    for cnt in range(count):
+        G = generate_network(Pk, N)
         t, S, I, R = EoN.fast_SIR(G, tau, gamma, rho=rho)
-        plt.plot(t, I*1./N, '-', color = networktype.color, 
+        plt.plot(t, I*1./N, '-', color = color, 
                                 alpha = 0.1, linewidth=1)
         subsampled_I = EoN.subsample(report_times, t, I)
         sums += subsampled_I*1./N
     ave = sums/count
     plt.plot(report_times, ave, color = 'k')
-
     
-    #now do the EBCM solution
-    t, S, I, R, = EoN.EBCM_uniform_introduction(N, networktype.Psi, 
-                                               networktype.DPsi, tau, 
-                                               gamma, rho, tmin=0, 
-                                               tmax=20, tcount=201)
-    plt.plot(t, I/N, networktype.symbol, markerfacecolor = networktype.color, 
-            label = networktype.label, markersize = 4, markeredgecolor='k')
+    #Do EBCM    
+    N= G.order()#N is arbitrary, but included because our implementation of EBCM assumes N is given.
+    t, S, I, R = EoN.EBCM_uniform_introduction(N, Psi, DPsi, tau, gamma, rho, tmin=0, tmax=10, tcount = 41)
+    plt.plot(t, I/N, symbol, color = color, markeredgecolor='k', label=label)
 
     for cnt in range(3):  #do 3 highlighted simulations
-        G = generate_network(networktype.Pk, N)
+        G = generate_network(Pk, N)
         t, S, I, R = EoN.fast_SIR(G, tau, gamma, rho=rho)
         plt.plot(t, I*1./N, '-', color = 'k', linewidth=0.1)
+
+
+
+
+plt.figure(figsize=(8,4))
+    
+    
+
+#Powerlaw
+process_degree_distribution(N, PkPowLaw, colors[3], PsiPowLaw, DPsiPowLaw, 'd', r'Truncated Power Law', count)
+
+#Poisson
+process_degree_distribution(N, PkPoisson, colors[0], PsiPoisson, DPsiPoisson, '^', r'Erd\H{o}s--R\'{e}nyi', count)
+
+#Homogeneous
+process_degree_distribution(N, PkHomogeneous, colors[2], PsiHomogeneous, DPsiHomogeneous, 's', r'Homogeneous', count)
 
 plt.xlabel(r'$t$', fontsize=12)
 plt.ylabel(r'Proportion infected', fontsize=12)

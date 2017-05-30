@@ -126,7 +126,7 @@ plt.plot(ode_times, expectedI, '-.', color = 'k')
 
 
 
-print "done with complete graph.  Now star --- warning, this may be slow"
+print("done with complete graph.  Now star --- warning, this may be slow")
 
 
 
@@ -155,11 +155,10 @@ expectedI = [ sum(k*central_susc[t][k] for k in range(N-1))/N
               + sum((k+1)*central_inf[t][k] for k in range(N-1))/N
               for t in range(len(X))]
 plt.plot(ode_times, expectedI)
-print "done with star ODE, now simulating"
+print("done with star ODE, now simulating")
 
 obs_I = 0*report_times
 for counter in range(iterations):
-    print counter
     IC = random.sample(range(N),100)
     t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = 5)
     obs_I += EoN.subsample(report_times, t, I)

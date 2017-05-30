@@ -134,9 +134,8 @@ plt.plot(t, I/N)
 
 #now check with simulation
 obs_I = 0*report_times
-print "done with complete graph ODE.  Now simulating"
+print("done with complete graph ODE.  Now simulating")
 for counter in range(iterations):
-    print counter
     IC = random.sample(range(N),100)
     t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = 5)
     obs_I += EoN.subsample(report_times, t, I)
@@ -144,7 +143,7 @@ plt.plot(report_times, obs_I*1./(iterations*N), 'o')
 plt.axis(ymin=0, ymax=1)
 plt.savefig('fig2p11a.pdf')
 
-print "done with complete graph.  Now star --- warning, this may be slow"
+print("done with complete graph.  Now star --- warning, this may be slow")
 
 
 
@@ -162,11 +161,10 @@ G = star(N)
 
 t, S, I = star_graph_lumped(N, I0, tmin, tmax, 1001)
 plt.plot(ode_times, expectedI)
-print "done with star ODE, now simulating"
+print("done with star ODE, now simulating")
 
 obs_I = 0*report_times
 for counter in range(iterations):
-    print counter
     IC = random.sample(range(N),100)
     t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = 5)
     obs_I += EoN.subsample(report_times, t, I)

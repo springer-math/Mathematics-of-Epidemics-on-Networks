@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import scipy
 import random
 
-print r"Warning, book says \tau=2\gamma/<K>, but it's really 1.5\gamma/<K>"
-print r"Warning - for the power law graph the text says k_{max}=110, but I believe it is 118."
+print(r"Warning, book says \tau=2\gamma/<K>, but it's really 1.5\gamma/<K>")
+print(r"Warning - for the power law graph the text says k_{max}=110, but I believe it is 118.")
 
 N=1000
 gamma = 1.

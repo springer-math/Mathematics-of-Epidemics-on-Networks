@@ -10,14 +10,14 @@ fit for the homogeneous_pairwise model.
 Increasing N to 10000 will eliminate this.
 '''
 
-print("Often stochastic effects cause the peak for <K>=50 to be lower than predicted.")
-print("See comments in code for explanation")
-
 
 import EoN
 import networkx as nx
 import matplotlib.pyplot as plt
 import scipy
+
+print("Often stochastic effects cause the peak for <K>=50 to be lower than predicted.")
+print("See comments in code for explanation")
 
 
 
