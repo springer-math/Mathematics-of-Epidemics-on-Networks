@@ -3,6 +3,7 @@ import EoN
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import scipy
+import random
 
 tau = 1.
 gamma = 1.
@@ -12,8 +13,7 @@ colors = ['#5AB3E6','#FF2000','#009A80','#E69A00', '#CD9AB3', '#0073B3','#F0E442
 print('setting up')
 G = nx.configuration_model([4]*N)
 
-chosen = range(int(0.01*N)) # since the graph is totally random, the first few
-                            # nodes are as random as any others.
+chosen = random.sample(range(N),int(0.01*N)) 
                             
 initial_infecteds = set()
 

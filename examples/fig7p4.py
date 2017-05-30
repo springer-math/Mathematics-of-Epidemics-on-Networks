@@ -13,8 +13,7 @@ kave = 5
 
 G = nx.fast_gnp_random_graph(N, kave/(N-1.))
 
-initial_infecteds = range(int(0.01*N)) # since the graph is totally random, the first few
-                            # nodes are as random as any others.
+initial_infecteds = random.sample(range(N),int(0.01*N)) 
 
 print('simulating')
 t, S, I, R = EoN.fast_SIR(G, tau, gamma, initial_infecteds = initial_infecteds)
