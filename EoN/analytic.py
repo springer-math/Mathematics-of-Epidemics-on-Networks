@@ -447,7 +447,7 @@ def _dSIR_individual_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn,
     dV = scipy.concatenate((dX,dY), axis=0)
     return scipy.array(dV)
 
-def SIS_individual_based(G, nodelist, Y0, tau, gamma, tmin = 0, 
+def SIS_individual_based(G, tau, gamma, rho = None, Y0=None, nodelist = None, tmin = 0, 
                             tmax = 100, tcount = 1001, transmission_weight=None, 
                             recovery_weight=None, return_full_data = False):
     #tested in test_SIS_individual_based
@@ -466,17 +466,25 @@ def SIS_individual_based(G, nodelist, Y0, tau, gamma, tmin = 0,
 
         G : Networkx graph
         
-        Y0 : scipy array
-            the array of initial infection probabilities
-
-        nodelist : list
-            list of nodes in G in the same order as in Y0
-
         tau : number
             transmission rate of disease
 
         gamma : number 
             global recovery rate 
+            
+        rho : number (default None)
+            initial uniformly random probability of being infected.
+            Cannot define both rho and Y0.
+
+        Y0 : scipy array (default None)
+            the array of initial infection probabilities.
+            If Y0 is defined, nodelist must also be defined.
+            If Y0 is defined, rho cannot be defined.
+
+        nodelist : list (default None)
+            list of nodes in G in the same order as in Y0.  If rho is
+            defined and nodelist is not, then nodelist= G.nodes()
+            Only affects returned values if return_full_data=True.
 
         tmin : number       (default 0)
             minimum report time
@@ -522,13 +530,26 @@ def SIS_individual_based(G, nodelist, Y0, tau, gamma, tmin = 0,
         import scipy
         
         G = nx.configuration_model([3,10]*1000)
-        nodelist = G.nodes()
         N = G.order()
         rho = 1./N
-        Y = rho*scipy.ones(N)
-        t, S, I = EoN.SIS_individual_based(G, nodelist, Y, 0.3, gamma=1, 
+        t, S, I = EoN.SIS_individual_based(G, 0.3, 1, rho=rho, 
                     tmax = 20)
     '''
+    if nodelist is None:
+        if Y0 is not None:
+            raise EoN.EoNError("cannot define Y0 without defining nodelist")
+        nodelist = G.nodes()
+
+    if rho is None:
+        if Y0 is None:
+            raise EoN.EoNError("must define one of rho and Y0")
+    else:
+        if Y0 is not None:
+            raise EoN.EoNError("cannot define both rho and Y0")
+        else:
+            Y0 = rho*scipy.ones(len(nodelist))
+    
+                            
     trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
@@ -545,7 +566,8 @@ def SIS_individual_based(G, nodelist, Y0, tau, gamma, tmin = 0,
         return times, sum(Ss), sum(Is)
 
 
-def SIR_individual_based(G, nodelist, X0, Y0, tau, gamma, tmin = 0, 
+def SIR_individual_based(G, tau, gamma, rho = None, Y0 = None, X0= None, 
+                            nodelist = None, tmin = 0, 
                             tmax = 100, tcount = 1001, transmission_weight=None, 
                             recovery_weight=None, return_full_data = False):
     '''
@@ -558,19 +580,26 @@ def SIR_individual_based(G, nodelist, X0, Y0, tau, gamma, tmin = 0,
 
         G : Networkx graph
 
-        X0 : scipy array
-            the array of initial susceptibility probabilities
-        Y0 : scipy array
-            the array of initial infection probabilities
-
-        nodelist : list
-            list of nodes in G in the same order as in X0 and Y0
-    
         tau : number
             transmission rate of disease
     
         gamma : number      (default None)
             global recovery rate  
+        
+        rho : number between 0 and 1 (default None)
+            probability random node is infected.  Cannot be defined along with X0 and Y0
+            At least one of rho and Y0 must be defined.
+        Y0 : scipy array (default None)
+            the array of initial infection probabilities.  If not defined, set
+            to be rho uniformly.
+        X0 : scipy array (default None)
+            the array of initial susceptibility probabilities.  If not defined
+            set to be 1-Y0.  Cannot define X0 without Y0.
+
+        nodelist : list  (default None)
+            list of nodes in G in the same order as in X0 and Y0.
+            Only relevant to returned data if return_full_data=True
+    
     
         tmin : number       (default 0)
             minimum report time
@@ -623,15 +652,32 @@ def SIR_individual_based(G, nodelist, X0, Y0, tau, gamma, tmin = 0,
         gamma = 1
         N = G.order()
         rho = 1./N
-
-        nodelist = G.nodes()
-        X = (1-rho)*scipy.ones(N)
-        Y = rho*scipy.ones(N)
     
-        t, S, I, R = EoN.SIR_individual_based(G, nodelist, X, Y, tau, gamma=gamma, tmax = 20)
+        t, S, I, R = EoN.SIR_individual_based(G, tau, gamma, rho=rho, tmax = 20)
         plt.plot(t,I)
     '''
 
+    if rho is None and Y0 is None:
+        raise EoN.EoNError("must define at least one of rho and Y0")
+    if X0 is not None and Y0 is None:
+        raise EoN.EoNError("cannot define X0 without defining Y0") 
+
+    
+    if nodelist is None:
+        if Y0 is not None:
+            raise EoN.EoNError("cannot define Y0 without defining nodelist")
+        nodelist = G.nodes()
+           
+    #nodelist is now guaranteed to exist.
+    if rho is not None:
+        if Y0 is not None:
+            raise EoN.EoNError("cannot define both rho and Y0")
+        else:
+            Y0 = rho*scipy.ones(len(nodelist))
+    
+    if X0 is None:
+        X0 = 1- Y0
+        
     trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                 transmission_weight,
                                                 recovery_weight)
@@ -658,7 +704,7 @@ def SIR_individual_based(G, nodelist, X0, Y0, tau, gamma, tmin = 0,
         return times, S, I, R
 
 
-def SIS_individual_based_pure_IC(G, index_nodes, nodelist, tau, gamma, 
+def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = None,
                                     tmin = 0, tmax = 100, tcount = 1001, 
                                     transmission_weight=None, 
                                     recovery_weight=None, 
@@ -675,14 +721,16 @@ def SIS_individual_based_pure_IC(G, index_nodes, nodelist, tau, gamma,
     Arguments:
 
         G : Networkx graph
-        index_nodes : list or set
-            the set of nodes initially infected
-        nodelist : list
-            list of nodes in G in the same order as in Y0
         tau : number
             transmission rate of disease
         gamma : number      (default None)
             global recovery rate  
+
+        initial_infecteds : list or set
+            the set of nodes initially infected
+
+        nodelist : list  (default None)
+            list of nodes in G in desired order. (only matters if return_full_data==True)
 
         tmin : number       (default 0)
             minimum report time
@@ -722,24 +770,29 @@ def SIS_individual_based_pure_IC(G, index_nodes, nodelist, tau, gamma,
         
         G = nx.configuration_model([3,10]*1000)
         nodelist = G.nodes()
-        index_nodes = range(100)
-        t, S, I = EoN.SIS_individual_based(G, index_nodes, nodelist, 0.3,  
-                    gamma=1, tmax = 20)
+        initial_infecteds = range(100)
+        t, S, I = EoN.SIS_individual_based(G, 0.3, 1, initial_infecteds, nodelist,
+                                            tmax = 20)
         plt.plot(t,I)
 
     '''
     #make Y0[u] be 1 if infected 0 if not
-    Y0 = scipy.array([1 if u in index_nodes else 0 for u in nodelist])
+    if nodelist is None:
+        nodelist = G.nodes()
+    initial_infecteds = set(initial_infecteds)
+    Y0 = scipy.array([1 if u in initial_infecteds else 0 for u in nodelist])
 
-    return SIS_individual_based(G, nodelist, Y0, tau, gamma, tmin, tmax, tcount,
-                                transmission_weight, recovery_weight, return_full_data)
+    return SIS_individual_based(G, tau, gamma, Y0=Y0, nodelist=nodelist, 
+                                tmin=tmin, tmax=tmax, tcount=tcount,
+                                transmission_weight=transmission_weight, 
+                                recovery_weight = recovery_weight, 
+                                return_full_data = return_full_data)
         
 
 
-
-def SIR_individual_based_pure_IC(G, index_nodes, nodelist, tau, gamma, 
-                                    initial_susceptible=None, tmin = 0, 
-                                    tmax = 100, tcount = 1001, 
+def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds, 
+                                    initial_recovereds = None, nodelist=None, 
+                                    tmin = 0, tmax = 100, tcount = 1001, 
                                     transmission_weight=None, 
                                     recovery_weight=None, 
                                     return_full_data = False):
@@ -755,21 +808,21 @@ def SIR_individual_based_pure_IC(G, index_nodes, nodelist, tau, gamma,
     Arguments:
 
         G : Networkx graph
-    
-        index_nodes : list or set
-            the set of nodes initially infected
-      
-        nodelist : list
-            list of nodes in G in the same order as in Y0
-    
+        
         tau : number
             transmission rate of disease
 
         gamma : number      (default None)
             global recovery rate  
-    
-        initial_susceptible : list or set  (default None)
-            initially susceptible nodes
+ 
+        initial_infecteds : list or set
+            the set of nodes initially infected
+      
+        nodelist : list  (default None)
+            list of nodes in G in desired order. (only matters if return_full_data==True)
+   
+        initial_recovereds : list or set  (default None)
+            initially recovered nodes
             if equal to None, then all non-index nodes are initially 
             susceptible.
 
@@ -801,17 +854,21 @@ def SIR_individual_based_pure_IC(G, index_nodes, nodelist, tau, gamma,
             returns times, S, I, R
     
     '''
-    nodelist = G.nodes()
+    if nodelist is None:
+        nodelist = G.nodes()
     N = len(nodelist)
+    initial_infecteds = set(initial_infecteds)
     #make Y0[u] be 1 if infected 0 if not
-    Y0 = scipy.array([1 if u in index_nodes else 0 for u in nodelist])
-    if initially_susceptible is None:
-        X0 = scipy.ones - Y0
+    Y0 = scipy.array([1 if u in initial_infecteds else 0 for u in nodelist])
+    if initial_recovereds is None:
+        X0 = 1 - Y0
     else:
-        X0 = scipy.array([1 if u in initially_susceptible else 0 
+        initial_recovereds = set(initial_recovereds) #for fast membership test
+        non_susceptibles = initial_recovereds.union(initial_infecteds)
+        X0 = scipy.array([0 if u in non_susceptibles  else 1
                             for u in nodelist])
     
-    return SIR_individual_based(G, nodelist, X0, Y0, tau, gamma, tmin, 
+    return SIR_individual_based(G, tau, gamma, nodelist, X0, Y0, tmin, 
                                 tmax, tcount, transmission_weight, 
                                 recovery_weight, return_full_data)
 
@@ -844,6 +901,7 @@ def _dSIS_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate
     All derivatives are initialized to 0, and then the loop only makes 
     changes for those terms where an edge exists.
     '''
+    #print(t)
     N=G.order()
     Y = V[0:N] #infecteds
     X = 1-Y    #susceptibles
@@ -958,6 +1016,9 @@ def _dSIR_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate
     #or at least understand.
     #I expect it to run quickly regardless.  Will avoid (premature) 
     #optimization for now.
+    
+    #Okay -this does not appear to run quickly (at least for a complete graph). 
+    #I'll need to do some profiling.
     for u in nodelist:
         i = index_of_node[u]
         dY[i] += -rec_rate_fxn(u)*Y[i] 
@@ -989,6 +1050,7 @@ def _dSIR_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate
 
     dV = scipy.concatenate((dX[:, None], dY[:,None], dXY, dXX), axis=0).T[0]
     return dV
+
 
 def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
                     Y0=None, XY0=None, XX0 = None, tmin = 0, tmax = 100,  
@@ -1096,7 +1158,7 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
         G = nx.fast_gnp_random_graph(1000,0.004)
         nodelist = G.nodes()
         Y0 = scipy.array([1 if node<10 else 0 for node in nodelist]) #infect first 10
-        t, S, I = EoN.SIS_pair_based(G, nodelist, Y0, 2, 0.5, tmax = 4, tcount = 101)
+        t, S, I = EoN.SIS_pair_based(G, 2, 0.5, nodelist, Y0, tmax = 4, tcount = 101)
         plt.plot(t,I)
         
 '''
@@ -1110,7 +1172,7 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
     if Y0 is not None and  nodelist is None:
         raise EoN.EoNError("cannot define Y0 without nodelist")
         
-    if  nodelist is None:
+    if  nodelist is None: #only get here if Y0 is None
         nodelist = G.nodes()
         Y0 = scipy.array([rho]*N)
     if len(Y0) != N:
@@ -1164,8 +1226,28 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
         return times, S, I
 
 
-
-
+def SIS_pair_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = None,
+                            tmin = 0, tmax = 100, tcount = 1001,
+                            transmission_weight = None, recovery_weight=None,
+                            return_full_data = False):
+    r''' 
+    Encodes System (3.26) of Kiss, Miller, & Simon, using a "pure initial 
+    condition".  That is, we can specify the exact status of all nodes at tmin
+    
+    Please cite the book if using this algorithm.
+    '''
+    if nodelist is None:
+        nodelist = G.nodes()
+    N = len(nodelist)
+    #make Y0[u] be 1 if infected 0 if not
+    initial_infecteds = set(initial_infecteds) #for fast membership test
+    Y0 = scipy.array([1 if u in initial_infecteds else 0 for u in nodelist])    
+    
+    return SIS_pair_based(G, tau, gamma, nodelist = nodelist,
+                            Y0=Y0, tmin=tmin, tmax=tmax, tcount=tcount,
+                            transmission_weight=transmission_weight, 
+                            recovery_weight=recovery_weight,
+                            return_full_data=return_full_data)
 
 def _SIR_pair_based_initialize_node_data(G, rho, nodelist, X0, Y0):
     #inputs must define either rho or Y0.  In first case nodelist is optional.
@@ -1342,7 +1424,7 @@ def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None,
     if Y0 is not None and  nodelist is None:
         raise EoN.EoNError("cannot define Y0 without nodelist")
         
-    if  nodelist is None:
+    if  nodelist is None: #only get here if Y0 is None
         nodelist = G.nodes()
         Y0 = scipy.array([rho]*N)
     if len(Y0) != N:
@@ -1402,8 +1484,36 @@ def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None,
         return times, S, I, R
 
 
-
-
+def SIR_pair_based_pure_IC(G, tau, gamma, initial_infecteds, 
+                            initial_recovereds = None, nodelist=None, 
+                            tmin = 0, tmax = 100, tcount = 1001, 
+                            transmission_weight=None, recovery_weight=None, 
+                            return_full_data = False):
+    '''
+    Encodes System (3.39) of Kiss, Miller, & Simon, using a "pure initial 
+    condition".  Please cite the
+    book if using this algorithm.
+    '''
+    
+    if nodelist is None:
+        nodelist = G.nodes()
+    N = len(nodelist)
+    #make Y0[u] be 1 if infected 0 if not
+    initial_infecteds = set(initial_infecteds) #for fast membership test
+    Y0 = scipy.array([1 if u in initial_infecteds else 0 for u in nodelist])
+    if initial_recovereds is None:
+        X0 = 1 - Y0
+    else:
+        initial_recovereds = set(initial_recovereds) #for fast membership test
+        non_susceptibles = initial_recovereds.union(initial_infecteds)
+        X0 = scipy.array([0 if u in non_susceptibles  else 1
+                            for u in nodelist])
+    
+    return SIR_pair_based(G, tau, gamma, nodelist=nodelist, Y0=Y0, X0=X0,
+                            tmin=tmin, tmax=tmax, tcount=tcount,
+                            transmission_weight=transmission_weight, 
+                            recovery_weight=recovery_weight,
+                            return_full_data=return_full_data)
 ######    HOMOGENEOUS MEANFIELD
 
 def _dSIS_homogeneous_meanfield_(X, t, n_over_N, tau, gamma):
