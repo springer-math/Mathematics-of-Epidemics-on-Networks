@@ -46,7 +46,7 @@ def complete_graph_dX(X, t, tau, gamma, N):
     
     return scipy.array(dX)
     
-def complete_graph_lumped(N, I0, tmin, tmax, tcount):
+def complete_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount):
     times = scipy.linspace(tmin, tmax, tcount)
     X0 = scipy.zeros(N+1)  #length N+1 of just 0 entries
     X0[I0]=1. #start with 100 infected.
@@ -98,21 +98,21 @@ def star_graph_dX(X, t, tau, gamma, N):
 
     return scipy.array(dY1vec + dY2vec)
 
-def star_graph_lumped(N, I0, tmin, tmax, tcount):
+def star_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount):
     times = scipy.linspace(tmin, tmax, tcount)
     #    [[central node infected] + [central node susceptible]]
     #X = [Y_1^1, Y_1^2, ..., Y_1^{N}, Y_2^0, Y_2^1, ..., Y_2^{N-1}]
     X0 = scipy.zeros(2*N)  #length 2*N of just 0 entries
     X0[I0]=I0*1./N #central infected, + I0-1 periph infected prob
-    X0[N+I0-1] = 1-I0*1./N #central suscept + I0 periph infected
+    X0[N+I0] = 1-I0*1./N #central suscept + I0 periph infected
     X = EoN.my_odeint(star_graph_dX, X0, times, args = (tau, gamma, N))
     #X looks like [[central susceptible,k periph] [ central inf, k-1 periph]] x T
 
-    central_susc = X[:,:N]
-    central_inf = X[:,N:]
+    central_inf = X[:,:N]
+    central_susc = X[:,N:]
     
-    I = scipy.array([ sum(k*central_susc[t][k] for k in range(N-1))/N 
-              + sum((k+1)*central_inf[t][k] for k in range(N-1))/N
+    I = scipy.array([ sum(k*central_susc[t][k] for k in range(N))
+              + sum((k+1)*central_inf[t][k] for k in range(N))
               for t in range(len(X))])
     S = N-I
     return times, S, I
@@ -126,13 +126,14 @@ iterations = 100 #number of simulations to compare
 gamma = 1
 tmin=0
 tmax=5
+tcount = 1001
 report_times = scipy.linspace(tmin, tmax, 21) #for simulations
 
 
 plt.figure(0)
 tau = 0.005
 G = nx.complete_graph(N)
-t, S, I = complete_graph_lumped(N, I0, tmin, tmax, 1001)
+t, S, I = complete_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount)
 plt.plot(t, I/N)
 
 #now check with simulation
@@ -140,7 +141,7 @@ obs_I = 0*report_times
 print("done with complete graph ODE.  Now simulating")
 for counter in range(iterations):
     IC = random.sample(range(N),I0)
-    t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = 5)
+    t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = tmax)
     obs_I += EoN.subsample(report_times, t, I)
 plt.plot(report_times, obs_I*1./(iterations*N), 'o')
 plt.axis(ymin=0, ymax=1)
@@ -162,14 +163,14 @@ plt.clf()
 tau = 4.
 G = star(N)
 
-t, S, I = star_graph_lumped(N, I0, tmin, tmax, 1001)
-plt.plot(t, I)
+t, S, I = star_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount)
+plt.plot(t, I/N)
 print("done with star ODE, now simulating")
 
 obs_I = 0*report_times
 for counter in range(iterations):
     IC = random.sample(range(N),I0)
-    t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = 5)
+    t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = tmax)
     obs_I += EoN.subsample(report_times, t, I)
 plt.plot(report_times, obs_I*1./(iterations*N), 'o')
 plt.axis(ymin=0, ymax=1)

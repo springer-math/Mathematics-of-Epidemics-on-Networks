@@ -83,7 +83,7 @@ Here are examples to generate (close approximations to) many of the figures in
 
 * :download:`figure 2.11 <../examples/fig2p11.py>`
 
-* :download:`figure 3.2 <../examples/fig3p2.py>` (This isn't done yet.)
+* :download:`figure 3.2 <../examples/fig3p2.py>` (This runs quite slowly, and produces slightly different output for the complete graph.  See comments in code for reasons)
 
 * :download:`figure 4.1 <../examples/fig4p1.py>`
 

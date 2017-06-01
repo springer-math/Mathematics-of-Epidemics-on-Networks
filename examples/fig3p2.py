@@ -8,14 +8,18 @@ from scipy import integrate
 
 
 '''
-Code to generate figure 3.2.  This is a bit messy because we have to 
-define the lumped ODE models.  Since python deals with ODEs by taking 
-1D arrays we have to set up all the variables into a single long vector.
+Code to generate figure 3.2 from page 94.  This is a bit messy because 
+we have to define the lumped ODE models.  Since python deals with ODEs by 
+taking 1D arrays we have to set up all the variables into a single long vector.
 
-This uses the same lumped model as for fig 2.11.  The other models are
-easier.
+This uses the same lumped model as for fig 2.11.  
+
 '''
-
+print("There is a difference between the output here and figure3.2a for the\n",
+      "book.  This code uses system 3.26, while the figure in the book\n"
+      "includes the triangle correction mentioned following system 3.26.\n\n")
+      
+print("The code for the complete graph runs quite slowly.  There are very many equations.")
 
 
 def star(N):
@@ -27,8 +31,9 @@ def star(N):
     
 
 
+
 def complete_graph_dX(X, t, tau, gamma, N):
-    r'''This lumped system is given in Proposition 2.3, taking Q=S, T=I
+    r'''This system is given in Proposition 2.3, taking Q=S, T=I
     f_{SI}(k) = f_{QT}= k*\tau 
     f_{IS}(k) = f_{TQ} = \gamma
     
@@ -49,8 +54,19 @@ def complete_graph_dX(X, t, tau, gamma, N):
     
     return scipy.array(dX)
     
+def complete_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount):
+    times = scipy.linspace(tmin, tmax, tcount)
+    X0 = scipy.zeros(N+1)  #length N+1 of just 0 entries
+    X0[I0]=1. #start with 100 infected.
+    X = integrate.odeint(complete_graph_dX, X0, times, args = (tau, gamma, N))
+    #X[t] is array whose kth entry is p(k infected| time=t).
+    I = scipy.array([sum(k*Pkt[k] for k in range(len(Pkt))) for Pkt in X])
+    S = N-I
+    return times, S, I
+    
+    
 def star_graph_dX(X, t, tau, gamma, N):
-    '''this lumped system is given in Proposition 2.4, taking Q=S, T=I
+    '''this system is given in Proposition 2.4, taking Q=S, T=I
     so f_{SI}(k) = f_{QT}(k) = k*tau
        f_{IS}(k) = f_{TQ}(k) = gamma
     X has length 2*(N-1)+2 = 2N'''
@@ -90,79 +106,110 @@ def star_graph_dX(X, t, tau, gamma, N):
 
     return scipy.array(dY1vec + dY2vec)
 
+def star_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount):
+    times = scipy.linspace(tmin, tmax, tcount)
+    #    [[central node infected] + [central node susceptible]]
+    #X = [Y_1^1, Y_1^2, ..., Y_1^{N}, Y_2^0, Y_2^1, ..., Y_2^{N-1}]
+    X0 = scipy.zeros(2*N)  #length 2*N of just 0 entries
+    #X0[I0]=I0*1./N #central infected, + I0-1 periph infected prob
+    X0[N+I0] = 1#-I0*1./N #central suscept + I0 periph infected
+    X = EoN.my_odeint(star_graph_dX, X0, times, args = (tau, gamma, N))
+    #X looks like [[central susceptible,k periph] [ central inf, k-1 periph]] x T
 
+    central_susc = X[:,N:]
+    central_inf = X[:,:N]
+    print(central_susc[-1][:])
+    print(central_inf[-1][:])
+    I = scipy.array([ sum(k*central_susc[t][k] for k in range(N))
+              + sum((k+1)*central_inf[t][k] for k in range(N))
+              for t in range(len(X))])
+    S = N-I
+    return times, S, I
+
+    
+    
+ 
 N=100
+I0 = 10
 gamma = 1
-report_times = scipy.linspace(0,5,21) #for simulations
-ode_times = scipy.linspace(0,5,1001) 
+tmin = 0
+tmax = 5
+tcount = 21
+report_times = scipy.linspace(0,tmax, tcount) #for simulations
+
+iterations = 1000
 
 
+taus1 = [0.03, 0.02, 0.01]
+taus2 = [1, 0.5, 0.1]
 
-raise EoN.EoNError("this is not done because the developer has \
-                    higher priorities at the moment, and hopes to come \
-                    back to it")
-#first the complete graph
+plt.figure(1)
 
-
-plt.figure(0)
-tau = 0.005
 G = nx.complete_graph(N)
 
-#lumped:
-X0 = scipy.zeros(N+1)  #length N+1 of just 0 entries
-X0[100]=1. #start with 100 infected.
-X = integrate.odeint(complete_graph_dX, X0, ode_times, args = (tau, gamma, N))
-#X[t] is array whose kth entry is p(k infected| time=t).
-expectedI = [sum(k*Pkt[k] for k in range(len(Pkt)))/N for Pkt in X]
-plt.plot(ode_times, expectedI, color = 'grey', linewidth = 3)
-#pair-based
-t, S, I = SIS_pair_based(G, nodelist, Y0, tau, gamma)
+for tau in taus1:
+    
+    print(tau)
+    print('lumped')
+    t, S, I = complete_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount)
+    plt.plot(t, I/N, color = 'grey', linewidth = 3)
+    plt.savefig('fig3p2a.pdf')
+    
+    print('I[-1]', I[-1])
+    initial_infecteds=random.sample(range(N), I0)
+    
+    obs_I = 0*report_times
+    for counter in range(iterations):
+        if counter%100==0:
+            print(counter)
+        IC = random.sample(range(N),I0)
+        t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = initial_infecteds, tmax = tmax)
+        obs_I += EoN.subsample(report_times, t, I)
+    plt.plot(report_times, obs_I*1./(iterations*N), 'o')    
+    plt.savefig('fig3p2a.pdf')
+    print(obs_I[-1]/iterations)
+    print('individual based')
+    t, S, I = EoN.SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, tmax=tmax, tcount = tcount)
+    plt.plot(t, I/N, '-.', color = 'k')
+    plt.savefig('fig3p2a.pdf')
 
-plt.plot(ode_times, expectedI, color = 'k')
+    print('pair based')
+    t, S, I = EoN.SIS_pair_based_pure_IC(G, tau, gamma, initial_infecteds, tmax=tmax, tcount = tcount)
+    plt.plot(t, I/N, color = 'k')
+    plt.savefig('fig3p2a.pdf')
 
-#individual-based
-
-plt.plot(ode_times, expectedI, '-.', color = 'k')
-
-
-
-print("done with complete graph.  Now star --- warning, this may be slow")
-
-
-
-
-
-
-
+plt.savefig('fig3p2a.pdf')
 
 plt.clf()
-#for star, if 100 nodes randomly start infected, 1/10 cases have
-#central node infected and 99 peripheral.  9/10 have 100 peripheral.
-
-tau = 4.
 G = star(N)
+for tau in taus2:
+    print(tau)
+    print('lumped')
+    t, S, I = star_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount)
+    print(I)
+    plt.plot(t, I/N, color = 'grey', linewidth = 3)
+    plt.savefig('fig3p2b.pdf')
 
-X0 = scipy.zeros(2*N)  #length 2*N of just 0 entries
-X0[100]=0.1 #central infected, + 99 periph infected prob = 0.1
-X0[N+99] = 0.9 #central suscept + 100 periph infected
-X = EoN.my_odeint(star_graph_dX, X0, ode_times, args = (tau, gamma, N))
-#X looks like [[central susceptible,k periph] [ central inf, k-1 periph]] x T
+    initial_infecteds=random.sample(range(1,N), I0)#not central node 0
+    
+    obs_I = 0*report_times
+    for counter in range(iterations):
+        if counter%100==0:
+            print(counter)
+        IC = random.sample(range(N),I0)
+        t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = initial_infecteds, tmax = tmax)
+        obs_I += EoN.subsample(report_times, t, I)
+    print(obs_I/iterations)
+    plt.plot(report_times, obs_I*1./(iterations*N), 'o')    
+    plt.savefig('fig3p2b.pdf')
+    
+    print('individual based')
+    t, S, I = EoN.SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, tmax=tmax, tcount = tcount)
+    plt.plot(t, I/N, '-.', color = 'k')
+    plt.savefig('fig3p2b.pdf')
 
-central_susc = X[:,:N]
-central_inf = X[:,N:]
-
-expectedI = [ sum(k*central_susc[t][k] for k in range(N-1))/N 
-              + sum((k+1)*central_inf[t][k] for k in range(N-1))/N
-              for t in range(len(X))]
-plt.plot(ode_times, expectedI)
-print("done with star ODE, now simulating")
-
-obs_I = 0*report_times
-for counter in range(iterations):
-    IC = random.sample(range(N),100)
-    t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = 5)
-    obs_I += EoN.subsample(report_times, t, I)
-plt.plot(report_times, obs_I*1./(iterations*N), 'o')
-plt.axis(ymin=0, ymax=1)
-plt.savefig('fig2p11b.pdf')
+    print('pair based')
+    t, S, I = EoN.SIS_pair_based_pure_IC(G, tau, gamma, initial_infecteds, tmax=tmax, tcount = tcount)
+    plt.plot(t, I/N, color = 'k')
+    plt.savefig('fig3p2b.pdf')
 
