@@ -4,6 +4,8 @@ EoN consists of two broad types of algorithms.  One set of algorithms is used to
 
 Installation
 ------------
+EoN is available at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks.
+
 To install EoN, you need the folder EoN and its contents to either be in the directory you are using or somewhere in your Python path.
 
 QuickStart Guide
@@ -70,6 +72,8 @@ The code here provides an example of creating a Barabasi-Albert network.  Then i
 EoN Examples
 ------------
 
+We have collected a number of examples using EoN to generate figures.
+
 Epidemics On Networks figures
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -83,7 +87,7 @@ Here are examples to generate (close approximations to) many of the figures in
 
 * :download:`figure 2.11 <../examples/fig2p11.py>`
 
-* :download:`figure 3.2 <../examples/fig3p2.py>` (This runs quite slowly, and produces slightly different output for the complete graph.  See comments in code for reasons)
+* :download:`figure 3.2 <../examples/fig3p2.py>` - (This runs quite slowly, and produces slightly different output for the complete graph compared to the figure in the book.  See comments in code for reasons)
 
 * :download:`figure 4.1 <../examples/fig4p1.py>`
 
@@ -148,4 +152,11 @@ rates.
 
 * :download:`SIS weighted edges <../examples/weighted_graph/SIS_weighted.py>`
 
+Are you trying to do something but can't figure it out and would like an example?  
+
+`Submit an issue`_ and I'll try to help.
+
+
+
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
+.. _Submit an issue: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues

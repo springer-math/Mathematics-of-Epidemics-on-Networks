@@ -9,8 +9,9 @@ solve analytic ODE models.  This is based on the book
 
   `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_ 
 
-The package is built using tools from NetworkX_. 
+EoN is built using tools from NetworkX_.  The repository_ is on github.   
 
+.. _repository: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
 .. _NetworkX: https://networkx.github.io
 
