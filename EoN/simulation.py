@@ -343,7 +343,12 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None, rho = None,
 def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
                                 return_full_data = False):
     
-    '''
+    '''This is not directly described in Kiss, Miller, & Simon.
+    
+    Does a simulation of the simple case of all nodes transmitting
+    with probability p independently to each neighbor and then
+    recovering.
+    
     Arguments:
 
         G : NetworkX Graph

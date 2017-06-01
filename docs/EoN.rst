@@ -134,9 +134,11 @@ Quick list
     SIS_individual_based
     SIS_individual_based_pure_IC
     SIS_pair_based
+    SIS_pair_based_pure_IC
     SIR_individual_based
     SIR_individual_based_pure_IC
     SIR_pair_based
+    SIR_pair_based_pure_IC
     SIS_homogeneous_meanfield
     SIR_homogeneous_meanfield
     SIS_homogeneous_pairwise
@@ -186,8 +188,8 @@ Quick list
     EBCM_pref_mix_discrete
     EBCM_pref_mix_discrete_from_graph
 
-Short description
-^^^^^^^^^^^^^^^^^
+Relation to models in text
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 The numbers given below are the equation numbers in the book.
 
 - Chapter 3
@@ -196,15 +198,19 @@ The numbers given below are the equation numbers in the book.
   
     - System (3.7): SIS model: Closes equations by assuming that knowing the probabilities
       for nodes to have each status is enough to predict impact of their interactions
-      (ignores temporal correlation between statuses of neighbors).
+      (ignores temporal correlation between statuses of neighbors).  
     
        - **SIS_individual_based** 
        - **SIS_individual_based_pure_IC**
+       
+      The pure_IC version assumes that some nodes begin infected with probability
+      1 and the others are susceptible with probability 1.
        
     - System (3.26): assumes that tracking pair correlations is enough.  Many
       more equations than individual-based.
       
        - **SIS_pair_based**
+       - **SIS_pair_based_pure_IC**
       
     - System (3.30) SIR equivalent of corresponding SIS model.
     
@@ -214,6 +220,7 @@ The numbers given below are the equation numbers in the book.
     - System (3.39) SIR equivalent of corresponding SIS model.
       
        - **SIR_pair_based**
+       - **SIR_pair_based_pure_IC**
     
 - Chapter 4
     
