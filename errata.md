@@ -1,5 +1,11 @@
 # Errata for [*Mathematics of Epidemics on Networks*](http://www.springer.com/book/9783319508047)
 
+This errata is limited to errors that are significant enough to cause confusion.
+
+If you believe you have found an error:
+ - and it is a minor typo that won't cause confusion for others (e.g., obvious misspelling, inconsequential punctuation error), please report it [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/9)
+ - and it is major enough that it should be on this page, please check if it is already on this list and if not open a new issue [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues)
+
 ## Chapter 1 
 
 ## Chapter 2 
@@ -16,6 +22,7 @@
 2 should be 1.5)
 
 ## Chapter 5 
+- In Figure 5.2c the label 1.2\tau should be 1.1\tau.
 
 ## Chapter 6 
 
@@ -26,6 +33,8 @@
 - displayed equation for example 6.3 \xi should be \zeta
 
 ## Chapter 7
+
+- On page 255, in the last paragraph of the introduction, it should note that the (PW) model is system (5.15), the ED model is system (5.38) and the EBCM model is system (6.12).
 
 ## Chapter 8
 
