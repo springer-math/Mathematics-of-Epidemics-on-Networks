@@ -3,8 +3,8 @@
 This errata is limited to errors that are significant enough to cause confusion.
 
 If you believe you have found an error:
- - and it is a minor typo that won't cause confusion for others (e.g., obvious misspelling, inconsequential punctuation error), please report it [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/9)
- - and it is major enough that it should be on this page, please check if it is already on this list and if not open a new issue [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues)
+ - If it is a minor typo that won't cause confusion for others (e.g., obvious misspelling, inconsequential punctuation error), please report it [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/9)
+ - If it is major enough that it should be on this page, please check if it is already on this list and if not open a new issue [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues) (use the green "New Issue" button). 
 
 ## Chapter 1 
 
