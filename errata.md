@@ -3,10 +3,10 @@
 This errata is limited to errors that are significant enough to cause confusion.
 
 If you believe you have found an error:
- - If it is a minor typo that won't cause confusion for others (e.g., obvious misspelling, inconsequential punctuation error), please report it [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/9)
+ - If it is a minor typo that won't cause confusion for others (e.g., obvious misspelling, inconsequential punctuation error), please report it [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/9).
  - If it is major enough that it should be on this page, please check if it is already on this list and if not open a new issue [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues) (use the green "New Issue" button). 
 
-## Acknowledgments
+## Dedication
 
 - "\epsilon_2" should be "Matilda"
 
@@ -34,11 +34,11 @@ If you believe you have found an error:
 
 - equation 6.8a, \xi should be \zeta.
 
-- displayed equation for example 6.3 \xi should be \zeta
+- In the displayed equation for example 6.3 \xi should be \zeta
 
 ## Chapter 7
 
-- On page 255, in the last paragraph of the introduction, it should note that the (PW) model is system (5.15), the ED model is system (5.38) and the EBCM model is system (6.12).
+- On page 255, the last paragraph of the introduction should note that the (PW) model is system (5.15), the ED model is system (5.38) and the EBCM model is system (6.12).
 
 ## Chapter 8
 

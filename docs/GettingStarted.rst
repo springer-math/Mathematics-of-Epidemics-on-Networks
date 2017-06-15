@@ -1,6 +1,5 @@
 Getting Started
 ===============
-EoN consists of two broad types of algorithms.  One set of algorithms is used to simulate epidemics on networks, and the others solve analytic ODE models that attempt to approximate the disease dynamics.
 
 Installation
 ------------
@@ -71,6 +70,9 @@ The code here provides an example of creating a Barabasi-Albert network.  Then i
 
 EoN Examples
 ------------
+
+EoN consists of two broad types of algorithms.  One set of algorithms is used to simulate epidemics on networks, and the others solve analytic ODE models that attempt to approximate the disease dynamics.
+
 
 We have collected a number of examples using EoN to generate figures.
 
