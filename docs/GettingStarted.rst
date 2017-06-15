@@ -3,9 +3,16 @@ Getting Started
 
 Installation
 ------------
-EoN is available at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks.
+You can install `EoN` with pip
 
-To install EoN, you need the folder EoN and its contents to either be in the directory you are using or somewhere in your Python path.
+::
+
+    pip install EoN
+
+or by cloning or downloading the distribution from GitHub 
+at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks.  Just 
+move into the main directory and run
+    python setup.py install
 
 QuickStart Guide
 ----------------
