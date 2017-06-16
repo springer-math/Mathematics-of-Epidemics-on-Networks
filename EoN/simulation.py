@@ -79,6 +79,43 @@ class _ListDict_(object):
 
 
 
+def _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True):
+    r'''The original (v0.96 and earlier) returned infection_times and recovery_times.
+    The new version returns node_history instead. This code transforms
+    the former to the latter.
+    
+    It is only used for the continuous time cases.
+    '''
+    if SIR:
+        node_history = defaultdict(lambda : ([tmin], ['S']))
+        for node, time in infection_times.items():
+            if time == tmin:
+                node_history[node] = ([], [])
+            node_history[node][0].append(time)
+            node_history[node][1].append('I')
+        for node, time in recovery_times.items():
+            if time == tmin:
+                node_history[node] = ([], [])
+            node_history[node][0].append(time)
+            node_history[node][1].append('R')        
+    else:
+        node_history = defaultdict(lambda : ([tmin], ['S']))
+        for node, Itimes in infection_times.keys():
+            Rtimes = recovery_times[node]
+            while Itimes:
+                time = Itimes.pop(0)
+                if time == tmin:
+                    node_history[node] = ([], [])
+                node_history[node][0].append(time)
+                node_history[node][1].append('I')
+                if Rtimes:
+                    time = Rtimes.pop(0)
+                    node_history[node][0].append(time)
+                    node_history[node][1].append('S')
+        
+    return node_history
+
+
 ##########################
 #                        #
 #    SIMULATION CODE     #
@@ -119,7 +156,9 @@ def _simple_test_transmission_(u, v, p):
 
 
 def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=(), 
-                initial_infecteds=None, rho = None, return_full_data = False):
+                initial_infecteds=None, initial_recovereds = None, 
+                rho = None, tmin = 0, tmax = float('Inf'),
+                return_full_data = False):
     #tested in test_discrete_SIR_epidemic
     r'''
     From figure 6.8 of Kiss, Miller, & Simon.  Please cite the book
@@ -175,27 +214,36 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
             If both initial_infecteds and rho are assigned, then there
             is an error.
        
+        initial_recovereds : as for initial_infecteds, but initially 
+            recovered nodes.
+            
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
 
+        tmin : start time
+        
+        tmax : stop time (if not extinct first).  Default step is 1.
 
         return_full_data: boolean  (default False)
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.
-            It is returned in the form of two dicts, 
-            `infection_time` and `recovery_time`
-            `infection_time[node]` is the time of infection and 
-            `recovery_time[node]` is the recovery time
+            Tells whether the times of each 
+            individual node's status changes should be returned.
+
+            
 
     Returns:
         :
+        if return_full_data is False returns 
+        
         t, S, I, R:
-            scipy arrays
+                scipy arrays
             
-        Or `if return_full_data is True`:
+        Or `if return_full_data is True` returns
       
-        t, S, I, R, infection_time, recovery_time
-            The additional two values are dicts giving infection and recovery time of each node.
+        t, S, I, R, node_history
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
 
     
     :SAMPLE USE:
@@ -217,9 +265,6 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    if return_full_data:
-        infection_time = {}
-        recovery_time = {}
     
     
     if initial_infecteds is None:  #create initial infecteds list if not given
@@ -232,30 +277,52 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
 
-    infecteds = initial_infecteds
-
+    if return_full_data:
+        node_history = defaultdict(lambda : ([tmin], ['S']))
+        for node in initial_infecteds:
+            node_history[node] = ([tmin], ['I'])
+        if initial_recovereds is not None:
+            node_history[node] = ([tmin], ['R'])
+    
     N=G.order()
-    t = [0]
-    S = [N-len(infecteds)]
-    I = [len(infecteds)]
+    t = [tmin]
+    S = [N-len(initial_infecteds)]
+    I = [len(initial_infecteds)]
     R = [0]
     
     susceptible = defaultdict(lambda: True)  
     #above line is equivalent to u.susceptible=True for all nodes.
     
-    for u in infecteds:
+    for u in initial_infecteds:
         susceptible[u] = False
-    while infecteds:
+    if initial_recovereds is not None:
+        for u in initial_recovereds:
+            susceptible[u] = False
+        
+    infecteds = initial_infecteds
+    
+    #may be useful to rewrite this someday to be more like SIS version
+    #taking advantage of sets.
+    while infecteds and t[-1]<tmax:
         new_infecteds = []
         for u in infecteds:
             for v in G.neighbors(u):
                 if susceptible[v] and test_transmission(u, v, *args):
                     new_infecteds.append(v)
                     susceptible[v] = False
-            if return_full_data:
-                infection_time[u] = t[-1]
-                recovery_time[u] = t[-1]+1
+
+        if return_full_data:
+            next_time = t[-1]+1
+            if next_time <= tmax:
+                for u in infecteds:
+                    node_history[u][0].append(next_time)
+                    node_history[u][1].append('R')
+                for v in new_infecteds:
+                    node_history[v][0].append(next_time)
+                    node_history[v][1].append('I')
+
         infecteds = new_infecteds
+
         R.append(R[-1]+I[-1])
         I.append(len(infecteds))
         S.append(S[-1]-I[-1])
@@ -265,11 +332,13 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
                scipy.array(R)
     else:
         return scipy.array(t), scipy.array(S), scipy.array(I), \
-                scipy.array(R), infection_time, recovery_time
+                scipy.array(R), node_history
 
 
 
-def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None, rho = None,
+def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None, 
+                                initial_recovereds = None, rho = None,
+                                tmin = 0, tmax=float('Inf'), 
                                 return_full_data = False):
     #tested in test_basic_discrete_SIR_epidemic   
     r'''
@@ -294,30 +363,38 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None, rho = None,
             If both initial_infecteds and rho are assigned, then there
             is an error.
        
+       
+        initial_recovereds : as for initial_infecteds, but initially 
+            recovered nodes.
+            
         rho : number
             initial fraction infected. number is int(round(G.order()*rho))
+        
+        tmin : start time
+        
+        tmax : stop time (if not extinct first).  Default step is 1.
 
         return_full_data: boolean (default False)
             Tells whether the infection and recovery times of each 
             individual node should be returned.  
-            It is returned in the form of two dicts, 
-            `infection_time` and `recovery_time`
-            
-            `infection_time[node]` is the time of infection and 
-            `recovery_time[node]` is the recovery time
 
     Returns:
         :
-            t, S, I, R : 
-                All scipy arrays OR if `return_full_data is True`:
-            t, S, I, R, infection_time, recovery_time
-                where the additional values are dicts:
-                `infection_time[node]` is the time of infection and 
-                `recovery_time[node]` is the recovery time
+        if return_full_data is False returns 
+        
+        t, S, I, R:
+            scipy arrays
+            these scipy arrays give all the times observed and the number 
+            in each state at each time.
+            
+        Or `if return_full_data is True` returns
+      
+        t, S, I, R, node_history
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
 
-    these scipy arrays give all the times observed and the number in 
-    each state at each time.  The dicts give times at which each node 
-    changed status.
     
     :SAMPLE USE:
 
@@ -338,10 +415,11 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None, rho = None,
 '''
 
     return discrete_SIR_epidemic(G, _simple_test_transmission_, (p,), 
-                                    initial_infecteds, rho, return_full_data)
+                                    initial_infecteds, initial_recovereds, 
+                                    rho, tmin, tmax, return_full_data)
 
 def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
-                                return_full_data = False):
+                                tmin = 0, tmax = 100, return_full_data = False):
     
     '''This is not directly described in Kiss, Miller, & Simon.
     
@@ -369,31 +447,23 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
         return_full_data: boolean (default False)
             Tells whether the infection and recovery times of each 
             individual node should be returned.  
-            It is returned in the form of two dicts, 
-            `infection_time` and `recovery_time`
-            `infection_time[node]` is the time of infection and 
-            `recovery_time[node]` is the recovery time
 
     Returns:
         :
             t, S, I, : 
-                All scipy arrays OR if `return_full_data is True`:
-            t, S, I,, infection_times, recovery_times
-                where the additional values are dicts:
-                `infection_times[node]` is a list giving times of infection and 
-                `recovery_times[node]` is a list with times of recovery of node.
+                All scipy arrays 
+            OR if `return_full_data is True`:
+            t, S, I, node_history
+                node_history is a dict and 
+                node_history[node] is a tuple (time_list, status_list)
+                the time_list is the times the node's status changes
+                the status_list is the status at those times.
 
-    these scipy arrays give all the times observed and the number in 
-    each state at each time.  The dicts give times at which each node 
-    changed status.
     '''
     
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    if return_full_data:
-        infection_time = {}
-        recovery_time = {}
     
     
     if initial_infecteds is None:  #create initial infecteds list if not given
@@ -406,23 +476,30 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
 
-    infecteds = set(initial_infecteds)
-
+    if return_full_data:
+        node_history = defaultdict(lambda : ([tmin], ['S']))
+        for u in initial_infecteds:
+            node_history[u] = ([tmin], ['I'])
     N=G.order()
-    t = [0]
-    S = [N-len(infecteds)]
-    I = [len(infecteds)]
+    t = [tmin]
+    S = [N-len(initial_infecteds)]
+    I = [len(initial_infecteds)]
     
-    while infecteds:
+    infecteds = set(initial_infecteds)
+    while infecteds and t[-1]<tmax:
         next_infecteds = set()
         for u in infecteds:
             next_infecteds.union({v for v in G.neighbors(u) if random.random()<p and v not in infecteds})
 
         if return_full_data:
-            for u in infecteds:
-                recovery_time[u].append(t[-1]+1)
-            for v in next_infecteds:
-                infection_time[u].append(t[-1]+1)
+            next_time = t[-1]+1
+            if next_time<= tmax:
+                for u in infecteds:
+                    node_history[u][0].append(next_time)
+                    node_history[u][1].append('S')
+                for v in next_infecteds:
+                    node_history[v][0].append(next_time)
+                    node_history[v][1].append('I')
         infecteds = next_infecteds
         t.append(t[-1]+1)
         S.append(N-len(infecteds))
@@ -432,8 +509,7 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
     if not return_full_data:
         return scipy.array(t), scipy.array(S), scipy.array(I)
     else:
-        return scipy.array(t), scipy.array(S), scipy.array(I), \
-                infection_times, recovery_times
+        return scipy.array(t), scipy.array(S), scipy.array(I), node_history
 
     
     
@@ -500,6 +576,9 @@ def _edge_exists_(u, v, H):
 
 def percolation_based_discrete_SIR_epidemic(G, p, 
                                             initial_infecteds=None, 
+                                            initial_recovereds = None,
+                                            rho = None, tmin = 0,
+                                            tmax = float('Inf'),
                                             return_full_data = False):
     #tested in test_basic_discrete_SIR_epidemic   
     r'''From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
@@ -527,17 +606,29 @@ def percolation_based_discrete_SIR_epidemic(G, p,
             The network the disease will transmit through.
         p : number
             transmission probability
-        initial_infecteds: node or iterable of nodes
+
+        initial_infecteds: node or iterable of nodes (default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
-            if None, then a randomly chosen node is initially infected.
-        return_full_data: boolean
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.
+       
+       
+        initial_recovereds : as for initial_infecteds, but initially 
+            recovered nodes.
+            
+        rho : number
+            initial fraction infected. number is int(round(G.order()*rho))
+        
+        tmin : start time
+        
+        tmax : stop time (if not extinct first).  Default step is 1.
+
+        return_full_data: boolean (default False)
             Tells whether the infection and recovery times of each 
-            individual node should be returned.  
-            It is returned in the form of two dicts, 
-                infection_time and recovery_time
-            infection_time[node] is the time of infection and 
-            recovery_time[node] is the recovery time
+            individual node should be returned.         
 
     Returns:
         :
@@ -545,10 +636,11 @@ def percolation_based_discrete_SIR_epidemic(G, p,
         
         OR if `return_full_data is True`:
             
-        t, S, I, R, infection_time, recovery_time 
-            The additional dicts satisfy 
-            infection_time[node] is the time of infection and 
-            recovery_time[node] is the recovery time
+        t, S, I, R, node_history 
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
     
     :SAMPLE USE:
 
@@ -566,13 +658,13 @@ def percolation_based_discrete_SIR_epidemic(G, p,
 
 '''
 
-    if initial_infecteds is None:
-        initial_infecteds=[random.choice(G.nodes())]
-    elif G.has_node(initial_infecteds):
-        initial_infecteds=[initial_infecteds]
     H = percolate_network(G, p)
-    return discrete_SIR_epidemic(H, test_transmission=H.has_edge, initial_infecteds=initial_infecteds, 
-                                    return_full_data=return_full_data)
+    return discrete_SIR_epidemic(H, test_transmission=H.has_edge, 
+                                initial_infecteds=initial_infecteds, 
+                                initial_recovereds = initial_recovereds,
+                                rho = rho, tmin = tmin, tmax = tmax, 
+                                return_full_data=return_full_data)
+                                
 
 def estimate_SIR_prob_size(G, p):
     #tested in test_estimate_SIR_prob_size
@@ -1282,26 +1374,22 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
             recovery rates
             gamma_i = G.node[i][recovery_weight]*gamma
 
-        return_full_data: boolean
+        return_full_data: boolean (default False)
             Tells whether the infection and recovery times of each 
-            individual node should be returned.  
-            It is returned in the form of two dicts, infection_time and 
-            recovery_time.
-            infection_time[node] is the time of infection and 
-            recovery_time[node] is the recovery time
+            individual node should be returned.         
 
     Returns:
         :
-        times, S, I, R : each a scipy array
-            giving times and number in each status for corresponding time
+        times, S, I, R : Scipy arrays
+        
+        OR if `return_full_data is True`:
+            
+        times, S, I, R, node_history 
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
 
-        OR if return_full_data=True:
-
-        times, S, I, R, infection_time, recovery_time
-            first four are scipy arrays as above.  New objects are dicts
-            with entries just for those nodes that were infected ever
-            infection_time[node] is time of infection
-            recovery_time[node] is time of recovery
     
     :SAMPLE USE:
 
@@ -1406,13 +1494,10 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
         tmax : (default infinity)
             final time
 
-        return_full_data: boolean
+        return_full_data: boolean (default False)
             Tells whether the infection and recovery times of each 
-            individual node should be returned.  
-            It is returned in the form of two dicts, infection_time and 
-            recovery_time.
-            infection_time[node] is the time of infection and 
-            recovery_time[node] is the recovery time
+            individual node should be returned.         
+
 
     
          If Q is defined:
@@ -1443,16 +1528,15 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
 
     Returns:
         :
-        times, S, I, R : each a scipy array
-            giving times and number in each status for corresponding time
-
-        OR if return_full_data=True:
-
-        times, S, I, R, infection_time, recovery_time
-            first four are scipy arrays as above.  New objects are dicts
-            with entries just for those nodes that were infected ever
-            infection_time[node] is time of infection
-            recovery_time[node] is time of recovery
+        times, S, I, R : Scipy arrays
+        
+        OR if `return_full_data is True`:
+            
+        times, S, I, R, node_history 
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
 
     :SAMPLE USE:
         
@@ -1531,7 +1615,7 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
 
         for node in initial_infecteds:
             status[node] = 'I'
-            pred_inf_time[node] = -1
+            pred_inf_time[node] = tmin  #old version made -1, not sure why not 0?
         for event in Q:
             if event.action == 'transmit' and \
                             event.time<pred_inf_time[event.node]:
@@ -1564,14 +1648,16 @@ def fast_nonMarkov_SIR(G, process_trans = _process_trans_SIR_,
     else:
         #strip pred_inf_time and rec_time down to just the values for nodes 
         #that became infected
-        
         #could use iteritems for Python 2, by   try ... except AttributeError
-        infection_time = {node:time for (node,time) in 
+        infection_times = {node:time for (node,time) in 
                             pred_inf_time.items() if status[node]!='S'}
-        recovery_time = {node:time for (node,time) in 
+        recovery_times = {node:time for (node,time) in 
                                 rec_time.items() if status[node] =='R'}
+                                
+                
+        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
         return scipy.array(times), scipy.array(S), scipy.array(I), \
-                scipy.array(R), infection_time, recovery_time
+                scipy.array(R), node_history
 
 
 def _process_trans_SIS_(time, G, source, target, times, infection_times, recovery_times,
@@ -1785,10 +1871,6 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         return_full_data: boolean
             Tells whether the infection and recovery times of each 
             individual node should be returned.  
-            It is returned in the form of two dicts, infection_time and 
-            recovery_time.
-            infection_time[node] is the time of infection and 
-            recovery_time[node] is the recovery time.
 
     Returns:
         :
@@ -1797,11 +1879,11 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         
         or if return_full_data=True:
             
-        times, S, I, infection_time, recovery_time
-            first four are scipy arrays as above.  New objects are dicts
-            with entries just for those nodes that were infected ever
-            infection_time[node] is a list of times of infection
-            recovery_time[node] is a list of times of recovery
+        times, S, I, node_history
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
     
     :SAMPLE USE:
 
@@ -1878,8 +1960,9 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
+        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         return scipy.array(times), scipy.array(S), scipy.array(I), \
-                infection_times, recovery_times
+                node_history
 
 
 
@@ -2139,10 +2222,6 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         return_full_data: boolean
             Tells whether the infection and recovery times of each 
             individual node should be returned.  
-            It is returned in the form of two dicts, infection_time and 
-            recovery_time.
-            infection_time[node] is the time of infection and 
-            recovery_time[node] is the recovery time.
 
     Returns:
         :
@@ -2150,11 +2229,11 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             giving times and number in each status for corresponding time
 
             OR if return_full_data=True:
-        times, S, I, R, infection_time, recovery_time
-            first four are scipy arrays as above.  New objects are dicts
-            with entries just for those nodes that were infected ever
-            infection_time[node] is time of infection
-            recovery_time[node] is time of recovery
+        times, S, I, R, node_history
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
 
     :SAMPLE USE:
 
@@ -2234,8 +2313,10 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         #need to change data type of infection_times and recovery_times
         infection_time = {node: L[0] for node, L in infection_times.items()}
         recovery_time = {node: L[0] for node, L in recovery_times.items()}
+
+        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
         return scipy.array(times), scipy.array(S), scipy.array(I), \
-                scipy.array(R), infection_time, recovery_time
+                scipy.array(R), node_history
 
 
 
@@ -2297,10 +2378,6 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         return_full_data: boolean
             Tells whether the infection and recovery times of each 
             individual node should be returned.  
-            It is returned in the form of two dicts, infection_time and 
-            recovery_time.
-            infection_times[node] gives the times of infection and 
-            recovery_times[node] gives the recovery times.
         
     Returns:
 
@@ -2309,11 +2386,11 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
 
         or if `return_full_data==True`
         
-        times, S, I, infection_time, recovery_time;
-            first four are scipy arrays as above.  New objects are dicts
-            with entries just for those nodes that were infected ever
-            infection_times[node] gives the times of infection and 
-            recovery_times[node] gives the recovery times.
+        times, S, I, node_history
+            node_history is a dict and 
+            node_history[node] is a tuple (time_list, status_list)
+            the time_list is the times the node's status changes
+            the status_list is the status at those times.
 
     :SAMPLE USE:
 
@@ -2390,8 +2467,10 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
+        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         return scipy.array(times), scipy.array(S), scipy.array(I), \
-                infection_times, recovery_times
+                node_history
+
 
 
 """

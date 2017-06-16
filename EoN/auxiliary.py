@@ -178,7 +178,7 @@ def get_time_shift(times, L, threshold):
 
 
 
-def visualize(G, plot_times, infection_times, recovery_times, pos = None, 
+def visualize(G, plot_times, node_history, pos = None, 
                 SIR = True, filetype = 'png', filenamebase = 'tmp', 
                 colorS = '#009a80', colorI = '#ff2020', 
                 colorR = 'gray', show_edges = True, plot_args = ()):
@@ -192,11 +192,11 @@ def visualize(G, plot_times, infection_times, recovery_times, pos = None,
         plot_times : list (or array, maybe even a set)
             collection of times to output plot
         
-        infection_times : dict
-            infection_times[node] is a list of times (if SIS) or the time (if 
-            SIR) of infection of node.  If node is never infected, 
-            it does not appear in dict and is assumed susceptible throughout.
-            
+        node_history : dict
+            node_history[node] = (times, statuses)
+            where times is a list of times of status change
+            and statuses is the new status at that time.
+             
         recovery_times : dict
             see infection_times, except this has time(s) of recovery.
             
@@ -262,28 +262,20 @@ def visualize(G, plot_times, infection_times, recovery_times, pos = None,
         S = set()
         I = set()
         R = set()
-        if SIR:
-            for node in G.nodes():
-                if node not in infection_times or infection_times[node]>time:
+
+        for node in G.nodes():
+            if node not in node_history:
+                S.add(node)
+            else:
+                changetimes = node_history[node][0]
+                number_swaps = len([changetime for changetime in changetimes if changetime<= time])
+                status = node_history[node][1][number_swaps-1]
+                if status == 'S':
                     S.add(node)
-                elif recovery_times[node]>time:
+                elif status == 'I':
                     I.add(node)
-                else:
+                else:  #won't happen in SIS case
                     R.add(node)    
-        else: #SIS
-            for node in G.nodes():
-                if node not in infection_times or infection_times[node][0]>time:
-                    S.add(node)
-                else: #has been infected at least once. I'm not taking advantage of ordering of lists. 
-                    time_of_last_inf = max(inftime for inftime in infection_times[node] if inftime<=time)
-                    if recovery_times[node][0]<time:
-                        time_of_last_rec = max(rectime for rectime in recovery_times[node] if rectime<=time)
-                    else:
-                        time_of_last_rec = -1
-                    if time_of_last_rec<time_of_last_inf: #most recent thing was infection
-                        I.add(node)
-                    else: #most recent thing was recovery.
-                        S.add(node)
 
         nx.draw_networkx_nodes(G, pos = pos, node_color = colorS, nodelist = list(S), *plot_args)            
         nx.draw_networkx_nodes(G, pos = pos, node_color = colorI, nodelist = list(I), *plot_args)            

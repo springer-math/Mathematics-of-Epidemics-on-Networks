@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(name='EoN',
       packages = ['EoN'], 
-      version='0.961',
+      version='0.97rc1',
       description = 'Epidemics on Networks',
       author = 'Joel C. Miller, Istvan Z. Kiss, and Peter Simon',
       author_email = 'joel.c.miller.research@gmail.com',
