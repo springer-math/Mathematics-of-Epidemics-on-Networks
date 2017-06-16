@@ -27,7 +27,7 @@ categories:
   
     - much faster than traditional Gillespie simulation
     - allows weighted graphs 
-    - allows non-Markovian dynamics(for SIR)
+    - allows non-Markovian dynamics (for SIR)
   - Gillespie algorithms for Markovian dynamics on unweighted graphs
   - discrete-time (synchronous update) models
 - **Numerical solvers for ODE models**

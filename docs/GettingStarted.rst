@@ -43,6 +43,11 @@ The code here provides an example of creating a Barabasi-Albert network.  Then i
         t, S, I, R = EoN.fast_SIR(G, tau, gamma, initial_infecteds=initial_infections, tmax = tmax)
         plt.plot(t, I, color = 'k', alpha=0.3)
             
+    #Now compare with ODE predictions.  Read in the degree distribution of G
+    #and use rho to initialize the various model equations.
+    #There are versions of these functions that allow you to specify the
+    #initial conditions rather than starting from a graph.
+    
     t, S, I, R = EoN.SIR_homogeneous_pairwise_from_graph(G, tau, gamma, rho=rho, tmax = tmax)
     plt.plot(t, I, '-.', label = 'Homogeneous pairwise', linewidth = 5)
     
@@ -66,6 +71,11 @@ The code here provides an example of creating a Barabasi-Albert network.  Then i
         t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds=initial_infections, tmax = tmax)
         plt.plot(t, I, color = 'k', alpha=0.3)
             
+    #Now compare with ODE predictions.  Read in the degree distribution of G
+    #and use rho to initialize the various model equations.
+    #There are versions of these functions that allow you to specify the
+    #initial conditions rather than starting from a graph.
+    
     t, S, I = EoN.SIS_homogeneous_pairwise_from_graph(G, tau, gamma, rho=rho, tmax = tmax)
     plt.plot(t, I, '-.', label = 'Homogeneous pairwise', linewidth = 5)
     
