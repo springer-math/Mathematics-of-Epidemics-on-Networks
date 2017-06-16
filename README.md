@@ -4,9 +4,7 @@ This repository accompanies [*Mathematics of Epidemics on Networks*](http://www.
 
 ![Cover image](https://images.springer.com/sgw/books/medium/9783319508047.jpg)
 
-Download the files as a zip using the green button at the top of [the github page](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks), or clone the repository to your machine using Git.
-
-This repository also contains the EoN (Epidemics on Networks) python software accompanying the book.
+It contains the EoN (Epidemics on Networks) python software accompanying the book.
 
 ## Documentation
 
@@ -14,15 +12,14 @@ Documentation (including installation instructions) is available at http://epide
 
 ## Releases
 
+We are close to releasing version 1.0.  If you would like to help test, we welcome your involvement.
 
 ## Corrections
 
-For corrections to the content in the published book, see the file [errata.md](errata.md).
+For corrections or to report an error to the content in the published book, see the file [errata.md](errata.md) and follow instructions there.
 
-To report a bug in the code or an error in the book, please use the Issues option
-at the top of [the github page](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks).  Please check the [errata](errata.md) before reporting a mistake in the book.
+To report a bug in the code please use the new issue option on the [issues page](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues).
 
 ## Contributions
 
-See the file Contributing.md for more information on how you can contribute to this repository.
-
+We welcome new contributors.  Please help test the code or suggest improvements.
