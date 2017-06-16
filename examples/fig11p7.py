@@ -33,8 +33,7 @@ def get_xmax(t,L):
     for index in range(len(L)):
         if L[-index]>1:
             break
-    print L[-index]
-    #print L[-index:]
+    #print(L[-index:])
     return t[-index]
  
 def SIR_process(G, degree_prob, tau, gamma, tmax = 10):
@@ -89,7 +88,7 @@ def SIS_process(G, degree_prob, tmax, tau, gamma):
     for index, starting_node in enumerate([x*N/10. for x in range(10)]):
         plt.figure(5)
         t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = [starting_node], tmax = tmax)
-        print I[-1]
+        #print(I[-1])
         subt = scipy.linspace(0, tmax, 501)
         subI = EoN.subsample(subt, t, I)
         plt.plot(subt,subI)
@@ -108,13 +107,13 @@ deg_dist_plot = plt.gca()
 SIR_tmaxes=[20]#, 15, 15, 15]#[40, 35, 25, 25]#[10000,100,100,10,10,10,10,10,10,10,10,10]
 ps = [0.01]#, 0.1, 0.5, 1]#[0.2, 0.4, 1, 2]#[0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
 for SIR_tmax, p in zip(SIR_tmaxes, ps):
-    print p
+    print(p)
     if p>1:
         raise MyError('p>1')
     G = nx.watts_strogatz_graph(N, k, p)
     degree_prob = get_deg_probs(G)
     plot_deg_dist(deg_dist_plot, degree_prob)
-    print 'SIR'
+    #print 'SIR'
     SIR_process(G, degree_prob, tau, gamma, tmax = SIR_tmax)
     #print 'SIS'
     #SIS_process(G, degree_prob, SIS_tmax, tau, gamma)

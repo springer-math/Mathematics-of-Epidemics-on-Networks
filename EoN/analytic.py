@@ -2304,6 +2304,7 @@ def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
 
     Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds,
                                             rho=rho, SIR=False)
+    
     return SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin, tmax, tcount, return_full_data)
 
 def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=None, 
@@ -2367,8 +2368,8 @@ def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
     
     '''
     Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, 
-                                                intial_infecteds = initial_infecteds, 
-                                                initial_recoverds = initial_recovereds,
+                                                initial_infecteds = initial_infecteds, 
+                                                initial_recovereds = initial_recovereds,
                                                 rho=rho, SIR=True)
     
     return SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin, tmax, 

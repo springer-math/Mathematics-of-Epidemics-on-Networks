@@ -37,7 +37,7 @@ simulate_process(graph_function, iterations, tmax, tcount, rho, kave, tau, gamma
 
 #bimodal
 symbol='x'
-graph_function = lambda: nx.configuration_model((N/2)*[5,35])
+graph_function = lambda: nx.configuration_model([5,35]*int(N/2+0.01))
 simulate_process(graph_function, iterations, tmax, tcount, rho, kave, tau, gamma, symbol)
 
 #erdos-renyi

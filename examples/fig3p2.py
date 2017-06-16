@@ -167,7 +167,7 @@ for tau in taus1:
         obs_I += EoN.subsample(report_times, t, I)
     plt.plot(report_times, obs_I*1./(iterations*N), 'o')    
     plt.savefig('fig3p2a.pdf')
-    print(obs_I[-1]/iterations)
+    #print(obs_I[-1]/iterations)
     print('individual based')
     t, S, I = EoN.SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, tmax=tmax, tcount = tcount)
     plt.plot(t, I/N, '-.', color = 'k')
@@ -199,7 +199,7 @@ for tau in taus2:
         IC = random.sample(range(N),I0)
         t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = initial_infecteds, tmax = tmax)
         obs_I += EoN.subsample(report_times, t, I)
-    print(obs_I/iterations)
+    #print(obs_I/iterations)
     plt.plot(report_times, obs_I*1./(iterations*N), 'o')    
     plt.savefig('fig3p2b.pdf')
     

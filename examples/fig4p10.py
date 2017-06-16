@@ -13,8 +13,8 @@ tcount = 1001
 
 report_times = scipy.linspace(0,tmax,tcount)
 
-deg_dist1 = [18,22]*(N/2)
-deg_dist2 = [5,35]*(N/2)
+deg_dist1 = [18,22]*int((N/2)+0.01)
+deg_dist2 = [5,35]*int((N/2)+0.01)
 ax1 = plt.gca()#axes([0.1,0.1,0.9,0.9])
 ax2 = plt.axes([0.44,0.2,0.4,0.4])
 for deg_dist, ax in zip([deg_dist1, deg_dist2], [ax1, ax2]):

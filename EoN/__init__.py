@@ -44,8 +44,6 @@ __version__ = "0.97rc1"
 print("warning - EoN is currently under significant development.  Interface"
       +" may change with little if any warning until version 1.0.\n"
       +"The current version is {}\n".format(__version__))
-print("Warning - although this has been tested in Python 3, it was originally"
-      +" written in Python 2, so some compatibility issues may remain\n\n\n")
 
 
 #__all__ = 
