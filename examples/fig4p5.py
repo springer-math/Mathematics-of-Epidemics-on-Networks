@@ -49,7 +49,7 @@ rho = 0.1
 
 for tau, label in zip([0.9*tau_c, tau_c, 1.2*tau_c, 1.5*tau_c],['a', 'b', 'c', 'd']):
     plt.clf()
-    t, S, I = complete_graph_lumped(N, N*rho, 0 , 20, 1001)
+    t, S, I = complete_graph_lumped(N, int(N*rho), 0 , 20, 1001)
     plt.plot(t, I)
     
     S0 = (1-rho)*N
