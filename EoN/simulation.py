@@ -866,7 +866,8 @@ def _in_component_(G, target):
     return source_nodes
 
 
-def get_infected_nodes(G, tau, gamma, initial_infecteds=None):
+def get_infected_nodes(G, tau, gamma, initial_infecteds=None, 
+                initial_recovereds = None):
     r'''
     From figure 6.15 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm
@@ -902,6 +903,9 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None):
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then a randomly chosen node is initially infected.
+        initial_recovereds: node or iterable of nodes
+            if a single node, then this node is initially recovered
+            if an iterable, then whole set is initially recovered
 
     Returns:
         :
@@ -921,11 +925,27 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None):
     finds the nodes infected if 0 and 5 are the initial nodes infected
     and tau=2, gamma=1
     '''    
+    if initial_recovereds is None:
+        initial_recovereds = set()
+    elif G.has_node(initial_recovereds):
+        initial_recovereds = set([initial_recovereds])
+    else:
+        initial_recovereds = set(initial_recovereds)
     if initial_infecteds is None:
-        initial_infecteds=[random.choice(G.nodes())]
+        while True:
+            node = random.choice(G.nodes())
+            if node not in initial_recovereds:
+                break
+        initial_infecteds=set([node])
     elif G.has_node(initial_infecteds):
-        initial_infecteds=[initial_infecteds]
+        initial_infecteds=set([initial_infecteds])
+    else:
+        initial_infecteds = set(initial_infecteds)
+    if initial_infecteds.intersection(initial_recovereds):
+        raise EoN.EoNError("initial infecteds and initial recovereds overlap")
     H = directed_percolate_network(G, tau, gamma)
+    for node in initial_recovereds:
+        H.remove_node(node)
     infected_nodes = _out_component_(H, initial_infecteds)
     return infected_nodes
 
