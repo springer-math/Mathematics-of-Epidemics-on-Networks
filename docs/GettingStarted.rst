@@ -52,14 +52,18 @@ The code here provides an example of creating a Barabasi-Albert network.  Then i
     t, S, I, R = EoN.SIR_homogeneous_pairwise_from_graph(G, tau, gamma, rho=rho, tmax = tmax)
     plt.plot(t, I, '-.', label = 'Homogeneous pairwise', linewidth = 5)
     
+    #meanfield models will generally overestimate SIR growth because they
+    #treat partnerships as constantly changing.
     t, S, I, R = EoN.SIR_heterogeneous_meanfield_from_graph(G, tau, gamma, rho=rho, tmax=tmax)
     plt.plot(t, I, ':', label = 'Heterogeneous meanfield', linewidth = 5)
     
+    #The EBCM model does not account for degree correlations or clustering
     t, S, I, R = EoN.EBCM_from_graph(G, tau, gamma, rho=rho, tmax = tmax)
     plt.plot(t, I, '--', label = 'EBCM approximation', linewidth = 5)
     
+    #the preferential mixing model captures degree correlations.
     t, S, I, R = EoN.EBCM_pref_mix_from_graph(G, tau, gamma, rho=rho, tmax=tmax)
-    plt.plot(t, I, label = 'Pref mix EBCM', linewidth=5, dashes=[8, 4, 2, 4, 2, 4])
+    plt.plot(t, I, label = 'Pref mix EBCM', linewidth=5, dashes=[4, 2, 1, 2, 1, 2])
     
     plt.legend(loc = 'upper right')
     plt.savefig('SIR_BA_model_vs_sim.pdf')
