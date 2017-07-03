@@ -2800,6 +2800,14 @@ def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = Non
         rho = 0.02
         t, S, I = EoN.SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, rho, tmax = 20)
     
+    :WARNING:
+        
+    ::
+    
+        This can have segmentation faults if there are too many degrees in the
+        graph.  This appears to happen because of trouble in numpy, and I have
+        not been able to find a way around it.
+    
     '''
     
     Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds = initial_infecteds,
@@ -2823,6 +2831,16 @@ def SIR_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None,
                                             return_full_data=False):
     r'''Calls SIR_heterogeneous_pairwise after calculating Sk0, Ik0, Rk0, SkSl0, SkIl0
     from a graph G and initial fraction infected rho. 
+    
+        
+    :WARNING:
+        
+    ::
+    
+        This can have segmentation faults if there are too many degrees in the
+        graph.  This appears to happen because of trouble in numpy, and I have
+        not been able to find a way around it.
+
     '''
     
     Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, 
@@ -3625,7 +3643,17 @@ def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
                                     
 
     r'''Calls SIS_effective_degree after calculating Ssi0, Isi0 from
-    the graph G and initialf fraction infected rho'''
+    the graph G and initialf fraction infected rho.
+    
+        
+    :WARNING:
+        
+    ::
+    
+        This can have segmentation faults if there are too many degrees in the
+        graph.  This appears to happen because of trouble in numpy, and I have
+        not been able to find a way around it.
+'''
 
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
@@ -3652,15 +3680,23 @@ def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])       
         for s in range(maxk+1):
             for i in range(maxk+1-s):
-                S_si0[s,i] = (1-rho)*Nk[s+i] * scipy.special.binom(s+i,i) \
+                binomial_result = scipy.special.biom(s+i,i)
+                if binomial_result < float('Inf'):
+                    #sometimes sp.special.binom() returns 'inf', this tries to avoid those cases
+                    S_si0[s,i] = (1-rho)*Nk[s+i] * binomial_result \
                                 * (rho**i) * (1-rho)**s
-                I_si0[s,i] = rho*Nk[s+i] * scipy.special.binom(s+i,i) \
+                    I_si0[s,i] = rho*Nk[s+i] * binomial_result \
                                 * (rho**i) * (1-rho)**s
+                else:
+                    #implicitly assuming that those cases where it return 'Inf'
+                    #have rho**i *(1-rho)**s is small enough to make this
+                    #effectively 0.
+                    S_si0[s,i] = 0
+                    I_si0[s,i] = 0
 
     return SIS_effective_degree(S_si0, I_si0, tau, gamma, tmin = tmin, 
                                 tmax=tmax, tcount=tcount, 
                                 return_full_data=return_full_data)
-
 
 def SIR_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
                                     initial_recovereds = None, rho = None, 
@@ -3668,7 +3704,17 @@ def SIR_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
                                     tmax=100, tcount=1001, 
                                     return_full_data=False):
     r'''Calls SIR_effective_degree after calculating S_si0, I0, R0 from the
-    graph G and initial fraction infected rho'''
+    graph G and initial fraction infected rho
+    
+        
+    :WARNING:
+        
+    ::
+    
+        This can have segmentation faults if there are too many degrees in the
+        graph.  This appears to happen because of trouble in numpy, and I have
+        not been able to find a way around it.
+'''
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
     if rho is not None and initial_recovereds is not None:
@@ -3698,8 +3744,17 @@ def SIR_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])       
         for s in range(maxk+1):
             for i in range(maxk+1-s):
-                S_si0[s,i] = (1-rho)*Nk[s+i] * scipy.special.binom(s+i,i) \
+                binomial_result = scipy.special.binom(s+i,i) 
+                if binomial_result < float('Inf'):
+                    S_si0[s,i] = (1-rho)*Nk[s+i] * binomial_result \
                                 * (rho**i) * (1-rho)**s
+                else:
+                    #implicitly assuming that those cases where it return 'Inf'
+                    #have rho**i *(1-rho)**s is small enough to make this
+                    #effectively 0.
+                    S_si0[s,i] = 0
+
+
         I0 = rho*sum(Nk)
         R0=0
 

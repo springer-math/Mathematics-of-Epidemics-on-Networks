@@ -1,6 +1,7 @@
 import networkx as nx
 import EoN
 import scipy
+import matplotlib.pyplot as plt
 
 def subsample(report_times, times, status1, status2=None, 
                 status3 = None):
@@ -179,9 +180,10 @@ def get_time_shift(times, L, threshold):
 
 
 def visualize(G, plot_times, node_history, pos = None, 
-                SIR = True, filetype = 'png', filenamebase = 'tmp', 
+                filetype = 'png', filenamebase = 'tmp', 
                 colorS = '#009a80', colorI = '#ff2020', 
-                colorR = 'gray', show_edges = True, plot_args = ()):
+                colorR = 'gray', show_edges = True, highlightSI = False,
+                plot_args = ()):
     r''' 
     Creates a set of plots showing statuses of nodes at different times.  By 
     default, the plot for t = 1.3 would be put into "tmp1p3.png"
@@ -227,6 +229,9 @@ def visualize(G, plot_times, node_history, pos = None,
         show_edges : Boolean, default True
             whether the edges should be plotted
             
+        highlight_SI : Boolean, default False
+            whether the SI edges should be plotted in a different color.
+            
         plot_args : tuple, default ()
             arguments to be passed to the networkx drawing commands
             draw_networkx_nodes and draw_networkx_edges.
@@ -244,12 +249,12 @@ def visualize(G, plot_times, node_history, pos = None,
         plot_times = scipy.linspace(0,10,101) #0, 0.1, 0.2, ..., 10
         
         #let's create 101 figures for an SIS epidemic
-        times, S, I, inf_times, rec_times = EoN.fast_SIS(G, 1., 1., return_full_data=True)
-        EoN.visualize(G, plot_times, inf_times, rec_times, filenamebase = 'tmpSIS', SIR = False)
+        times, S, I, node_history = EoN.fast_SIS(G, 1., 1., return_full_data=True)
+        EoN.visualize(G, plot_times, node_history, filenamebase = 'tmpSIS')
         
         #let's create 101 figures for an SIR epidemic
-        times, S, I, R, inf_time, rec_time = EoN.fast_SIR(G, 1., 1., return_full_data=True)
-        EoN.visualize(G, plot_times, inf_time, filenamebase = 'tmpSIR', rec_time)
+        times, S, I, R, node_history = EoN.fast_SIR(G, 1., 1., return_full_data=True)
+        EoN.visualize(G, plot_times, node_history, filenamebase = 'tmpSIR')
         
     '''
     
@@ -281,6 +286,12 @@ def visualize(G, plot_times, node_history, pos = None,
         nx.draw_networkx_nodes(G, pos = pos, node_color = colorI, nodelist = list(I), *plot_args)            
         nx.draw_networkx_nodes(G, pos = pos, node_color = colorR, nodelist = list(R), *plot_args)
         if show_edges:
-            nx.draw_networkx_edges(G, pos, *plot_args)
+            if not highlightSI:
+                nx.draw_networkx_edges(G, pos, *plot_args)
+            else:
+                SIedges = {(u,v) for u, v in G.edges() if (u in S and v in I) or (u in I and v in S)}
+                nonSIedges = {edge for edge in G.edges() if edge not in SIedges}
+                nx.draw_networkx_edges(G, pos, edgelist = list(SIedges), edge_color = colorI)
+                nx.draw_networkx_edges(G, pos, edgelist = list(nonSIedges))
         plt.savefig(filenamebase+str(time).replace('.', 'p')+'.'+filetype)
                 
