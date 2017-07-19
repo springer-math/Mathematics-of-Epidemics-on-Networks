@@ -1653,6 +1653,125 @@ def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100,
     R = N-S-I
     return times, S, I, R
 
+def SIS_homogeneous_meanfield_from_graph(G, tau, gamma, 
+                                        initial_infecteds=None, rho = None, 
+                                        tmin = 0, tmax=100, tcount=1001, 
+                                        return_full_data=False):
+    r'''
+    Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, SI0, SS0, n, 
+    based on the graph G and initial fraction infected rho.
+
+    Arguments:
+
+        G : networkx Graph
+        tau : number
+            transmission rate
+        gamma : number
+            recovery rate
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
+        tmin : number (default 0)
+            minimum report time
+        tmax : number (default 100)
+            maximum report time 
+        tcount : integer (default 1001)
+            number of reports
+        return_full_data : boolean (default False)
+            tells whether to just return times, S, I, R or all calculated data.
+            if True, then returns times, S, I, R, SI, SS
+    Returns:
+        :
+        if return_full_data is True:
+            t, S, I, SI, SS, II
+        if return_full_data is False:
+            t, S, I
+'''
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    kave = G.size()*2.0/G.order()
+    if initial_infecteds is not None:
+        I0 = len(initial_infecteds)
+    elif rho is not None:
+        I0 = rho*G.order()
+    else:
+        I0 = 1.
+    S0 = G.order()-I0
+    return SIS_homogeneous_meanfield(S0, I0, kave, tau, gamma, tmin=tmin, tmax=tmax, 
+                                tcount=tcount, return_full_data = return_full_data)
+
+def SIR_homogeneous_meanfield_from_graph(G, tau, gamma, initial_infecteds=None, 
+                                    initial_recovereds = None, rho = None, 
+                                    tmin = 0, tmax=100,
+                                    tcount=1001, return_full_data=False):
+    r'''
+    Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, SI0, SS0, n, 
+    based on the graph G and initial fraction infected rho.
+
+    Arguments:
+
+        G : networkx Graph
+        tau : number
+            transmission rate
+        gamma : number
+            recovery rate
+        initial_infecteds: node or iterable of nodes (default None)
+            if a single node, then this node is initially infected
+            if an iterable, then whole set is initially infected
+            if None, then choose randomly based on rho.  If rho is also
+            None, a random single node is chosen.
+            If both initial_infecteds and rho are assigned, then there
+            is an error.       
+        initial_recovereds: iterable of nodes (default None)
+            this whole collection is made recovered.
+            Currently there is no test for consistency with initial_infecteds.
+            Understood that everyone who isn't infected or recovered initially
+            is initially susceptible.
+        rho : number between 0 and 1  (default None)
+            the fraction to be randomly infected at time 0
+            If None, then rho=1/N is used where N = G.order()
+        tmin : number (default 0)
+            minimum report time
+        tmax : number (default 100)
+            maximum report time 
+        tcount : integer (default 1001)
+            number of reports
+        return_full_data : boolean (default False)
+            tells whether to just return times, S, I, R or all calculated data.
+            if True, then returns times, S, I, R, SI, SS
+    Returns:
+        :
+        if return_full_data is True:
+            t, S, I, SI, SS, II
+        if return_full_data is False:
+            t, S, I
+'''
+    if rho is not None and initial_infecteds is not None:
+        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rho is not None and initial_recovereds is not None:
+        raise EoN.EoNError("cannot define both initial_recovereds and rho")
+    kave = G.size()*2.0/G.order()
+    if initial_infecteds is not None:
+        I0 = len(initial_infecteds)
+        if initial_recovereds is None:
+            initial_recovereds = []
+    elif rho is not None:
+        I0 = rho*G.order()
+    else:
+        I0 = 1.
+    R0 = len(initial_recovereds)
+        
+    S0 = G.order()-I0 - R0
+    return SIR_homogeneous_meanfield(S0, I0, R0, kave, tau, gamma, tmin=tmin, tmax=tmax, 
+                                tcount=tcount, return_full_data = return_full_data)
+
 
 ####   HOMOGENEOUS PAIRWISE
 

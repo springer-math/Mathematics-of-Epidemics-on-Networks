@@ -183,7 +183,7 @@ def visualize(G, plot_times, node_history, pos = None,
                 filetype = 'png', filenamebase = 'tmp', 
                 colorS = '#009a80', colorI = '#ff2020', 
                 colorR = 'gray', show_edges = True, highlightSI = False,
-                plot_args = ()):
+                plot_args = (), number_by_time = False):
     r''' 
     Creates a set of plots showing statuses of nodes at different times.  By 
     default, the plot for t = 1.3 would be put into "tmp1p3.png"
@@ -236,6 +236,9 @@ def visualize(G, plot_times, node_history, pos = None,
             arguments to be passed to the networkx drawing commands
             draw_networkx_nodes and draw_networkx_edges.
          
+        number_by_time : Boolean
+            if True, then the filename gets the actual calculated time.  Else
+            it is numbered sequentially.
          
     :SAMPLE USE:
 
@@ -262,7 +265,7 @@ def visualize(G, plot_times, node_history, pos = None,
         pos = nx.spring_layout(G)
 
         
-    for time in plot_times:
+    for index, time in enumerate(plot_times):
         plt.clf()
         S = set()
         I = set()
@@ -282,16 +285,19 @@ def visualize(G, plot_times, node_history, pos = None,
                 else:  #won't happen in SIS case
                     R.add(node)    
 
-        nx.draw_networkx_nodes(G, pos = pos, node_color = colorS, nodelist = list(S), *plot_args)            
-        nx.draw_networkx_nodes(G, pos = pos, node_color = colorI, nodelist = list(I), *plot_args)            
-        nx.draw_networkx_nodes(G, pos = pos, node_color = colorR, nodelist = list(R), *plot_args)
+        nx.draw(G, pos = pos, node_color = colorS, nodelist = list(S), edgelist = [], *plot_args)            
+        nx.draw(G, pos = pos, node_color = colorI, nodelist = list(I), edgelist = [], *plot_args)            
+        nx.draw(G, pos = pos, node_color = colorR, nodelist = list(R), edgelist = [], *plot_args)
         if show_edges:
             if not highlightSI:
-                nx.draw_networkx_edges(G, pos, *plot_args)
+                nx.draw(G, pos, nodelist=[], edgelist = G.edges(), *plot_args)
             else:
                 SIedges = {(u,v) for u, v in G.edges() if (u in S and v in I) or (u in I and v in S)}
                 nonSIedges = {edge for edge in G.edges() if edge not in SIedges}
-                nx.draw_networkx_edges(G, pos, edgelist = list(SIedges), edge_color = colorI)
-                nx.draw_networkx_edges(G, pos, edgelist = list(nonSIedges))
-        plt.savefig(filenamebase+str(time).replace('.', 'p')+'.'+filetype)
+                nx.draw(G, pos, nodelist = [], edgelist = list(SIedges), edge_color = colorI)
+                nx.draw(G, pos, nodelist = [], edgelist = list(nonSIedges))
+        if number_by_time:
+            plt.savefig(filenamebase+str(time).replace('.', 'p')+'.'+filetype, bbox_inches='tight')
+        else:
+            plt.savefig(filenamebase+str(index).replace('.', 'p')+'.'+filetype, bbox_inches='tight')
                 
