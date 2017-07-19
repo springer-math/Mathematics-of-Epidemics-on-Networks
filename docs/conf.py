@@ -59,7 +59,7 @@ author = u'Joel Miller, Istvan Kiss, Peter Simon'
 # built documents.
 #
 # The short X.Y version.
-version = u'0.97.2rc2'
+version = u'0.97.2'
 # The full version, including alpha/beta/rc tags.
 release = u'0.97.2rc2' 
 
