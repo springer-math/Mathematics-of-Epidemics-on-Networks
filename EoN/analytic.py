@@ -1543,7 +1543,8 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
        
        [\dot{I}] = \tau n[S][I]/N - \gamma [I]
 
-
+    This is the SIS version of the "Kermack-McKendrick equations".
+    
     Arguments:
 
         S0 : number
@@ -1597,6 +1598,8 @@ def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100,
 
     In the text this is often referred to as the 
     "mean-field model closed at the level of pairs"
+    
+    These are often referred to as the "Kermack-McKendrick equations"
 
     [\dot{S}] = - tau n[S][I]/N
     [\dot{I}] = \tau n[S][I]/N - \gamma [I]
@@ -1658,7 +1661,7 @@ def SIS_homogeneous_meanfield_from_graph(G, tau, gamma,
                                         tmin = 0, tmax=100, tcount=1001, 
                                         return_full_data=False):
     r'''
-    Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, SI0, SS0, n, 
+    Calls SIR_homogeneous_pairwise after calculating S0, I0, & n, 
     based on the graph G and initial fraction infected rho.
 
     Arguments:
@@ -1712,7 +1715,7 @@ def SIR_homogeneous_meanfield_from_graph(G, tau, gamma, initial_infecteds=None,
                                     tmin = 0, tmax=100,
                                     tcount=1001, return_full_data=False):
     r'''
-    Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, SI0, SS0, n, 
+    Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, & n, 
     based on the graph G and initial fraction infected rho.
 
     Arguments:
@@ -2198,6 +2201,9 @@ def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100,
     In the text this is often referred to as the 
     "heterogeneous mean-field model closed at the level of pairs"
 
+    This is also called Degree-baded Mean Field or Mean Field Social 
+    Heterogeneity
+    
     a few notes on the inputs:
     Sk0 is an array (or a list). 
     
@@ -2290,6 +2296,9 @@ def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100,
     In the text this is often referred to as the 
     "heterogeneous mean-field model closed at the level of pairs"
 
+    This is also called Degree-baded Mean Field or Mean Field Social 
+    Heterogeneity
+    
     Ik0 and Rk0 are similar to Sk0.
 
     [S_k] = [S_k](0) theta^k
