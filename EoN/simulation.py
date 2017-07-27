@@ -26,17 +26,29 @@ class myQueue(object):
     r'''
     This class is used to store and act on a priority queue of events
     for event-driven simulations.
+
+    Each queue is given a tmax (default is infinity) so that any event at later time is ignored.
     
-    This is a priority queue of 2-tuples of the form (t, event)
-    because the popping and pushing are much faster with a tuple whose first 
-    entry is time than if it has to go through the __lt__ of an Event
-    class.
+    This is a priority queue of 4-tuples of the form (t, counter, function, function_arguments)
+
+    The 'counter' is present just to break ties, which generally only occur when multiple events
+    are put in place for the initial condition.
+
+    note that the function is understood to have its first argument be t, and the tuple
+    function_arguments does not include this first t.
+
+    So function is called as function(t, *function_arguments)
+
+    Previously I used a class of events, but sorting using the __lt__ function I wrote was
+    significantly slower than simply using tuples.
     '''
     def __init__(self, tmax=float("Inf")):
         self._Q_ = []
         self.tmax=tmax
         self.counter = 0 #tie-breaker for putting things in priority queue
     def add(self, time, function, args = ()):
+        r'''time is the time of the event.  args are the arguments of the
+        function not including the first argument which must be time'''
         if time<self.tmax:   
             heapq.heappush(self._Q_, (time, self.counter, function, args))
             self.counter += 1
@@ -45,7 +57,8 @@ class myQueue(object):
         function(t, *args)
     def __len__(self): #this will allow for something like "while Q:" 
         return len(self._Q_)
-
+        
+        
 class _ListDict_(object):
     r'''
     The Gillespie algorithm with rejection-sampling will involve a step 
