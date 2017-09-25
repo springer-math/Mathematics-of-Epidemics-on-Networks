@@ -36,8 +36,6 @@ If you believe you have found an error:
 
 - In the displayed equation for example 6.3 \xi should be \zeta
 
-- In citations of second paragraph of sxn 6.7 reference 12 occurs twice
-
 ## Chapter 7
 
 - On page 255, the last paragraph of the introduction should note that the (PW) model is system (5.15), the ED model is system (5.38) and the EBCM model is system (6.12).
