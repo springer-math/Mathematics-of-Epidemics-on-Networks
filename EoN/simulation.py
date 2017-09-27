@@ -571,7 +571,7 @@ def percolate_network(G, p):
 
     H = nx.Graph()
     H.add_nodes_from(G.nodes())
-    for edge in G.edges_iter():
+    for edge in G.edges():
         if random.random()<p:
             H.add_edge(*edge)
     return H
@@ -742,11 +742,6 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     r'''From figure 6.13 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.  
     
-    This adds node and edge attributes in the percolated network which 
-    are not at present in the figure in the book.  
-    
-    This option is discussed in the text.
-    
     This performs directed percolation corresponding to an SIR epidemic
     assuming that transmission is at rate tau and recovery at rate 
     gamma
@@ -799,12 +794,18 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     #simply calls directed_percolate_network_with_timing, using markovian rules.
     
     def trans_time_fxn(u, v, tau):
-        return random.expovariate(tau)
+        if tau>0:
+            return random.expovariate(tau)
+        else:
+            return float('Inf')
     trans_time_args = (tau,)
     
-    def rec_time_fxn(u, rate):
-        return random.expovariate(gamma)
-    rec_time_args = (gamma)
+    def rec_time_fxn(u, gamma):
+        if gamma>0:
+            return random.expovariate(gamma)
+        else:
+            return float('Inf')
+    rec_time_args = (gamma,)
     
     return nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, 
                                                             rec_time_fxn, 
@@ -1142,12 +1143,11 @@ def nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, rec_time
                                             weights=True):
     r'''
     
-    Creates a directed percolated network as described in chapter 6, and
-    as created for more complex scenarios in 
-    nonMarkov_directed_percolate_network
-    but it is built by assigning each node an infection duration and then each 
-    edge (in each direction) a delay until transmission.  If delay<duration
-    it adds directed edge to H.  
+    A generalization of figure 6.13 of Kiss, Miller & Simon
+    
+    The returned graph is built by assigning each node an infection duration 
+    and then each edge (in each direction) a delay until transmission.  
+    If   delay<duration  it adds directed edge to H.  
     
     if weights is True, then returned graph contains the duration and delays
     as weights.  Else it's just a directed graph.
@@ -1170,7 +1170,9 @@ def nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, rec_time
             any additional arguments required by rec_time_fxn
         weights : boolean
             if true, then return network with these weights.
-            
+    Note:
+        if delay == duration, we assume infection happens.
+          
     :SEE ALSO:
         -directed_percolate_network
         if it's just a constant transmission and recovery rate.
@@ -1187,16 +1189,16 @@ def nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, rec_time
             duration = rec_time_fxn(u, *rec_time_args)
             H.add_node(u, duration = duration)
             for v in G.neighbors(u):
-                delay = trans_time_fxn(u, v, trans_time_args)
-                if delay<duration:
+                delay = trans_time_fxn(u, v, *trans_time_args)
+                if delay<=duration:
                     H.add_edge(u,v, delay_to_infection = delay)
     else:
         for u in G.nodes():
             duration = rec_time_fxn(u, *rec_time_args)
             H.add_node(u)
             for v in G.neighbors(u):
-                delay = trans_time_fxn(u, v, trans_time_args)
-                if delay<duration:
+                delay = trans_time_fxn(u, v, *trans_time_args)
+                if delay<=duration:
                     H.add_edge(u,v)
     return H
 
@@ -1205,8 +1207,9 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
     From figure 6.18 of Kiss, Miller, & Simon.  
     Please cite the book if using this algorithm.
     
-    NOTE --- You probablty DON'T REALLY WANT TO USE THIS.
-    Check if nonMarkov_directed_percolate_with_timing fits your needs better.
+    Note:
+        You probably DON'T REALLY WANT TO USE THIS.
+        Check if nonMarkov_directed_percolate_with_timing fits your needs better.
 
     xi and zeta are dictionaries of whatever data is needed so that 
     xi[u] and zeta[v] 
@@ -1337,22 +1340,16 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status,
         
         suscep_neighbors = [v for v in G.neighbors(node) if status[v]=='S']
 
-        
-        #trans_delay, rec_delay = _find_trans_and_rec_delays(node, suscep_neighbors,
-        #                                                trans_time_fxn,
-        #                                                rec_time_fxn,
-        #                                                trans_time_args,
-        #                                                rec_time_args)
         trans_delay, rec_delay = trans_and_rec_time_fxn(node, suscep_neighbors,
                                                 *trans_and_rec_time_args)
                                 
         rec_time[node] = time + rec_delay
-        if rec_time[node]<Q.tmax:
+        if rec_time[node]<=Q.tmax:
             Q.add(rec_time[node], _process_rec_SIR_, 
                             args = (node, times, S, I, R, status))
         for v in trans_delay:
             inf_time = time + trans_delay[v]
-            if inf_time< rec_time[node] and inf_time < pred_inf_time[v] and inf_time<Q.tmax:
+            if inf_time<= rec_time[node] and inf_time < pred_inf_time[v] and inf_time<=Q.tmax:
                 Q.add(inf_time, _process_trans_SIR_, 
                               args = (G, v, times, S, I, R, Q, 
                                         status, rec_time, pred_inf_time, 

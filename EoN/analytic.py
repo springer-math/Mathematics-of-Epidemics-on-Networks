@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from scipy import integrate
 from scipy.ndimage.interpolation import shift
 import scipy
@@ -9,7 +10,7 @@ from collections import defaultdict, Counter
 #                     #
 #   Auxiliary stuff   #
 #                     #
-#######################
+#######################ƒ
 
 
 
@@ -147,7 +148,7 @@ def get_Nk_and_IC_as_arrays(G, initial_infecteds = None, initial_recovereds = No
     if SIR is False and initial_recovereds is not None:
         raise EoN.EoNError("cannot define initial_recovereds for SIS")
         
-    Nk = Counter(G.degree().values())
+    Nk = Counter(dict(G.degree()).values())
     maxk = max(Nk.keys())
     Nk = scipy.array([Nk[k] for k in range(maxk+1)])
     
@@ -242,10 +243,10 @@ def get_NkNl_and_IC_as_arrays(G, initial_infecteds=None, initial_recovereds = No
         raise EoN.EoNError("cannot define both initial_recovereds and rho")
 
     if withKs:
-        Ks = sorted(list(set(G.degree().values())))
+        Ks = sorted(list(set(dict(G.degree()).values())))
         klength = len(Ks)
     else:
-        klength = max(G.degree().values())+1
+        klength = max(dict(G.degree()).values())+1
     NkNl = scipy.zeros(shape=(klength,klength))
     NkNl = scipy.zeros(shape=(klength,klength))
     NkNl = scipy.zeros(shape=(klength,klength))
@@ -307,7 +308,7 @@ def get_Pk(G):
             Pk[k] is the proportion of nodes with degree k.
     '''
 
-    Nk = Counter(G.degree().values())
+    Nk = Counter(dict(G.degree()).values())
     Pk = {x:Nk[x]/float(G.order()) for x in Nk.keys()}
     return Pk
 
@@ -383,8 +384,8 @@ def get_Pnk(G):
             Pnk[k1][k2] is the proportion of neighbors of degree k1 nodes 
             that have degree k2.
     '''
-    Pnk = {k1:defaultdict(int)  for k1 in G.degree().values()}
-    Nk = Counter(G.degree().values())
+    Pnk = {k1:defaultdict(int)  for k1 in dict(G.degree()).values()}
+    Nk = Counter(dict(G.degree()).values())
 
     for node in G.nodes():
         k1 = G.degree(node)
@@ -3194,7 +3195,7 @@ def SIS_compact_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, rho =
     if initial_infecteds is not None:
         SS0, SI0, II0 = _count_edge_types_(G, initial_infecteds, SIR=False)   
     else:
-        maxk = max(G.degree().values())
+        maxk = max(dict(G.degree()).values())
         SS0 = sum(Nk[k]*k*(1-rho)*(1-rho) for k in range(maxk+1))
         SI0 = sum(Nk[k]*k*(1-rho)*rho for k in range(maxk+1))
         II0 = sum(Nk[k]*k*rho*rho for k in range(maxk+1))
@@ -3786,7 +3787,7 @@ def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    Nk = Counter(G.degree().values())
+    Nk = Counter(dict(G.degree()).values())
     maxk = max(Nk.keys())
     
 
@@ -3808,7 +3809,7 @@ def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])       
         for s in range(maxk+1):
             for i in range(maxk+1-s):
-                binomial_result = scipy.special.biom(s+i,i)
+                binomial_result = scipy.special.binom(s+i,i)
                 if binomial_result < float('Inf'):
                     #sometimes sp.special.binom() returns 'inf', this tries to avoid those cases
                     S_si0[s,i] = (1-rho)*Nk[s+i] * binomial_result \
@@ -3849,7 +3850,7 @@ def SIR_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
         raise EoN.EoNError("cannot define both initial_recovereds and rho")
     
 
-    Nk = Counter(G.degree().values())
+    Nk = Counter(dict(G.degree()).values())
     maxk = max(Nk.keys())
     S_si0 = scipy.zeros((maxk+1,maxk+1))
     I0 = 0
@@ -4030,7 +4031,7 @@ def SIR_compact_effective_degree_from_graph(G, tau, gamma, initial_infecteds=Non
     
     
     if initial_infecteds is not None:
-        Nk = Counter(G.degree().values())
+        Nk = Counter(dict(G.degree()).values())
         maxk = max(Nk.keys())
         Skappa0 = scipy.zeros(maxk+1)
         I0=0
@@ -4051,7 +4052,7 @@ def SIR_compact_effective_degree_from_graph(G, tau, gamma, initial_infecteds=Non
     else:
         if rho is None:
             rho = 1./G.order()
-        Nk = Counter(G.degree().values())
+        Nk = Counter(dict(G.degree()).values())
         maxk = max(Nk.keys())
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])
         Skappa0 = Nk*(1-rho)  #Skappa0 = Sk0
@@ -4280,7 +4281,7 @@ def Attack_rate_discrete_from_graph(G, p, initial_infecteds=None,
     if initial_infecteds is not None:
         status = _initialize_node_status_(G, initial_infecteds, 
                                     initial_recovereds = initial_recovereds)
-        Nk = Counter(G.degree().values())
+        Nk = Counter(dict(G.degree()).values())
         maxk = max(Nk.keys())
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])
         SS=0
@@ -4402,7 +4403,7 @@ def Attack_rate_cts_time_from_graph(G,  tau, gamma, initial_infecteds=None,
     if initial_infecteds is not None:
         status = _initialize_node_status_(G, initial_infecteds, 
                                     initial_recovereds = initial_recovereds)
-        Nk = Counter(G.degree().values())
+        Nk = Counter(dict(G.degree()).values())
         maxk = max(Nk.keys())
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])
         SS=0
@@ -4581,7 +4582,7 @@ def EBCM_discrete_from_graph(G, p, initial_infecteds=None,
     if initial_infecteds is not None:
         status = _initialize_node_status_(G, initial_infecteds, 
                                     initial_recovereds = initial_recovereds)
-        Nk = Counter(G.degree().values())
+        Nk = Counter(dict(G.degree()).values())
         maxk = max(Nk.keys())
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])
         Sk0 = 0*Nk
@@ -4762,7 +4763,7 @@ def EBCM_from_graph(G, tau, gamma, initial_infecteds=None,
     if initial_infecteds is not None:
         status = _initialize_node_status_(G, initial_infecteds, 
                                     initial_recovereds = initial_recovereds)
-        Nk = Counter(G.degree().values())
+        Nk = Counter(dict(G.degree()).values())
         maxk = max(Nk.keys())
         Nk = scipy.array([Nk[k] for k in range(maxk+1)])
         SS=0
@@ -4942,9 +4943,9 @@ def EBCM_pref_mix(N, Pk, Pnk, tau, gamma, rho = None, tmin = 0, tmax = 100, tcou
 
 def EBCM_pref_mix_from_graph(G, tau, gamma, rho = None, tmin = 0, tmax = 100, tcount = 1001, return_full_data=False):
     r'''
-    Encodes the system derived in exercise 6.21 of Kiss, Miller, & Simon.  Please cite the
-    book if using this algorithm.
-
+    Takes a given graph, finds degree correlations, and calls EBCM_pref_mix
+    
+    
     I anticipate eventually adding an option so that the initial condition is
     not uniformly distributed.  So could give rho_k
     
@@ -5058,6 +5059,8 @@ def EBCM_pref_mix_discrete(N, Pk, Pnk, p, rho = None, tmin = 0, tmax = 100, retu
 def EBCM_pref_mix_discrete_from_graph(G, p, rho = None, tmin = 0, tmax = 100, return_full_data=False):
     
     '''
+    Takes a given graph, finds degree correlations, and calls EBCM_pref_mix_discrete
+    
     Sample Use:
         ::
         

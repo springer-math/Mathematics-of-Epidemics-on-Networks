@@ -54,6 +54,7 @@ Quick list
    discrete_SIR_epidemic
    percolate_network
    directed_percolate_network
+   nonMarkov_directed_percolate_network_with_timing
    nonMarkov_directed_percolate_network
    estimate_SIR_prob_size
    estimate_SIR_prob_size_from_dir_perc
@@ -106,8 +107,9 @@ Short descriptions
     
   - **percolate_network** (undirected percolation corresponding to fixed transmission probability)
   - **directed_percolate_network** (directed percolation corresponding to constant transmission and recovery rates)
+  - **nonMarkov_directed_percolate_network_with_timing** (uses user-generated duration and transmission time distributions)
   - **nonMarkov_directed_percolate_network** (uses user-generated transmission rules)
-  - **estimate_SIR_prob_size**
+  - **estimate_SIR_prob_size** (estimates prob/size from an undirected percolated network - only appropriate if constant p)
   - **estimate_SIR_prob_size_from_dir_perc** (estimates epi prob and size from a given percolated network)
   - **estimate_directed_SIR_prob_size** (estimates based on constant transmission and recovery rates)
   - **estimate_nonMarkov_SIR_prob_size** (estimates based on user-generated transmission rules)
