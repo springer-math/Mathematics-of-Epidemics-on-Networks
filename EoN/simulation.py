@@ -150,6 +150,8 @@ def _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = Tru
 
 def _simple_test_transmission_(u, v, p):
     r'''
+    A simple test for whether u transmits to v assuming constant probability p
+    
     From figure 6.8 of Kiss, Miller, & Simon.  Please cite the book if 
     using this test_transmission function for basic_discrete_SIR_epidemic.
 
@@ -182,6 +184,8 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
                 return_full_data = False):
     #tested in test_discrete_SIR_epidemic
     r'''
+    Simulates an SIR epidemic on G in discrete time, allowing user-specified transmission rules
+    
     From figure 6.8 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
 
@@ -363,6 +367,8 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
                                 return_full_data = False):
     #tested in test_basic_discrete_SIR_epidemic   
     r'''
+    Performs simple discrete SIR simulation assuming constant transmission probability p.
+    
     From figure 6.8 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm.
 
@@ -537,7 +543,10 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
 def percolate_network(G, p):
     #tested indirectly in test_basic_discrete_SIR_epidemic   
 
-    r'''From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
+    r'''
+    Performs percolation on a network G with each edge persisting with probability p
+    
+    From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
 
     Performs bond percolation on the network G, keeping edges with 
@@ -577,7 +586,10 @@ def percolate_network(G, p):
     return H
 
 def _edge_exists_(u, v, H):
-    r'''From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
+    r'''
+    Tests if directed edge u, v exists in graph H.
+    
+    From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
 
     Tests whether H has an edge from u to v.
@@ -602,7 +614,10 @@ def percolation_based_discrete_SIR_epidemic(G, p,
                                             tmax = float('Inf'),
                                             return_full_data = False):
     #tested in test_basic_discrete_SIR_epidemic   
-    r'''From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
+    r'''
+    perfoms a simple SIR epidemic but using percolation as the underlying method.
+    
+    From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
 
     
@@ -610,10 +625,12 @@ def percolation_based_discrete_SIR_epidemic(G, p,
     independently to each neighbor and then recovering, but using a 
     percolation-based approach.  
     
-    See basic_discrete_SIR_epidemic which should produce equivalent 
+    Note:
+        You probably DON'T REALLY WANT TO USE THIS.
+        See basic_discrete_SIR_epidemic which should produce equivalent 
     outputs.  
     
-    That algorithm will be faster than this one.  
+        That algorithm will be faster than this one.  
     
     The value of this function is that by performing many simulations we 
     can see that the outputs of the two are equivalent.  
@@ -689,7 +706,10 @@ def percolation_based_discrete_SIR_epidemic(G, p,
 
 def estimate_SIR_prob_size(G, p):
     #tested in test_estimate_SIR_prob_size
-    r'''From figure 6.12 of Kiss, Miller, & Simon.  Please cite the
+    r'''
+    Uses percolation to estimate the probability and size of epidemics assuming constant transmission probability p
+    
+    From figure 6.12 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     Provies an estimate of epidemic probability and size assuming a 
@@ -739,7 +759,11 @@ def estimate_SIR_prob_size(G, p):
 
 def directed_percolate_network(G, tau, gamma, weights = True):
     #indirectly tested in test_estimate_SIR_prob_size
-    r'''From figure 6.13 of Kiss, Miller, & Simon.  Please cite the
+    r'''
+    performs directed percolation, assuming that transmission and recovery are Markovian
+    
+    
+    From figure 6.13 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.  
     
     This performs directed percolation corresponding to an SIR epidemic
@@ -808,8 +832,8 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     rec_time_args = (gamma,)
     
     return nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, 
-                                                            trans_time_args,
                                                             rec_time_fxn,  
+                                                            trans_time_args,
                                                             rec_time_args, 
                                                             weights=weights)
                 
@@ -904,14 +928,15 @@ def _in_component_(G, target):
 def get_infected_nodes(G, tau, gamma, initial_infecteds=None, 
                 initial_recovereds = None):
     r'''
+    Finds all eventually infected nodes in a simulation, through a percolation approach 
+    
     From figure 6.15 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm
 
-    Finds all eventually infected nodes in a simulation, assuming that 
+    Assumes that
     the intial infecteds are as given and transmission occurs with rate 
-    tau and recovery with rate gamma.  
+    tau and recovery with rate gamma.          
     
-    Uses a percolation-based approach.
 
     Note that the output of this algorithm is stochastic.
     
@@ -919,7 +944,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     There are much faster ways to implement an algorithm giving the same 
     output, for example by actually running an epidemic.
     
-    :Warning:
+    :WARNING:
     
     why are you using this command? If it's to better understand some
     concept, that's fine.  But this command IS NOT an efficient way to
@@ -988,11 +1013,12 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
 def estimate_directed_SIR_prob_size(G, tau, gamma):
     #tested in test_estimate_SIR_prob_size
     '''
+    Predicts probability and attack rate assuming continuous-time Markovian SIR disease on network G
+    
     From figure 6.17 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm
     
-    Predicts probability and attack rate assuming continuous-time 
-    Markovian SIR disease on network G
+    
     
     :SEE ALSO:
 
@@ -1033,6 +1059,8 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
 def estimate_SIR_prob_size_from_dir_perc(H):
     #indirectly tested in test_estimate_SIR_prob_size
     r'''
+    Estimates probability and size of SIR epidemics for an input network after directed percolation
+    
     From figure 6.17 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm
 
@@ -1073,12 +1101,11 @@ def estimate_SIR_prob_size_from_dir_perc(H):
  
 def estimate_nonMarkov_SIR_prob_size_with_timing(G, 
                                                 trans_time_fxn, 
-                                                trans_time_args=(),
                                                 rec_time_fxn, 
+                                                trans_time_args=(),
                                                 rec_time_args=()):
     '''
-    estimates probability and size assuming some input functions giving 
-    transmission and recovery times.
+    estimates probability and size for user-input transmission and recovery time functions.
     
        Arguments:
         G : Networkx Graph
@@ -1086,12 +1113,12 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
         trans_time_fxn : function
             trans_time_fxn(u, v, *trans_time_args) 
             returns the delay from u's infection to transmission to v.
-        trans_time_args : tuple
-            any additional arguments required by trans_time_fxn.  For example
-            weights of nodes.
         rec_time_fxn : function
             rec_time_fxn(u, *rec_time_args)
             returns the delay from u's infection to its recovery.
+        trans_time_args : tuple
+            any additional arguments required by trans_time_fxn.  For example
+            weights of nodes.
         rec_time_args : tuple
             any additional arguments required by rec_time_fxn
 
@@ -1133,8 +1160,8 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
         
         PE, AR = EoN.estimate_nonMarkov_SIR_prob_size(G, 
                                                     trans_time_fxn=trans_time_fxn,
-                                                    trans_time_args = (tau,),
                                                     rec_time_fxn = rec_time_fxn,
+                                                    trans_time_args = (tau,),
                                                     rec_time_args = (gamma,)
                                                     )
 
@@ -1142,17 +1169,17 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
     
     H = nonMarkov_directed_percolate_network_with_timing(G, 
                                                         trans_time_fxn,
-                                                        trans_time_args,
                                                         rec_time_fxn,
+                                                        trans_time_args,
                                                         rec_time_args)
     return estimate_SIR_prob_size_from_dir_perc(H)
     
     
 def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
     '''
-    This is not directly described in Kiss, Miller, & Simon.  It uses
-    nonMarkov_directed_percolate_network  (fig 6.18) to predict 
-    epidemic probability and size.
+    Predicts epidemic probability and size using nonMarkov_directed_percolate_network.
+    
+    This is not directly described in Kiss, Miller, & Simon, but is based on (fig 6.18).
     
     Note:
         You probably DON'T REALLY WANT TO USE THIS.
@@ -1221,9 +1248,9 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
         
 def nonMarkov_directed_percolate_network_with_timing(G, 
                                                     trans_time_fxn, 
-                                                    trans_time_args,
                                                     rec_time_fxn,
-                                                    rec_time_args, 
+                                                    trans_time_args=(),
+                                                    rec_time_args=(), 
                                                     weights=True):
     r'''
     
@@ -1244,12 +1271,12 @@ def nonMarkov_directed_percolate_network_with_timing(G,
         trans_time_fxn : function
             trans_time_fxn(u, v, *trans_time_args) 
             returns the delay from u's infection to transmission to v.
-        trans_time_args : tuple
-            any additional arguments required by trans_time_fxn.  For example
-            weights of nodes.
         rec_time_fxn : function
             rec_time_fxn(u, *rec_time_args)
             returns the delay from u's infection to its recovery.
+        trans_time_args : tuple
+            any additional arguments required by trans_time_fxn.  For example
+            weights of nodes.
         rec_time_args : tuple
             any additional arguments required by rec_time_fxn
         weights : boolean
@@ -1288,6 +1315,8 @@ def nonMarkov_directed_percolate_network_with_timing(G,
 
 def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
     r'''
+    performs directed percolation on a network following user-specified rules.
+    
     From figure 6.18 of Kiss, Miller, & Simon.  
     Please cite the book if using this algorithm.
     
@@ -1351,8 +1380,8 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
 
 
 def _find_trans_and_rec_delays_(node, sus_neighbors, trans_time_fxn, 
-                                     trans_time_args, rec_time_fxn, 
-                                    rec_time_args):
+                                    rec_time_fxn,  trans_time_args=(),
+                                    rec_time_args=()):
 
     rec_delay = rec_time_fxn(node, *rec_time_args)
     trans_delay={}
@@ -1494,11 +1523,14 @@ def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rat
 def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None, 
                 rho = None, tmin = 0, tmax=float('Inf'), transmission_weight = None, 
                 recovery_weight = None, return_full_data = False):
-    r'''From figure A.3 of Kiss, Miller, & Simon.  Please cite the
-    book if using this algorithm.
-
+    r'''
     fast SIR simulation assuming exponentially distributed infection and
     recovery times
+    
+    From figure A.3 of Kiss, Miller, & Simon.  Please cite the
+    book if using this algorithm.
+
+    
     
 
     Arguments:
@@ -1603,8 +1635,8 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         trans_time_args = (trans_rate_fxn,)
         rec_time_args = (rec_rate_fxn,)
         return fast_nonMarkov_SIR(G, trans_time_fxn = trans_time_fxn, 
-                        trans_time_args = trans_time_args, 
                         rec_time_fxn = rec_time_fxn,
+                        trans_time_args = trans_time_args, 
                         rec_time_args = rec_time_args, 
                         initial_infecteds = initial_infecteds, 
                         initial_recovereds = initial_recovereds, 
@@ -1630,10 +1662,10 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
 
 
 def fast_nonMarkov_SIR(G, trans_time_fxn=None,
-                        trans_time_args=(),  
                         rec_time_fxn=None,
-                        rec_time_args=(), 
                         trans_and_rec_time_fxn = None,
+                        trans_time_args=(),  
+                        rec_time_args=(), 
                         trans_and_rec_time_args = (),
                         initial_infecteds = None, 
                         initial_recovereds = None, 
@@ -1669,17 +1701,12 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             Called using the form
             trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)
 
-        trans_time_args : tuple
-            see trans_time_fxn
-        
         rec_time_fxn : a user-defined function that returns the delay until 
                        recovery for a node.  May depend on various arguments 
                        and need not be Markovian.  Returns float
             Called using the form
             rec_delay = rec_time_fxn(node, *rec_time_args)
 
-        rec_time_args : tuple
-            see rec_time_fxn
     
         trans_and_rec_time_fxn : a user-defined function that returns both 
                                  a dict giving delay until transmissions for 
@@ -1697,6 +1724,12 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             here trans_delay_dict is a dict whose keys are those neighbors
             who receive a transmission and rec_delay is a float.
             
+        trans_time_args : tuple
+            see trans_time_fxn
+        
+        rec_time_args : tuple
+            see rec_time_fxn
+
         trans_and_rec_time_args : tuple
             see trans_and_rec_tim_fxn
         
@@ -1804,8 +1837,8 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         
         t, S, I, R = EoN.fast_nonMarkov_SIR(G, 
                                 trans_time_fxn=trans_time_fxn, 
-                                trans_time_args=(tau,), 
                                 rec_time_fxn=rec_time_fxn,
+                                trans_time_args=(tau,), 
                                 rec_time_args=(D,),
                                 initial_infecteds = range(initial_inf_count))
         
@@ -2084,7 +2117,7 @@ def _process_rec_SIS_(time, node, times, recovery_times, S, I, status):
 def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100, 
                 transmission_weight = None, recovery_weight = None, 
                 return_full_data = False):
-    r'''Performs SIS simulations for epidemics on weighted or unweighted
+    r'''Fast SIS simulations for epidemics on weighted or unweighted
     networks, allowing edge and node weights to scale the transmission
     and recovery rates.  Assumes exponentially distributed times to recovery
     and to transmission.

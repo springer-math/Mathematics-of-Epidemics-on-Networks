@@ -58,7 +58,7 @@ Quick list
    estimate_SIR_prob_size
    estimate_SIR_prob_size_from_dir_perc
    estimate_directed_SIR_prob_size
-   estimate_nonMarkov_SIR_prob_size_from_timing
+   estimate_nonMarkov_SIR_prob_size_with_timing
    estimate_nonMarkov_SIR_prob_size
    get_infected_nodes
    percolation_based_discrete_SIR_epidemic
@@ -112,6 +112,7 @@ Short descriptions
   - **estimate_SIR_prob_size** (estimates prob/size from an undirected percolated network - only appropriate if constant p)
   - **estimate_SIR_prob_size_from_dir_perc** (estimates epi prob and size from a given percolated network)
   - **estimate_directed_SIR_prob_size** (estimates based on constant transmission and recovery rates)
+  - **estimate_nonMarkov_SIR_prob_size_with_timing** (estimates based on user-generated transmission and recovery time distributions)
   - **estimate_nonMarkov_SIR_prob_size** (estimates based on user-generated transmission rules)
   - **get_infected_nodes** (simulates epidemic and returns final infected nodes)
   - **percolation_based_discrete_SIR_epidemic**
