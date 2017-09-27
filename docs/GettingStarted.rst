@@ -176,6 +176,15 @@ The remainder of these simulations use reduced sizes or numbers of iterations co
 
 * :download:`figure 7.4 <../examples/fig7p4.py>` 
 
+For Chapter 9 (nonMarkovian) figures, we have not implemented code that solves 
+the dynamic equations but we do have code that will do the simulations.  These 
+are given here.
+
+* :download:`figure 9.2 <../examples/fig9p2.py>` 
+
+* :download:`figure 9.4 <../examples/fig9p4.py>` 
+
+* :download:`figure 9.5 <../examples/fig9p5.py>` 
 
 
 Additional Examples

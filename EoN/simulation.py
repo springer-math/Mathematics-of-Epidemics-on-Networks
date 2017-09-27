@@ -808,8 +808,8 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     rec_time_args = (gamma,)
     
     return nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, 
-                                                            rec_time_fxn, 
-                                                            trans_time_args, 
+                                                            trans_time_args,
+                                                            rec_time_fxn,  
                                                             rec_time_args, 
                                                             weights=weights)
                 
@@ -1071,11 +1071,92 @@ def estimate_SIR_prob_size_from_dir_perc(H):
     AR = len(outC)/N
     return PE, AR
  
+def estimate_nonMarkov_SIR_prob_size_with_timing(G, 
+                                                trans_time_fxn, 
+                                                trans_time_args=(),
+                                                rec_time_fxn, 
+                                                rec_time_args=()):
+    '''
+    estimates probability and size assuming some input functions giving 
+    transmission and recovery times.
+    
+       Arguments:
+        G : Networkx Graph
+            the input graph
+        trans_time_fxn : function
+            trans_time_fxn(u, v, *trans_time_args) 
+            returns the delay from u's infection to transmission to v.
+        trans_time_args : tuple
+            any additional arguments required by trans_time_fxn.  For example
+            weights of nodes.
+        rec_time_fxn : function
+            rec_time_fxn(u, *rec_time_args)
+            returns the delay from u's infection to its recovery.
+        rec_time_args : tuple
+            any additional arguments required by rec_time_fxn
+
+    Returns:
+        :
+        PE, AR  :  numbers (between 0 and 1)
+            Estimates of epidemic probability and attack rate found by 
+            finding largest strongly connected component and finding in/out 
+            components.
+        
+    :SAMPLE USE:
+
+
+    ::
+
+        #mimicking the standard version with transmission rate tau
+        #and recovery rate gamma
+        #equivalent to 
+        #PE, AR = EoN.estimate_SIR_prob_size(G, tau, gamma)
+    
+        import networkx as nx
+        import EoN
+        import random
+        from collections import defaultdict
+    
+        G=nx.fast_gnp_random_graph(1000,0.002)
+        
+        tau = 2
+        
+        gamma = 1
+    
+        def trans_time_fxn(u,v, tau):
+            
+            return random.expovariate(tau)
+            
+        def rec_time_fxn(u, gamma):
+            
+            return random.expovariate(gamma)
+        
+        PE, AR = EoN.estimate_nonMarkov_SIR_prob_size(G, 
+                                                    trans_time_fxn=trans_time_fxn,
+                                                    trans_time_args = (tau,),
+                                                    rec_time_fxn = rec_time_fxn,
+                                                    rec_time_args = (gamma,)
+                                                    )
+
+    '''
+    
+    H = nonMarkov_directed_percolate_network_with_timing(G, 
+                                                        trans_time_fxn,
+                                                        trans_time_args,
+                                                        rec_time_fxn,
+                                                        rec_time_args)
+    return estimate_SIR_prob_size_from_dir_perc(H)
+    
+    
 def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
     '''
     This is not directly described in Kiss, Miller, & Simon.  It uses
     nonMarkov_directed_percolate_network  (fig 6.18) to predict 
     epidemic probability and size.
+    
+    Note:
+        You probably DON'T REALLY WANT TO USE THIS.
+        Check if estimate_nonMarkov_prob_size_with_timing fits your needs better.
     
     Arguments:
 
@@ -1138,9 +1219,12 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
     H = nonMarkov_directed_percolate_network(G, xi, zeta, transmission)
     return estimate_SIR_prob_size_from_dir_perc(H)
         
-def nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, rec_time_fxn, 
-                                            trans_time_args, rec_time_args, 
-                                            weights=True):
+def nonMarkov_directed_percolate_network_with_timing(G, 
+                                                    trans_time_fxn, 
+                                                    trans_time_args,
+                                                    rec_time_fxn,
+                                                    rec_time_args, 
+                                                    weights=True):
     r'''
     
     A generalization of figure 6.13 of Kiss, Miller & Simon
@@ -1160,12 +1244,12 @@ def nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, rec_time
         trans_time_fxn : function
             trans_time_fxn(u, v, *trans_time_args) 
             returns the delay from u's infection to transmission to v.
-        rec_time_fxn : function
-            rec_time_fxn(u, *rec_time_args)
-            returns the delay from u's infection to its recovery.
         trans_time_args : tuple
             any additional arguments required by trans_time_fxn.  For example
             weights of nodes.
+        rec_time_fxn : function
+            rec_time_fxn(u, *rec_time_args)
+            returns the delay from u's infection to its recovery.
         rec_time_args : tuple
             any additional arguments required by rec_time_fxn
         weights : boolean
@@ -1267,7 +1351,7 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
 
 
 def _find_trans_and_rec_delays_(node, sus_neighbors, trans_time_fxn, 
-                                    rec_time_fxn, trans_time_args, 
+                                     trans_time_args, rec_time_fxn, 
                                     rec_time_args):
 
     rec_delay = rec_time_fxn(node, *rec_time_args)
@@ -1519,8 +1603,8 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         trans_time_args = (trans_rate_fxn,)
         rec_time_args = (rec_rate_fxn,)
         return fast_nonMarkov_SIR(G, trans_time_fxn = trans_time_fxn, 
-                        rec_time_fxn = rec_time_fxn,
                         trans_time_args = trans_time_args, 
+                        rec_time_fxn = rec_time_fxn,
                         rec_time_args = rec_time_args, 
                         initial_infecteds = initial_infecteds, 
                         initial_recovereds = initial_recovereds, 
@@ -1545,11 +1629,14 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
 
 
 
-def fast_nonMarkov_SIR(G, trans_time_fxn=None, rec_time_fxn=None,
+def fast_nonMarkov_SIR(G, trans_time_fxn=None,
+                        trans_time_args=(),  
+                        rec_time_fxn=None,
+                        rec_time_args=(), 
                         trans_and_rec_time_fxn = None,
-                        trans_time_args=(), rec_time_args=(), 
                         trans_and_rec_time_args = (),
-                        initial_infecteds = None, initial_recovereds = None, 
+                        initial_infecteds = None, 
+                        initial_recovereds = None, 
                         rho=None, tmin = 0, tmax = float('Inf'), 
                         return_full_data = False, Q=None):
     r'''
@@ -1581,12 +1668,18 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None, rec_time_fxn=None,
                          arguments and need not be Markovian.  Returns float
             Called using the form
             trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)
+
+        trans_time_args : tuple
+            see trans_time_fxn
         
         rec_time_fxn : a user-defined function that returns the delay until 
                        recovery for a node.  May depend on various arguments 
                        and need not be Markovian.  Returns float
             Called using the form
             rec_delay = rec_time_fxn(node, *rec_time_args)
+
+        rec_time_args : tuple
+            see rec_time_fxn
     
         trans_and_rec_time_fxn : a user-defined function that returns both 
                                  a dict giving delay until transmissions for 
@@ -1603,6 +1696,9 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None, rec_time_fxn=None,
                                                *trans_and_rec_time_args)
             here trans_delay_dict is a dict whose keys are those neighbors
             who receive a transmission and rec_delay is a float.
+            
+        trans_and_rec_time_args : tuple
+            see trans_and_rec_tim_fxn
         
         initial_infecteds: node or iterable of nodes
             if a single node, then this node is initially infected
@@ -1675,34 +1771,46 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None, rec_time_fxn=None,
 
                 
         import EoN
+        
         import networkx as nx
+        
         import matplotlib.pyplot as plt
+        
         import random
         
         N=1000000
+        
         G = nx.fast_gnp_random_graph(N, 5/(N-1.))
         
 
         
         #set up the code to handle constant transmission rate 
+        
         #with fixed recovery time.
         
         def trans_time_fxn(source, target, rate):
+        
             return random.expovariate(rate)
 
         def rec_time_fxn(node,D):
+        
             return D
         
         D = 5
+        
         tau = 0.3
+        
         initial_inf_count = 100
+        
         t, S, I, R = EoN.fast_nonMarkov_SIR(G, 
                                 trans_time_fxn=trans_time_fxn, 
-                                rec_time_fxn=rec_time_fxn,
                                 trans_time_args=(tau,), 
+                                rec_time_fxn=rec_time_fxn,
                                 rec_time_args=(D,),
                                 initial_infecteds = range(initial_inf_count))
+        
         # note the comma after `rate` and `D`.  This is needed for python
+        
         # to recognize these are tuples
 
         # initial condition has first 100 nodes in G infected.

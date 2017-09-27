@@ -327,8 +327,9 @@ def get_Psi(Pk):
             :math:`\psi(x) = \sum_k Pk[k] x^k`
     '''
     maxk = max(Pk.keys())
-    Pkarray = scipy.array([Pk.get(k,0) for k in range(maxk+1)])
-    return lambda x: Pkarray.dot(x**k)
+    ks = scipy.linspace(0,maxk, maxk+1)
+    Pkarray = scipy.array([Pk.get(k,0) for k in ks])
+    return lambda x: Pkarray.dot(x**ks)
 
 def get_PsiPrime(Pk):
     r'''
@@ -346,9 +347,10 @@ def get_PsiPrime(Pk):
             \sum_k k Pk[k] x^{k-1}
     '''
     maxk = max(Pk.keys())
-    Pkarray = scipy.array([Pk.get(k,0) for k in range(maxk+1)])
+    ks = scipy.linspace(0,maxk, maxk+1)
+    Pkarray = scipy.array([Pk.get(k,0) for k in ks])
 
-    return lambda x: Pkarray[k].dot(k*x**(k-1))
+    return lambda x: Pkarray.dot(ks*x**(ks-1))
 
 def get_PsiDPrime(Pk):
     r'''
@@ -367,8 +369,9 @@ def get_PsiDPrime(Pk):
             \sum_k k(k-1)Pk[k] x^{k-2}
     '''
     maxk = max(Pk.keys())
-    Pkarray = scipy.array([Pk.get(k,0) for k in range(maxk+1)])
-    return lambda x: Pkarray[k].dot(k*(k-1)*x**(k-2))
+    ks = scipy.linspace(0,maxk, maxk+1)
+    Pkarray = scipy.array([Pk.get(k,0) for k in ks])
+    return lambda x: Pkarray.dot(ks*(ks-1)*x**(ks-2))
 
 
 def get_Pnk(G):

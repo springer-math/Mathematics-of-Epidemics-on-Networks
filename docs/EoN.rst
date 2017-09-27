@@ -17,7 +17,6 @@ For simulations, we assume that input networks are **NetworkX**
 graphs; see https://networkx.github.io/
 
 
-
 **EoN** consists of two sets of algorithms.  
 
 - The first deals with **stochastic simulation of epidemics on networks**.  The most significant of these are `fast_SIS` and `fast_SIR` which significantly outperform Gillespie algorithms (also included).  These algorithms are discussed in more detail in the appendix of the book.
@@ -59,6 +58,7 @@ Quick list
    estimate_SIR_prob_size
    estimate_SIR_prob_size_from_dir_perc
    estimate_directed_SIR_prob_size
+   estimate_nonMarkov_SIR_prob_size_from_timing
    estimate_nonMarkov_SIR_prob_size
    get_infected_nodes
    percolation_based_discrete_SIR_epidemic
