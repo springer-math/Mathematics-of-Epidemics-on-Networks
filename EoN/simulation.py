@@ -249,9 +249,8 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
         
         tmax : stop time (if not extinct first).  Default step is 1.
 
-        return_full_data: boolean  (default False)
-            Tells whether the times of each 
-            individual node's status changes should be returned.
+        return_full_data: boolean (default False)
+            Tells whether `node_history` should be returned.  
 
             
 
@@ -380,8 +379,10 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
 
         G : NetworkX Graph
             The network the disease will transmit through.
+            
         p : number
             transmission probability
+            
         initial_infecteds: node or iterable of nodes (default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
@@ -389,7 +390,6 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.
-       
        
         initial_recovereds : as for initial_infecteds, but initially 
             recovered nodes.
@@ -402,8 +402,7 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
         tmax : stop time (if not extinct first).  Default step is 1.
 
         return_full_data: boolean (default False)
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.  
+            Tells whether `node_history` should be returned.  
 
     Returns:
         :
@@ -436,8 +435,8 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
         plt.plot(t,S)
     
     
-    This sample may be boring if the randomly chosen initial infection
-    doesn't trigger an epidemic.
+        #This sample may be boring if the randomly chosen initial infection
+        #doesn't trigger an epidemic.
 
 '''
 
@@ -448,18 +447,22 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
 def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
                                 tmin = 0, tmax = 100, return_full_data = False):
     
-    '''This is not directly described in Kiss, Miller, & Simon.
-    
-    Does a simulation of the simple case of all nodes transmitting
-    with probability p independently to each neighbor and then
+    '''Does a simulation of the simple case of all nodes transmitting
+    with probability p independently to each susceptible neighbor and then
     recovering.
+    
+    This is not directly described in Kiss, Miller, & Simon.
+    
+    
     
     Arguments:
 
         G : NetworkX Graph
             The network the disease will transmit through.
+            
         p : number
             transmission probability
+            
         initial_infecteds: node or iterable of nodes (default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
@@ -472,19 +475,19 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
             initial fraction infected. number is int(round(G.order()*rho))
 
         return_full_data: boolean (default False)
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.  
+            Tells whether `node_history` should be returned.  
 
     Returns:
         :
             t, S, I, : 
-                All scipy arrays 
-            OR if `return_full_data is True`:
+                All scipy arrays (if return_full_data is False)
+
             t, S, I, node_history
                 node_history is a dict and 
                 node_history[node] is a tuple (time_list, status_list)
                 the time_list is the times the node's status changes
                 the status_list is the status at those times.
+                (if return_full_data is True)
 
     '''
     
@@ -665,8 +668,7 @@ def percolation_based_discrete_SIR_epidemic(G, p,
         tmax : stop time (if not extinct first).  Default step is 1.
 
         return_full_data: boolean (default False)
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.         
+            Tells whether `node_history` should be returned.  
 
     Returns:
         :
@@ -1253,6 +1255,8 @@ def nonMarkov_directed_percolate_network_with_timing(G,
                                                     rec_time_args=(), 
                                                     weights=True):
     r'''
+    Performs directed percolation on G for user-specified transmission time
+    and recovery time distributions.
     
     A generalization of figure 6.13 of Kiss, Miller & Simon
     
@@ -1580,8 +1584,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
             gamma_i = G.node[i][recovery_weight]*gamma
 
         return_full_data: boolean (default False)
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.         
+            Tells whether `node_history` should be returned.  
 
     Returns:
         :
@@ -1757,8 +1760,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             final time
 
         return_full_data: boolean (default False)
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.         
+            Tells whether `node_history` should be returned.  
 
 
     
@@ -2163,9 +2165,8 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
             recovery rates
             `gamma_i = G.node[i][recovery_weight]*gamma`
     
-        return_full_data: boolean
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.  
+        return_full_data: boolean (default False)
+            Tells whether `node_history` should be returned.  
 
     Returns:
         :
@@ -2506,9 +2507,8 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         tmax : number
             stop time
 
-        return_full_data: boolean
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.  
+        return_full_data: boolean (default False)
+            Tells whether `node_history` should be returned.  
 
     Returns:
         :
@@ -2662,9 +2662,8 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         tmax : number
             stop time
 
-        return_full_data: boolean
-            Tells whether the infection and recovery times of each 
-            individual node should be returned.  
+        return_full_data: boolean (default False)
+            Tells whether `node_history` should be returned.  
         
     Returns:
 
