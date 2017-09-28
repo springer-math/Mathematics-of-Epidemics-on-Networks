@@ -38,7 +38,7 @@ This submodule deals with epidemic simulation.  We start with a quick list of th
 Quick list
 ^^^^^^^^^^
 
-.. currentmodule:: EoN
+.. currentmodule:: EoN.simulation
 
 .. autosummary::
    :toctree: functions
@@ -126,7 +126,7 @@ additional functions that calculate properties which these need.
 
 Quick list
 ^^^^^^^^^^
-.. currentmodule:: EoN
+.. currentmodule:: EoN.analytic
 
 .. autosummary::
    :toctree: functions
@@ -372,7 +372,7 @@ We have a few additional functions which are of value.
 Quick List
 ^^^^^^^^^^
 
-.. currentmodule:: EoN
+.. currentmodule:: EoN.auxiliary
   
 .. autosummary::
    :toctree: functions
