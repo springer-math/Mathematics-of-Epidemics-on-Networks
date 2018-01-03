@@ -32,7 +32,7 @@ def ER_graph_generation(N, kave):
 def regular_graph_generation(N, kave):
     return nx.configuration_model([kave]*N)
     
-display_ts = scipy.linspace(0, 8, 41)
+display_ts = scipy.linspace(0, 8, 41) #[0, 0.2, 0.4, ..., 7.8, 8]
 for graph_algorithm, filename in ([regular_graph_generation, 'fig9p4a.pdf'], [ER_graph_generation, 'fig9p4b.pdf']):
     plt.clf()
     for kave, symbol in ([5, 'o'], [10, 's'], [15, 'd']):

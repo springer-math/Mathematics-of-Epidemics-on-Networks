@@ -17,6 +17,15 @@ move into the main directory and run
 
     python setup.py install
 
+If you have installed a previous version and want to reinstall.  The easiest
+way is 
+
+::
+
+    pip uninstall EoN
+    pip install EoN
+    
+    
 QuickStart Guide
 ----------------
 

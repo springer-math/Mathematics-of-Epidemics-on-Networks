@@ -91,7 +91,13 @@ def _count_edge_types_(G, initial_infecteds, initial_recovereds = None, SIR=True
     else:
         return SS0, SI0, II0
         
-    
+#################################
+#                               #
+#   Degree Distribution stuff   #
+#                               #
+#################################
+
+
 def get_Nk_and_IC_as_arrays(G, initial_infecteds = None, initial_recovereds = None, rho=None, SIR=True):
     r'''
     Given the graph and initial proportion infected this finds the 
@@ -312,9 +318,10 @@ def get_Pk(G):
     Pk = {x:Nk[x]/float(G.order()) for x in Nk.keys()}
     return Pk
 
-def get_Psi(Pk):
+def get_PGF(Pk):
     r'''
-    Given a degree distribution (as a dict), returns the function psi
+    Given a degree distribution (as a dict), returns the probability 
+    generating function
     
     Arguments:
 
@@ -331,7 +338,7 @@ def get_Psi(Pk):
     Pkarray = scipy.array([Pk.get(k,0) for k in ks])
     return lambda x: Pkarray.dot(x**ks)
 
-def get_PsiPrime(Pk):
+def get_PGFPrime(Pk):
     r'''
     Given a degree distribution (as a dict) returns the function
     dPsi(x)/dx
@@ -352,7 +359,7 @@ def get_PsiPrime(Pk):
 
     return lambda x: Pkarray.dot(ks*x**(ks-1))
 
-def get_PsiDPrime(Pk):
+def get_PGFDPrime(Pk):
     r'''
     Given a degree distribution (as a dict) returns the function 
     
@@ -397,7 +404,31 @@ def get_Pnk(G):
             Pnk[k1][k2] += 1./(k1*Nk[k1])
     return Pnk
     
-
+    
+def estimate_R0(G, tau = None, gamma = None, transmissibility = None):
+    r'''
+    provides the estimate R_0 = T <K^2-K>/<K>
+    where in the continuous time case T = tau/(tau+gamma)
+    
+    Arguments:
+        G : networkx Graph
+        tau : transmission rate (default None)
+        gamma : recovery rate (default None)
+        transmissibility : average transmission probability (default None)
+        
+    returns  R_0 = T <K^2-K>/<K>
+    '''
+    
+    if transmissibility is None:
+        if tau is None or beta is None:
+            raise EoN.EoNError("not enough information give to estimate transmission probability")
+        else:
+            transmissibility = tau/(tau+gamma)
+    Pk = get_Pk(G)
+    psiDPrime = get_PGFDPrime(Pk)
+    psiPrime = get_PGFPrime(Pk)
+    return transmissibility * psiDPrime(1.)/psiPrime(1.)
+            
 ##################
 #                #
 #    ODE CODE    #
@@ -4092,8 +4123,8 @@ def Epi_Prob_discrete(Pk, p, number_its = 100):
     Returns:
         Calculated Epidemic probability (assuming configuration model)
     '''
-    psi = get_Psi(Pk)
-    psiPrime = get_PsiPrime(Pk)
+    psi = get_PGF(Pk)
+    psiPrime = get_PGFPrime(Pk)
     
     alpha = 1-p
     k_ave = psiPrime(1.)
@@ -4155,8 +4186,8 @@ def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001,
         PE:
             Calculated Epidemic probability (assuming configuration model)
     '''
-    psi = get_Psi(Pk)
-    psiPrime = get_PsiPrime(Pk)
+    psi = get_PGF(Pk)
+    psiPrime = get_PGFPrime(Pk)
 
     us = scipy.linspace(umin, umax, ucount) 
     alpha = scipy.e**(-tau*us/gamma)  #initial guess for alpha(u)
@@ -4191,8 +4222,8 @@ def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
         Calculated Epidemic probability (assuming configuration model)
     '''
     ks = scipy.arange(len(Pk))
-    psi = get_Psi(Pk)
-    psiPrime = get_PsiPrime(Pk)
+    psi = get_PGF(Pk)
+    psiPrime = get_PGFPrime(Pk)
     
     xis = Pxidxi.keys()
     alpha = {xi: 1-po(xi) for xi in xis}

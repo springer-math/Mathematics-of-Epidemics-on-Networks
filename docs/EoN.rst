@@ -187,6 +187,11 @@ Quick list
     EBCM_pref_mix_from_graph
     EBCM_pref_mix_discrete
     EBCM_pref_mix_discrete_from_graph
+    get_Pk
+    get_PGF
+    get_PGFPrime
+    get_PGFDPrime
+    estimate_R0
 
 Relation to models in text
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
