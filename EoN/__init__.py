@@ -38,7 +38,7 @@ We start with a few useful auxiliary functions
 '''
 
 __author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
-__version__ = "0.99.0rc1"
+__version__ = "0.99.0"
 
 
 #print("warning - EoN is currently under significant development.  Interface"
