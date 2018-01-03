@@ -38,12 +38,12 @@ We start with a few useful auxiliary functions
 '''
 
 __author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
-__version__ = "0.98.2"
+__version__ = "0.99.0rc1"
 
 
-print("warning - EoN is currently under significant development.  Interface"
-      +" may change with little if any warning until version 1.0.\n"
-      +"The current version is {}\n".format(__version__))
+#print("warning - EoN is currently under significant development.  Interface"
+#      +" may change with little if any warning until version 1.0.\n"
+#      +"The current version is {}\n".format(__version__))
 
 
 #__all__ = 
@@ -102,7 +102,8 @@ import EoN.simulation
 from EoN.simulation import *
 import EoN.analytic
 from EoN.analytic import *
-
+import EoN.visualization
+from EoN.visualization import *
 
 '''
 These are the systems I want to include:

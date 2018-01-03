@@ -25,7 +25,8 @@ graphs; see https://networkx.github.io/
 - The second deals with **numerical solution of systems of equations** derived in the book.  For these it is possible to either provide the degree distribution, or simply use a network and let the code determine the degree distribution.
 
 
-- There are a few additional algorithms which are not described in the book, but which we believe will be useful. Most notably, the function `visualize` which creates a sequence of images of a network which are appropriate for creating a movie showing disease spread.
+- There are a few additional algorithms which are not described in the
+  book, but which we believe will be useful. Most notably, related to visualization.
 
 Distributed under MIT license.  See :download:`license.txt<../license.txt>` for full details.
 
@@ -369,6 +370,30 @@ The numbers given below are the equation numbers in the book.
        - **EBCM_pref_mix_discrete**
        - **EBCM_pref_mix_discrete_from_graph**
 
+
+Visualization Functions
+------------------------
+
+Quick List
+^^^^^^^^^^
+
+..  currentmodule:: EoN
+
+.. autosummary::
+   :toctree: functions
+
+   plot_graph
+   animate
+
+Short  Description
+^^^^^^^^^^^^^^^^^
+
+    - **plot_graph** (allows us to plot a graph at a specific time
+      point, and to optionally include the calculated time series)
+
+    - **animate** (allows us to plot a graph at many time points
+      We can create a visualization such as mp4, or save each
+      individual frame of an animation.  The time series are optional.
   
 Auxiliary Functions
 -------------------
@@ -384,7 +409,6 @@ Quick List
    
    get_time_shift
    subsample
-   visualize
 
 
 Short Description
@@ -392,8 +416,6 @@ Short Description
 
     - **get_time_shift** (allows us to shift plots to eliminate the effect of early-time stochasticity)
     - **subsample** (allows us to take output given at a stochastic set of times and get output at given times - particularly useful to allow for averageing multiple simulations)
-    - **visualize** (creates figures showing disease spread in a network)
-    
     
     
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
