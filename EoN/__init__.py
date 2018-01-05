@@ -57,7 +57,7 @@ class EoNError(Exception):
 def _get_rate_functions_(G, tau, gamma, transmission_weight = None, 
                         recovery_weight=None):
     r'''
-    Arguments:
+    Arguments : 
         G : networkx Graph
             the graph disease spread on
 
@@ -74,7 +74,7 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
             a label for a weight given to the nodes to scale their 
             recovery rates
                 `gamma_i = G.node[i][recovery_weight]*gamma`
-    Returns:
+    Returns : 
         : trans_rate_fxn, rec_rate_fxn
             Two functions such that 
             - `trans_rate_fxn(u,v)` is the transmission rate from u to v and

@@ -14,7 +14,7 @@ from collections import defaultdict, Counter
 
 
 
-def my_odeint(dfunc, V0, times, args=()):
+def _my_odeint_(dfunc, V0, times, args=()):
     r'''For some of the systems odeint will switch to the BDF solver.
     In large enough systems, it then gets stuck trying to estimate the 
     Jacobian.  This will even cause segmentation faults.
@@ -35,11 +35,10 @@ def my_odeint(dfunc, V0, times, args=()):
         
     INPUT and OUTPUT are as integrate.odeint
     
-    Arguments:
+    Arguments : 
         Identical to integrate.odeint
         
-    Returns:
-        :
+    Returns : 
         Identical to integrate.odeint
     '''
 
@@ -98,17 +97,17 @@ def _count_edge_types_(G, initial_infecteds, initial_recovereds = None, SIR=True
 #################################
 
 
-def get_Nk_and_IC_as_arrays(G, initial_infecteds = None, initial_recovereds = None, rho=None, SIR=True):
+def _get_Nk_and_IC_as_arrays_(G, initial_infecteds = None, initial_recovereds = None, rho=None, SIR=True):
     r'''
     Given the graph and initial proportion infected this finds the 
     initial conditions and number of nodes of each degree as needed
     by many of the differential equations models.
     
-    Arguments:
+    Arguments : 
 
-        G : networkx graph
+        G (networkx Graph)
 
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
@@ -116,34 +115,34 @@ def get_Nk_and_IC_as_arrays(G, initial_infecteds = None, initial_recovereds = No
             If both initial_infecteds and rho are assigned, then there
             is an error.    
                
-        initial_recovereds: iterable of nodes (default None)
+        initial_recovereds (iterable of nodes default None)
             this whole collection is made recovered.
             Currently there is no test for consistency with initial_infecteds.
             Understood that everyone who isn't infected or recovered initially
             is initially susceptible.
             
-        rho : number between 0 and 1  (default None)
+        rho (float between 0 and 1  default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
 
-        SIR : boolean
+        SIR (boolean)
             says whether the system will be SIR or SIS.
 
-    Returns:
+    Returns : 
 
-        Nk : scipy array
+        Nk (scipy array)
            NUMBER (not proportion) of nodes of each degree.
 
-        Sk0 : scipy array
+        Sk0 (scipy array)
             NUMBER of susceptible nodes of each degree at t=0, 
             = (1-rho)Nk
 
-        Ik0 : scipy array    
+        Ik0 (scipy array)
             NUMBER of infected nodes of each degree at t=0,   
             = rho Nk
 
         if SIR, also returns
-        Rk0 : scipy array
+        Rk0 (scipy array)
             NUMBER of recovered nodes of each degree at t=0,    
             = 0 Nk
     '''
@@ -181,7 +180,7 @@ def get_Nk_and_IC_as_arrays(G, initial_infecteds = None, initial_recovereds = No
     else:
         return Nk, Sk0, Ik0
 
-def get_NkNl_and_IC_as_arrays(G, initial_infecteds=None, initial_recovereds = None, 
+def _get_NkNl_and_IC_as_arrays_(G, initial_infecteds=None, initial_recovereds = None, 
                                 rho=None, withKs = False, SIR=True):
     r'''
     In some of the differential equations models, we need to know how
@@ -190,24 +189,24 @@ def get_NkNl_and_IC_as_arrays(G, initial_infecteds=None, initial_recovereds = No
     This finds that and the initial conditions for numbers of the
     various edges assuming a fraction rho is initially infected.
     
-    Arguments:
-        G : networkx graph
-        initial_infecteds: node or iterable of nodes (default None)
+    Arguments : 
+        G (networkx Graph)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        initial_recovereds: iterable of nodes (default None)
+        initial_recovereds (iterable of nodes default None)
             this whole collection is made recovered.
             Currently there is no test for consistency with initial_infecteds.
             Understood that everyone who isn't infected or recovered initially
             is initially susceptible.
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
-        withKs : boolean
+        withKs (boolean)
             flag to say whether we are restricting our attention to 
             just those degrees observed in the network or to all 
             degrees.
@@ -216,32 +215,32 @@ def get_NkNl_and_IC_as_arrays(G, initial_infecteds=None, initial_recovereds = No
             If False, 
              then we treat it as if all degrees from 0 to kmax are 
              observed.
-        SIR : boolean
+        SIR (boolean)
             says whether the system will be SIR or SIS.
 
-    Returns:
-        :
-        NkNl : 2D scipy array
+    Returns : 
+        
+        NkNl (2D scipy array)
             NUMBER (not proportion) of edges between each pair of degrees.
-        SkSl0 : 2D scipy array
+        SkSl0 (2D scipy array)
             initial NUMBER of edges between pair of susceptibel nodes of 
             each degree type.
             = (1-rho)^2 NkNl
-        SkIl0 : 2D scipy array    
+        SkIl0 (2D scipy array)
             initial NUMBER of edges from a susceptible to an infected node 
             of the given degrees.
             = rho(1-rho) NkNl
 
         if not SIR, also returns
 
-        IkIl0 : 2D scipy array
+        IkIl0 (2D scipy array)
             initial NUMBER of edges between 2 infected nodes.  This is not 
             needed for SIR model.
             = rho^2*NkNl
 
         if withKs, also returns
-            Ks : scipy array
-            The observed degrees in the population.
+            Ks (scipy array)
+                The observed degrees in the population.
         ''' 
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
@@ -304,13 +303,13 @@ def get_Pk(G):
     Used in several places so that we can input a graph and then we 
     can call the methods that depend on the degree distribution
 
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
+        G (networkx Graph)
 
-    Returns:
+    Returns : 
 
-        Pk : dict
+        Pk (dict)
             Pk[k] is the proportion of nodes with degree k.
     '''
 
@@ -323,15 +322,15 @@ def get_PGF(Pk):
     Given a degree distribution (as a dict), returns the probability 
     generating function
     
-    Arguments:
+    Arguments : 
 
-        Pk : dict
+        Pk (dict)
             Pk[k] is the proportion of nodes with degree k.
 
-    Returns:
-        :
-        psi : function.
-            :math:`\psi(x) = \sum_k Pk[k] x^k`
+    Returns : 
+        
+        psi (function)
+            :math:`\psi(x) = \sum_k P_k[k] x^k`
     '''
     maxk = max(Pk.keys())
     ks = scipy.linspace(0,maxk, maxk+1)
@@ -343,15 +342,15 @@ def get_PGFPrime(Pk):
     Given a degree distribution (as a dict) returns the function
     dPsi(x)/dx
     
-    Arguments:
+    Arguments : 
 
-        Pk : dict
+        Pk (dict)
             Pk[k] is the proportion of nodes with degree k.
 
-    Returns:
+    Returns : 
 
-        psiPrime : function.
-            \sum_k k Pk[k] x^{k-1}
+        psiPrime (function)
+            :math:`psi'(x) = \sum_k k P_k[k] x^{k-1}`
     '''
     maxk = max(Pk.keys())
     ks = scipy.linspace(0,maxk, maxk+1)
@@ -363,17 +362,17 @@ def get_PGFDPrime(Pk):
     r'''
     Given a degree distribution (as a dict) returns the function 
     
-    d^2Psi(x)/dx^2
+    :math:`d^2\psi(x)/dx^2`
     
-    Arguments:
+    Arguments : 
 
-        Pk : dict
+        Pk (dict)
             Pk[k] is the proportion of nodes with degree k.
 
-    Returns:
-        :
-        psiDPrime : function.
-            \sum_k k(k-1)Pk[k] x^{k-2}
+    Returns : 
+        
+        psiDPrime (function)
+            :math:`\psi''(x) = \sum_k k(k-1)P_k[k] x^{k-2}`
     '''
     maxk = max(Pk.keys())
     ks = scipy.linspace(0,maxk, maxk+1)
@@ -384,13 +383,13 @@ def get_PGFDPrime(Pk):
 def get_Pnk(G):
 
     r'''    
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
+        G (networkx Graph)
 
-    Returns:
+    Returns : 
 
-        Pnk : dict
+        Pnk (dict)
             Pnk[k1][k2] is the proportion of neighbors of degree k1 nodes 
             that have degree k2.
     '''
@@ -407,14 +406,27 @@ def get_Pnk(G):
     
 def estimate_R0(G, tau = None, gamma = None, transmissibility = None):
     r'''
-    provides the estimate R_0 = T <K^2-K>/<K>
-    where in the continuous time case T = tau/(tau+gamma)
+    provides the estimate of the reproductive number R_0 = T <K^2-K>/<K>
     
-    Arguments:
-        G : networkx Graph
-        tau : transmission rate (default None)
-        gamma : recovery rate (default None)
-        transmissibility : average transmission probability (default None)
+    This handles the Markovian continuous time case with T = tau/(tau+gamma)
+    and it handles other cases by the user inputting an average transmissibility
+
+    For <K^2-K>/<K> it measures the network.
+    
+    
+    Arguments : 
+        G (networkx Graph)
+
+        tau (positive float, default None)
+            transmission rate
+            Either both tau and gamma must be given or
+            transmissibility is given.
+
+        gamma (positive float, default None)
+            recovery rate 
+
+        transmissibility (positive float, default None)
+            average transmission probability 
         
     returns  R_0 = T <K^2-K>/<K>
     '''
@@ -497,17 +509,17 @@ def SIS_individual_based(G, tau, gamma, rho = None, Y0=None, nodelist = None, tm
 
     <\dot{Y}_i> = tau \sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
 
-    Arguments:
+    Arguments : 
 
-        G : Networkx graph
+        G (networkx Graph)
         
-        tau : number
+        tau (positive float)
             transmission rate of disease
 
         gamma : number 
             global recovery rate 
             
-        rho : number (default None)
+        rho  (float between 0 and 1, default None)
             initial uniformly random probability of being infected.
             Cannot define both rho and Y0.
 
@@ -543,7 +555,7 @@ def SIS_individual_based(G, tau, gamma, rho = None, Y0=None, nodelist = None, tm
             If True, returns times, Ss, Is
             if False, returns times, S, I
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             returns times, Ss, Is
@@ -611,11 +623,11 @@ def SIR_individual_based(G, tau, gamma, rho = None, Y0 = None, X0= None,
 
     See also:
 
-    Arguments:
+    Arguments : 
 
-        G : Networkx graph
+        G (networkx Graph)
 
-        tau : number
+        tau (positive float)
             transmission rate of disease
     
         gamma : number      (default None)
@@ -658,7 +670,7 @@ def SIR_individual_based(G, tau, gamma, rho = None, Y0 = None, X0= None,
             If True, returns times, S, I, R, Ss, Is, Rs
             if False, returns times, S, I, R
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             returns times, Ss, Is, Rs
@@ -753,10 +765,10 @@ def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = No
     
     <\dot{Y}_i> = tau \sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
 
-    Arguments:
+    Arguments : 
 
-        G : Networkx graph
-        tau : number
+        G (networkx Graph)
+        tau (positive float)
             transmission rate of disease
         gamma : number      (default None)
             global recovery rate  
@@ -788,7 +800,7 @@ def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = No
         return_full_data : boolean      (default False)
 
 
-    Returns:
+    Returns : 
             if return_full_data is True,
                 Returns times, Ss, Is
             if return_full_data is False,
@@ -840,11 +852,11 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
     
     <\dot{Y}_i> = tau \sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
 
-    Arguments:
+    Arguments : 
 
-        G : Networkx graph
+        G (networkx Graph)
         
-        tau : number
+        tau (positive float)
             transmission rate of disease
 
         gamma : number      (default None)
@@ -881,7 +893,7 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
 
         return_full_data : boolean      (default False)
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True,
             returns times, S, I, R, Ss, Is, Rs
@@ -1114,17 +1126,17 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
         We track pairs in both directions: e.g., XX[1,2] and XX[2,1].
 
 
-    Arguments:
+    Arguments : 
     
-        G : Networkx graph
+        G (networkx Graph)
         
-        tau : number
+        tau (positive float)
             transmission rate of disease
 
         gamma : number
             global recovery rate  
             
-        rho : number (default None)
+        rho  (float between 0 and 1, default None)
             proportion assumed initially infected.  If None, then Y0 is used
             if Y0 is also None, then rho = 1./N
 
@@ -1174,7 +1186,7 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
             if False:
                 returns times, S, I, R
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             returns times, S, I, Xs, Ys, XY, XX
@@ -1244,7 +1256,7 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
     V0 = scipy.concatenate((Y0[:,None], XY0, XX0), axis=0).T[0]
     index_of_node = {node:i for i, node in enumerate(nodelist)}
 
-    V = my_odeint(_dSIS_pair_based_, V0, times, 
+    V = _my_odeint_(_dSIS_pair_based_, V0, times, 
                             args = (G, nodelist, index_of_node, trans_rate_fxn, 
                                     rec_rate_fxn))
     Ys = V.T[0:N]
@@ -1363,16 +1375,16 @@ def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None,
     Journal of Theoretical Biology
     
 
-    Arguments:
-        G : Networkx graph
+    Arguments : 
+        G (networkx Graph)
 
-        tau : number
+        tau (positive float)
             transmission rate of disease
 
         gamma : number
             global recovery rate  
     
-        rho : number (default None)
+        rho  (float between 0 and 1, default None)
             proportion assumed initially infected.  If None, then Y0 is used
             if Y0 is also None, then rho = 1./N
 
@@ -1428,7 +1440,7 @@ def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None,
             if False:
                 returns times, S, I, R
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             returns times, S, I, R, Xs, Ys, Zs, XY, XX
@@ -1580,7 +1592,7 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
 
     This is the SIS version of the "Kermack-McKendrick equations".
     
-    Arguments:
+    Arguments : 
 
         S0 : number
             initial number susceptible
@@ -1588,7 +1600,7 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
             initial number infected
         n : integer
             (average) degree of all nodes.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -1599,7 +1611,7 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
         tcount : integer (default 1001)
             number of reports
 
-    Returns:
+    Returns : 
         :
         times, S, I, all scipy arrays
     
@@ -1641,7 +1653,7 @@ def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100,
     [\dot{R}] = \gamma [I]
 
 
-    Arguments:
+    Arguments : 
 
         S0 : number
             initial number susceptible
@@ -1651,7 +1663,7 @@ def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100,
             initial number recovered
         n : integer
             degree of each node
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -1662,7 +1674,7 @@ def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100,
         tcount : integer (default 1001)
             number of reports
     
-    Returns:
+    Returns : 
         :
         times, S, I, R : all scipy arrays
     
@@ -1699,21 +1711,21 @@ def SIS_homogeneous_meanfield_from_graph(G, tau, gamma,
     Calls SIR_homogeneous_pairwise after calculating S0, I0, & n, 
     based on the graph G and initial fraction infected rho.
 
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
-        tau : number
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
@@ -1725,7 +1737,7 @@ def SIS_homogeneous_meanfield_from_graph(G, tau, gamma,
         return_full_data : boolean (default False)
             tells whether to just return times, S, I, R or all calculated data.
             if True, then returns times, S, I, R, SI, SS
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             t, S, I, SI, SS, II
@@ -1753,26 +1765,26 @@ def SIR_homogeneous_meanfield_from_graph(G, tau, gamma, initial_infecteds=None,
     Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, & n, 
     based on the graph G and initial fraction infected rho.
 
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
-        tau : number
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        initial_recovereds: iterable of nodes (default None)
+        initial_recovereds (iterable of nodes default None)
             this whole collection is made recovered.
             Currently there is no test for consistency with initial_infecteds.
             Understood that everyone who isn't infected or recovered initially
             is initially susceptible.
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
@@ -1784,7 +1796,7 @@ def SIR_homogeneous_meanfield_from_graph(G, tau, gamma, initial_infecteds=None,
         return_full_data : boolean (default False)
             tells whether to just return times, S, I, R or all calculated data.
             if True, then returns times, S, I, R, SI, SS
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             t, S, I, SI, SS, II
@@ -1860,7 +1872,7 @@ def SIS_homogeneous_pairwise(S0, I0, SI0, SS0, n, tau, gamma, tmin = 0,
     In the text this is often referred to as the 
     "mean-field model closed at the level of triples"
 
-    Arguments:
+    Arguments : 
 
         S0 : number
             initial number susceptible
@@ -1872,7 +1884,7 @@ def SIS_homogeneous_pairwise(S0, I0, SI0, SS0, n, tau, gamma, tmin = 0,
             initial number of SS edges
         n : integer
             (common) degree of nodes.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -1885,7 +1897,7 @@ def SIS_homogeneous_pairwise(S0, I0, SI0, SS0, n, tau, gamma, tmin = 0,
         return_full_data : boolean
             tells whether to just return times, S, I or all calculated data.
     
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             t, S, I, SI, SS, II
@@ -1949,7 +1961,7 @@ def SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin = 0,
     conserved quantities: [S]+[I]+[R]  also 
                           [SS]+[II]+[RR] + 2([SI] + [SR] + [IR])
 
-    Arguments:
+    Arguments : 
 
         S0 : Initial number suusceptible
         I0 : Initial number infected
@@ -1957,7 +1969,7 @@ def SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin = 0,
         SI0 : Initial number of SI edges
         SS0 : Initial number of SS edges
         n : Degree of nodes
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -1970,7 +1982,7 @@ def SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin = 0,
         return_full_data : boolean (default False)
             tells whether to just return times, S, I, R or all calculated data.
             if True, then returns times, S, I, R, SI, SS
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             times, S, I, R, SI, SS
@@ -2018,21 +2030,21 @@ def SIS_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None,
     Calls SIS_homogeneous_pairwise after calculating S0, I0, SI0, SS0, n based
     on the graph G and initial fraction infected rho.
 
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
-        tau : number
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
@@ -2044,7 +2056,7 @@ def SIS_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None,
         return_full_data : boolean (default False)
             tells whether to just return times, S, I, or all calculated data.
             if True, then returns times, S, I, SI, SS
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             t, S, I, SI, SS, II
@@ -2106,26 +2118,26 @@ def SIR_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None,
     Calls SIR_homogeneous_pairwise after calculating S0, I0, R0, SI0, SS0, n, 
     based on the graph G and initial fraction infected rho.
 
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
-        tau : number
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        initial_recovereds: iterable of nodes (default None)
+        initial_recovereds (iterable of nodes default None)
             this whole collection is made recovered.
             Currently there is no test for consistency with initial_infecteds.
             Understood that everyone who isn't infected or recovered initially
             is initially susceptible.
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
@@ -2137,7 +2149,7 @@ def SIR_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None,
         return_full_data : boolean (default False)
             tells whether to just return times, S, I, R or all calculated data.
             if True, then returns times, S, I, R, SI, SS
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             t, S, I, SI, SS, II
@@ -2260,13 +2272,13 @@ def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100,
 
 
 
-    Arguments:
+    Arguments : 
 
         Sk0 : scipy array
             number susceptible for each k
         Ik0 : scipy array
             number infected for each k
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -2280,7 +2292,7 @@ def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100,
             tells whether to just return times, S, I or all calculated data.
             if True, returns t, S, I, Sk, Ik
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             times, S, I, Sk  (Sk is scipy 2D arrays)
@@ -2342,7 +2354,7 @@ def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100,
     pi_I = \sum_k k[I_k]
 
 
-    Arguments:
+    Arguments : 
 
         Sk0 : array
             Sk0[k] is the number of
@@ -2350,7 +2362,7 @@ def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100,
             missing).
         Ik0 : array
         Rk0 : array
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -2363,7 +2375,7 @@ def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100,
         return_full_data : boolean
             tells whether to just return times, S, I, R or all calculated data.
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             times, S, I, R, Sk, Ik, Rk (the Xk are scipy 2D arrays)
@@ -2416,20 +2428,20 @@ def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
     Calls SIS_heterogeneous_meanfield after calculating Sk0, Ik0 based on 
     the graph G and random fraction infected rho.
 
-    Arguments:
-        G : networkx Graph
-        tau : number
+    Arguments : 
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
@@ -2441,7 +2453,7 @@ def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
         return_full_data : boolean
             tells whether to just return times, S, I, R or all calculated data.
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             times, S, I, Sk, Ik, (the Xk are scipy 2D arrays)
@@ -2465,7 +2477,7 @@ def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds,
+    Nk, Sk0, Ik0 = _get_Nk_and_IC_as_arrays_(G, initial_infecteds=initial_infecteds,
                                             rho=rho, SIR=False)
     
     return SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin, tmax, tcount, return_full_data)
@@ -2478,26 +2490,26 @@ def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
     Calls SIR_heterogeneous_meanfield after calculating Sk0, Ik0, Rk0 based
     on a graph G and initial fraction infected rho.
 
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
-        tau : number
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        initial_recovereds: iterable of nodes (default None)
+        initial_recovereds (iterable of nodes default None)
             this whole collection is made recovered.
             Currently there is no test for consistency with initial_infecteds.
             Understood that everyone who isn't infected or recovered initially
             is initially susceptible.
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
@@ -2509,7 +2521,7 @@ def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
         return_full_data : boolean
             tells whether to just return times, S, I, R or all calculated data.
 
-    Returns:
+    Returns : 
 
         if return_full_data is True
             times, Sk, Ik, Rk (the Xk are scipy 2D arrays)
@@ -2530,7 +2542,7 @@ def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
                                                                 tmax = 10)
     
     '''
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, 
+    Nk, Sk0, Ik0, Rk0 = _get_Nk_and_IC_as_arrays_(G, 
                                                 initial_infecteds = initial_infecteds, 
                                                 initial_recovereds = initial_recovereds,
                                                 rho=rho, SIR=True)
@@ -2564,7 +2576,7 @@ def _dSIS_heterogeneous_pairwise_(X, t, Nk, NkNl, tau, gamma, Ks):
     identities: [IkSl] = [SlIk], so where IkSl needed, use SlIk.T
 
 
-    Arguments:
+    Arguments : 
 
         X : current values of variables
         t : current time
@@ -2676,7 +2688,7 @@ def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma,
     In the text this is often referred to as the 
     heterogeneous mean-field model closed at the level of triples
 
-    Arguments:
+    Arguments : 
         Sk0 : array.  
             Sk0[k] is the number of nodes that are susceptible and have degree 
             k.  If one is empty, it becomes 0.
@@ -2693,7 +2705,7 @@ def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma,
             The code does not enforce these constraints.
             (if Ks is defined, the definition changes slightly, see below)
 
-        tau : number
+        tau (positive float)
             transmission rate
 
         gamma : number
@@ -2732,7 +2744,7 @@ def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma,
     others, but for consistency with elsewhere, this is not done here.
     
     
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             returns times, S, I, Sk, Ik, SkIl, SkSl, IkIl
@@ -2776,7 +2788,7 @@ def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma,
 
     X0 = scipy.concatenate((Sk0[:,None], SkSl0, SkIl0), axis=0).T[0]
 
-    X = my_odeint(_dSIS_heterogeneous_pairwise_, X0, times, 
+    X = _my_odeint_(_dSIS_heterogeneous_pairwise_, X0, times, 
                     args = (Nk, NkNl, tau, gamma, Ks))
 
     kcount = len(Nk)
@@ -2815,7 +2827,7 @@ def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma,
     [A_l S_k I] = ((k-1)/k) [A_l S_k] [S_k I]/ [S_k]
     [I S_k A_l] = ((k-1)/k) [I S_k] [S_k A_l]/ [S_k]
 
-    Arguments:
+    Arguments : 
 
         Sk0 : scipy array, Sk0[k] is number of degree k susceptible at 
             time 0.
@@ -2824,7 +2836,7 @@ def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma,
         SkIl0 : scipy 2D array
         SkSl0 : scipy 2D array
 
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -2838,7 +2850,7 @@ def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma,
             If True, return times, Sk, Ik, Rk, SkIl, SkSl
             If False, return times, S, I, R
 
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -2859,7 +2871,7 @@ def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma,
             the Sk0[i] is the number of nodes that are susceptible and
             have degree Ks[i].  Similarly for Ik0 and SkIl0 etc.        
 
-    Returns:
+    Returns : 
 
         if return_full_data is True
             returns times, S, I, R, Sk, Ik, Rk, SkIl, SkSl
@@ -2916,21 +2928,21 @@ def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = Non
     Calls SIS_heterogeneous_pairwise after calculating Sk0, Ik0, SkSl0, SkIl0, IkIl0
     from a graph G and initial fraction infected rho.
 
-    Arguments:
+    Arguments : 
 
-        G : networkx Graph
-        tau : number
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmin : number (default 0)
@@ -2942,7 +2954,7 @@ def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = Non
         return_full_data : boolean (default False)
             tells whether to just return times, S, I, or all calculated data.
             if True, then returns times, S, I, SI, SS
-    Returns:
+    Returns : 
         :
         if return_full_data is True:
             returns times, S, I, Sk, Ik, SkIl, SkSl, IkIl
@@ -2973,11 +2985,11 @@ def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = Non
     
     '''
     
-    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds = initial_infecteds,
+    Nk, Sk0, Ik0 = _get_Nk_and_IC_as_arrays_(G, initial_infecteds = initial_infecteds,
                                             rho=rho, SIR=False)
 
     NkNl, SkSl0, SkIl0, IkIl0, Ks = \
-                get_NkNl_and_IC_as_arrays(G, initial_infecteds = initial_infecteds,
+                _get_NkNl_and_IC_as_arrays_(G, initial_infecteds = initial_infecteds,
                                             rho=rho, withKs = True, SIR=False)
 
     Sk0 = scipy.array([Sk0[k] for k in Ks])
@@ -3006,9 +3018,9 @@ def SIR_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None,
 
     '''
     
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, 
+    Nk, Sk0, Ik0, Rk0 = _get_Nk_and_IC_as_arrays_(G, initial_infecteds=initial_infecteds, 
                                         initial_recovereds = initial_recovereds, rho=rho, SIR=True)
-    NkNl, SkSl0, SkIl0, Ks = get_NkNl_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, 
+    NkNl, SkSl0, SkIl0, Ks = _get_NkNl_and_IC_as_arrays_(G, initial_infecteds=initial_infecteds, 
                                         initial_recovereds = initial_recovereds, rho=rho, withKs = True, 
                                                         SIR = True)
 
@@ -3074,7 +3086,7 @@ def SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, tmin = 0,
     [SX] = sum_k k [S_k]
     Q = (1/[SX]^2) sum_k (k-1)k[S_k]
 
-    Arguments:
+    Arguments : 
         Sk0 : scipy array
             number susceptible for each k
         Ik0 : scipy array
@@ -3085,7 +3097,7 @@ def SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, tmin = 0,
             number of SS edges
         II0 : number
             number of II edges
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -3105,7 +3117,7 @@ def SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, tmin = 0,
     conserved quantities:  [Sk]+[Ik]     ;     SS + II + 2SI
     
     
-    Returns:
+    Returns : 
         :
         All scipy arrays
         if return_full_data:
@@ -3157,7 +3169,7 @@ def SIR_compact_pairwise(Sk0, I0, R0, SS0, SI0, tau, gamma, tmin=0, tmax=100,
     [S] = sum [S_k]
     I = N-[S]-R
 
-    Arguments:
+    Arguments : 
 
         Sk0 : scipy array
             initial number of suscetibles of each degree k
@@ -3169,7 +3181,7 @@ def SIR_compact_pairwise(Sk0, I0, R0, SS0, SI0, tau, gamma, tmin=0, tmax=100,
             initial number of SS edges
         SI0 : number
             initial number of SI edges
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -3182,7 +3194,7 @@ def SIR_compact_pairwise(Sk0, I0, R0, SS0, SI0, tau, gamma, tmin=0, tmax=100,
         return_full_data : boolean
             tells whether to just return times, S, I, R or all calculated data.
 
-    Returns:
+    Returns : 
         :
         if return_full_data:
            times, Sk, I, R, SS, SI
@@ -3224,7 +3236,7 @@ def SIS_compact_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, rho =
     if rho is None and initial_infecteds is None:
         rho = 1./G.order()
 
-    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, rho=rho, SIR=False)
+    Nk, Sk0, Ik0 = _get_Nk_and_IC_as_arrays_(G, initial_infecteds=initial_infecteds, rho=rho, SIR=False)
     
     if initial_infecteds is not None:
         SS0, SI0, II0 = _count_edge_types_(G, initial_infecteds, SIR=False)   
@@ -3249,7 +3261,7 @@ def SIR_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None,
     if rho is None and initial_infecteds is None:
         rho = 1./G.order()
 
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, initial_infecteds=initial_infecteds, 
+    Nk, Sk0, Ik0, Rk0 = _get_Nk_and_IC_as_arrays_(G, initial_infecteds=initial_infecteds, 
                                                 initial_recovereds=initial_recovereds, 
                                                 rho=rho, SIR=True)
     
@@ -3330,7 +3342,7 @@ def SIS_super_compact_pairwise(S0, I0, SS0, SI0, II0, tau, gamma, k_ave,
     Encodes system (5.20) of Kiss, Miller, & Simon.  Please cite the 
     book if using this algorithm.
 
-    Arguments:
+    Arguments : 
 
         S0 : number
             initial number susceptible
@@ -3342,7 +3354,7 @@ def SIS_super_compact_pairwise(S0, I0, SS0, SI0, II0, tau, gamma, k_ave,
             initial number of susceptible-infected edges
         II0 : number
             initial number of infected-infected edges.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -3362,7 +3374,7 @@ def SIS_super_compact_pairwise(S0, I0, SS0, SI0, II0, tau, gamma, k_ave,
             tells whether to just return times, S, I, R or all 
             calculated data.
 
-    Returns:
+    Returns : 
         :
         if return_full_data is True
             returns times, S, I, SS, SI, II
@@ -3406,14 +3418,14 @@ def SIR_super_compact_pairwise(R0, SS0, SI0,  N, tau, gamma, psihat,
     Q = psihat_xx(theta)/N(psihat_x(theta))^2
 
     
-    Arguments:
+    Arguments : 
         R0 : number
             initial number of R nodes.
         SS0 : number
             initial number of SS edges
         SI0 : number
             initial number of SI edges
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -3427,7 +3439,7 @@ def SIR_super_compact_pairwise(R0, SS0, SI0,  N, tau, gamma, psihat,
             tells whether to just return times, S, I, R or all 
             calculated data.
 
-    Returns:
+    Returns : 
         :
         if return_full_data:
 	   return times, S, I, R, SS, SI
@@ -3458,7 +3470,7 @@ def SIS_super_compact_pairwise_from_graph(G, tau, gamma, initial_infecteds=None,
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
     
-    Nk, Sk0, Ik0 = get_Nk_and_IC_as_arrays(G, initial_infecteds = initial_infecteds, 
+    Nk, Sk0, Ik0 = _get_Nk_and_IC_as_arrays_(G, initial_infecteds = initial_infecteds, 
                                             rho=rho, SIR=False)
 
     ks = scipy.array(range(len(Nk))) #[0,1,2,3,...,k]
@@ -3500,7 +3512,7 @@ def SIR_super_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
     if rho is None and initial_infecteds is None:
         rho = 1./G.order()
-    Nk, Sk0, Ik0, Rk0 = get_Nk_and_IC_as_arrays(G, initial_infecteds = initial_infecteds, 
+    Nk, Sk0, Ik0, Rk0 = _get_Nk_and_IC_as_arrays_(G, initial_infecteds = initial_infecteds, 
                                                 initial_recovereds = initial_recovereds,
                                                 rho=rho, SIR=True)
 
@@ -3670,13 +3682,13 @@ def SIS_effective_degree(Ssi0, Isi0, tau, gamma, tmin = 0, tmax=100,
     book if using this algorithm.
 
 
-    Arguments:
+    Arguments : 
 
         Ssi0 and Isi0 : (square) numpy 2D arrays of same shape.
             Entries are initial number susceptible or infected 
             with given initial number of susceptible/infected 
             neighbors.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -3693,7 +3705,7 @@ def SIS_effective_degree(Ssi0, Isi0, tau, gamma, tmin = 0, tmax=100,
             if False, 
                 return times, S, I
                    
-   Returns:
+   Returns : 
        :
         if return_full_data:
             return times, S, I, Ssi, Isi
@@ -3732,7 +3744,7 @@ def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100,
     S = \sum_{s,i} S_{s,i}
     I = N-S-R
 
-    Arguments:
+    Arguments : 
 
         S_si0 : (square) numpy 2-D array
             S_{s,i} at time 0
@@ -3740,7 +3752,7 @@ def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100,
             number of infected individuals at time 0
         R0 : number
             number of recovered individuals at time 0
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -3754,7 +3766,7 @@ def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100,
             tells whether to just return times, S, I, R or 
             all calculated data.
 
-    Returns:
+    Returns : 
         :
         if return_full_data==False
             times : scipy.array of times
@@ -3989,7 +4001,7 @@ def SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, tmin=0,
     S = sum_kappa S_kappa
     I = N - S - R
 
-    Arguments:
+    Arguments : 
 
         Skappa0 : scipy array
             from S_0(0) up to S_kappamax(0) of number susceptible with 
@@ -4002,7 +4014,7 @@ def SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, tmin=0,
             initial number recovered
         SI0 : number
             initial number of SI edges
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -4015,7 +4027,7 @@ def SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, tmin=0,
         return_full_data : boolean
             tells whether to just return times, S, I, R or all calculated data.
     
-    Returns:
+    Returns : 
         :
         if return_full_data==False
             times : scipy.array of times
@@ -4110,9 +4122,9 @@ def Epi_Prob_discrete(Pk, p, number_its = 100):
     '''Encodes System (6.2) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
     
-    Arguments:
+    Arguments : 
 
-        Pk : dict
+        Pk (dict)
             Pk[k] is probability a node has degree k.
 
         p : transmission probability
@@ -4120,7 +4132,7 @@ def Epi_Prob_discrete(Pk, p, number_its = 100):
         number_its : number of iterations before assumed converged.
                  default value is 100
 
-    Returns:
+    Returns : 
         Calculated Epidemic probability (assuming configuration model)
     '''
     psi = get_PGF(Pk)
@@ -4163,9 +4175,9 @@ def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001,
     and 
         p(u) = 1-e^{-\tau u/\gamma}
     
-    Arguments:
+    Arguments : 
 
-        Pk : dict
+        Pk (dict)
             Pk[k] is probability a node has degree k.
 
         tau : transmission rate
@@ -4181,7 +4193,7 @@ def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001,
         number_its : number of iterations before assumed converged.
                  default value is 100
 
-    Returns:
+    Returns : 
         :
         PE:
             Calculated Epidemic probability (assuming configuration model)
@@ -4202,9 +4214,9 @@ def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
     r'''Encodes system (6.5) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
     
-    Arguments:
+    Arguments : 
 
-        Pk : dict Pk[k] is probability a node has degree k.
+        Pk (dict) Pk[k] is probability a node has degree k.
 
         Pxidxi : a dict.  Returns P(xi)dxi for user-selected xi.  The 
              algorithm will replace the integral with
@@ -4217,7 +4229,7 @@ def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
         number_its : number of iterations before assumed converged.
                  default value is 100
 
-    Returns:
+    Returns : 
         :
         Calculated Epidemic probability (assuming configuration model)
     '''
@@ -4244,11 +4256,11 @@ def Attack_rate_discrete(Pk, p, rho = None, Sk0=None,
 
     To use system (6.6), leave rho and Sk0 as None.
 
-    Arguments:
+    Arguments : 
 
-        Pk : dict
+        Pk (dict)
             Pk[k] is the probability a randomly selected node has degree k.
-        tau : number
+        tau (positive float)
             per-edge transmission rate.
         gamma : number
             per-node recovery rate
@@ -4268,7 +4280,7 @@ def Attack_rate_discrete(Pk, p, rho = None, Sk0=None,
         phiR0 : number (default 0)
             As with phiS0, only used if Sk0 is not None.
 
-    Returns:
+    Returns : 
         :
         A : number
             the predicted fraction infected.
@@ -4356,12 +4368,12 @@ def Attack_rate_cts_time(Pk, tau, gamma, number_its =100, rho = None,
     If we look for the limit of a nonzero initial fraction infected, we 
     introduce rho or Sk0
 
-    Arguments:
+    Arguments : 
         
-        Pk : dict    
+        Pk (dict)    
             the probability a randomly selected node has degree k.
 
-        tau : number
+        tau (positive float)
             per-edge transmission rate.
 
         gamma : number
@@ -4382,7 +4394,7 @@ def Attack_rate_cts_time(Pk, tau, gamma, number_its =100, rho = None,
             Sk0 is a dict such that Sk0[k] is the probability that a 
             degree k node is susceptible at start.
 
-    Returns:
+    Returns : 
         :
         A : number
             the predicted fraction infected.
@@ -4464,8 +4476,8 @@ def Attack_rate_non_Markovian(Pk, Pzetadzeta, pi, number_its = 100):
     Encodes system (6.8) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
     
-    Arguments:
-        Pk : dict
+    Arguments : 
+        Pk (dict)
             Pk[k] is probability of degree k.
         Pzetadzeta: a dict.  Returns P(zeta)dzeta for user-selected zeta.  The 
              algorithm will replace the integral with
@@ -4477,7 +4489,7 @@ def Attack_rate_non_Markovian(Pk, Pzetadzeta, pi, number_its = 100):
 
         number_its : number of iterations before assumed converged.
                  default value is 100
-    Returns:
+    Returns : 
         :
         AR: number
             attack rate
@@ -4491,7 +4503,7 @@ def Attack_rate_non_Markovian(Pk, Pzetadzeta, pi, number_its = 100):
 
 def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmin = 0, tmax = 100,
                     return_full_data = False):
-    #tested in test_basic_discrete_SIR_epidemic
+    #tested in test_basic_discrete_SIR
     r'''
     Encodes system (6.11) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
@@ -4502,9 +4514,9 @@ def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmin = 0, tma
     S(t) = N psihat(theta(t))
     I(t) = N-S-R
 
-    Arguments:
+    Arguments : 
 
-        N : number
+        N (positive integer)
             size of population
         psihat : function
             psihat(x) = \sum_k S(k,0) x^k
@@ -4528,7 +4540,7 @@ def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmin = 0, tma
             if True 
                return t, S, I, R, and theta
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             returns t, S, I, R, all scipy arrays
@@ -4562,7 +4574,7 @@ def EBCM_discrete_from_graph(G, p, initial_infecteds=None,
                                 initial_recovereds = None, rho = None, 
                                 tmin = 0, tmax=100, 
                                 return_full_data=False):
-    #tested in test_basic_discrete_SIR_epidemic
+    #tested in test_basic_discrete_SIR
     '''
     Takes a given graph, finds the degree distribution 
     (from which it gets psi),
@@ -4570,24 +4582,24 @@ def EBCM_discrete_from_graph(G, p, initial_infecteds=None,
     0, 
     and then uses the discrete EBCM model.
     
-    Arguments:
+    Arguments : 
 
         G : Networkx Graph
         p : number
             per edge transmission probability
-        initial_infecteds: node or iterable of nodes (default None)
+        initial_infecteds (node or iterable of nodes, default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
             None, a random single node is chosen.
             If both initial_infecteds and rho are assigned, then there
             is an error.       
-        initial_recovereds: iterable of nodes (default None)
+        initial_recovereds (iterable of nodes default None)
             this whole collection is made recovered.
             Currently there is no test for consistency with initial_infecteds.
             Understood that everyone who isn't infected or recovered initially
             is initially susceptible.
-        rho : number between 0 and 1  (default None)
+        rho  (float between 0 and 1, default None)
             the fraction to be randomly infected at time 0
             If None, then rho=1/N is used where N = G.order()
         tmax : number
@@ -4596,7 +4608,7 @@ def EBCM_discrete_from_graph(G, p, initial_infecteds=None,
             if False, 
                 return t, S, I, R and if True return t, S, I, R, and theta
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             returns t, S, I, R, all scipy arrays
@@ -4662,12 +4674,12 @@ def EBCM_discrete_from_graph(G, p, initial_infecteds=None,
                         
 def EBCM_discrete_uniform_introduction(N, psi, psiPrime, p, rho, tmax=100, 
                                         return_full_data=False):
-    #tested in test_basic_discrete_SIR_epidemic
+    #tested in test_basic_discrete_SIR
     '''
     Handles the case that the disease is introduced uniformly as opposed
     to depending on degree.
 
-    Arguments:
+    Arguments : 
 
         N : Number
             number of nodes
@@ -4687,7 +4699,7 @@ def EBCM_discrete_uniform_introduction(N, psi, psiPrime, p, rho, tmax=100,
             if True 
                 return t, S, I, R, and theta
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             returns t, S, I, R, all scipy arrays
@@ -4726,15 +4738,15 @@ def EBCM(N, psihat, psihatPrime, tau, gamma, phiS0, phiR0=0, R0=0, tmin=0,
     note : R0 is R(0), not the reproductive number
 
 
-    Arguments:
+    Arguments : 
 
-        N : number
+        N (positive integer)
             size of population
         psihat : function
             psihat(x) = \sum_k S(k,0) x^k
         psihatPrime : function
             psihatPrime(x) = d psihat(x)/dx = sum_k k S(k,0) x^{k-1}
-        tau : number
+        tau (positive float)
             per edge transmission rate
         gamma : number
             per node recovery rate
@@ -4758,7 +4770,7 @@ def EBCM(N, psihat, psihatPrime, tau, gamma, phiS0, phiR0=0, R0=0, tmin=0,
             if True 
                 return t, S, I, R, and theta
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             returns t, S, I, R, all scipy arrays
@@ -4843,15 +4855,15 @@ def EBCM_uniform_introduction(N, psi, psiPrime, tau, gamma, rho, tmin=0,
     Handles the case that the disease is introduced uniformly as opposed
     to depending on degree.
 
-    Arguments:
+    Arguments : 
 
-        N : number
+        N (positive integer)
             size of population
         psi : function
             psihat(x) = \sum_k S(k,0) x^k
         psiPrime : function
             psihatPrime(x) = d psihat(x)/dx = sum_k k S(k,0) x^{k-1}
-        tau : number
+        tau (positive float)
             per edge transmission rate
         gamma : number
             per node recovery rate
@@ -4869,7 +4881,7 @@ def EBCM_uniform_introduction(N, psi, psiPrime, tau, gamma, rho, tmin=0,
             if True 
                 return t, S, I, R, and theta
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             returns t, S, I, R, all scipy arrays
@@ -4919,15 +4931,15 @@ def EBCM_pref_mix(N, Pk, Pnk, tau, gamma, rho = None, tmin = 0, tmax = 100, tcou
     I anticipate eventually adding an option so that the initial condition is
     not uniformly distributed.  So could give rho_k
     
-    Arguments:
-        N : number
+    Arguments : 
+        N (positive integer)
             number of nodes.
-        Pk : dict  (could also be an array or a list)
+        Pk (dict)  (could also be an array or a list)
             Pk[k] is the probability a random node has degree k.
         Pnk : dict of dicts (possibly array/list)
             Pnk[k1][k2] is the probability a neighbor of a degree k1 node has
             degree k2.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -4943,7 +4955,7 @@ def EBCM_pref_mix(N, Pk, Pnk, tau, gamma, rho = None, tmin = 0, tmax = 100, tcou
             whether to return theta or not
             
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             t, S, I, R, all scipy arrays
@@ -4983,11 +4995,11 @@ def EBCM_pref_mix_from_graph(G, tau, gamma, rho = None, tmin = 0, tmax = 100, tc
     I anticipate eventually adding an option so that the initial condition is
     not uniformly distributed.  So could give rho_k
     
-    Arguments:
-        G : NetworkX Graph
-        tau : number
+    Arguments : 
+        G (networkx Graph)
+        tau (positive float)
             transmission rate
-        gamma : number
+        gamma (positive float)
             recovery rate
         rho : number (optional)
             initial proportion infected.  Defaults to 1/N.
@@ -5001,7 +5013,7 @@ def EBCM_pref_mix_from_graph(G, tau, gamma, rho = None, tmin = 0, tmax = 100, tc
             whether to return theta or not
             
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             t, S, I, R, all scipy arrays
@@ -5025,10 +5037,10 @@ def EBCM_pref_mix_discrete(N, Pk, Pnk, p, rho = None, tmin = 0, tmax = 100, retu
     I anticipate eventually adding an option so that the initial condition is
     not uniformly distributed.  So could give rho_k
     
-    Arguments:
-        N : number
+    Arguments : 
+        N (positive integer)
             number of nodes.
-        Pk : dict  (could also be an array or a list)
+        Pk (dict)  (could also be an array or a list)
             Pk[k] is the probability a random node has degree k.
         Pnk : dict of dicts (possibly array/list)
             Pnk[k1][k2] is the probability a neighbor of a degree k1 node has
@@ -5047,7 +5059,7 @@ def EBCM_pref_mix_discrete(N, Pk, Pnk, p, rho = None, tmin = 0, tmax = 100, retu
             whether to return theta or not
             
 
-    Returns:
+    Returns : 
         :
         if return_full_data == False:
             t, S, I, R, all scipy arrays
@@ -5102,7 +5114,7 @@ def EBCM_pref_mix_discrete_from_graph(G, p, rho = None, tmin = 0, tmax = 100, re
             import EoN
             import matplotlib.pyplot as plt
             G = nx.bipartite.configuration_model([5]*300000, [2]*750000)
-            t, S, I, R = EoN.basic_discrete_SIR_epidemic(G, 0.6, rho = 0.002)
+            t, S, I, R = EoN.basic_discrete_SIR(G, 0.6, rho = 0.002)
             tx, Sx, Ix, Rx = EoN.EBCM_pref_mix_discrete_from_graph(G, 0.6, rho=0.002, tmax=t[-1])
             plt.plot(t, I, label = 'simulation')
             plt.plot(tx, Ix, '--', label = 'analytic prediction')

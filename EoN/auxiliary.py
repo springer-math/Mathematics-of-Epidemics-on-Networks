@@ -14,7 +14,7 @@ def subsample(report_times, times, status1, status2=None,
       subsampled at specific report_times.
     
 
-    Arguments:
+    Arguments : 
 
         report_times : iterable (ordered)
             times at which we want to know state of system
@@ -26,7 +26,7 @@ def subsample(report_times, times, status1, status2=None,
         statusX (X one of 1, 2 or 3) : iterable (order corresponds to times)
                           generally S, I, or R
                           number of nodes in given status.
-    Returns:
+    Returns : 
 
         :
         If only status1 is defined
@@ -124,7 +124,7 @@ def get_time_shift(times, L, threshold):
     Identifies the first time at which L crosses a threshold.  
     Useful for shifting times.
     
-    Arguments:
+    Arguments : 
         times : list or scipy array (ordered)
             the times we have observations
         L : a list or scipy array
@@ -132,7 +132,7 @@ def get_time_shift(times, L, threshold):
         threshold : number
             a threshold value
 
-    Returns:
+    Returns : 
         :
             t  (number)
                 the first time at which L reaches or exceeds a threshold.

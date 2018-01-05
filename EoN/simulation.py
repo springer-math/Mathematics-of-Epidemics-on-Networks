@@ -153,21 +153,21 @@ def _simple_test_transmission_(u, v, p):
     A simple test for whether u transmits to v assuming constant probability p
     
     From figure 6.8 of Kiss, Miller, & Simon.  Please cite the book if 
-    using this test_transmission function for basic_discrete_SIR_epidemic.
+    using this test_transmission function for basic_discrete_SIR.
 
     This handles the simple case where transmission occurs with 
     probability p.
 
-    Arguments:
+    Arguments :
 
-        u : node
+        u (node)
             the infected node
         v : node
             the susceptible node
         p : number between 0 and 1
             the transmission probability
 
-    Returns:
+    Returns :
         
         :
             
@@ -178,11 +178,11 @@ def _simple_test_transmission_(u, v, p):
     return random.random()<p
 
 
-def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=(), 
+def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(), 
                 initial_infecteds=None, initial_recovereds = None, 
                 rho = None, tmin = 0, tmax = float('Inf'),
                 return_full_data = False):
-    #tested in test_discrete_SIR_epidemic
+    #tested in test_discrete_SIR
     r'''
     Simulates an SIR epidemic on G in discrete time, allowing user-specified transmission rules
     
@@ -204,7 +204,7 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
     `_simple_test_transmission_`
     in which case args should be entered as (p,)
 
-    Arguments:
+    Arguements : 
 
         G: NetworkX Graph (or some other structure which quacks like a NetworkX Graph)
             The network on which the epidemic will be simulated.
@@ -254,7 +254,7 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
 
             
 
-    Returns:
+    Returns : 
         :
         if return_full_data is False returns 
         
@@ -278,13 +278,13 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
         import EoN
         import matplotlib.pyplot as plt
         G = nx.fast_gnp_random_graph(1000,0.002)
-        t, S, I, R = EoN.discrete_SIR_epidemic(G, args = (0.6,), 
+        t, S, I, R = EoN.discrete_SIR(G, args = (0.6,), 
                                             initial_infecteds=range(20))
         plt.plot(t,I)
     
     
     Because this sample uses the defaults, it is equivalent to a call to 
-    basic_discrete_SIR_epidemic
+    basic_discrete_SIR
     '''
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
@@ -360,11 +360,11 @@ def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=
 
 
 
-def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None, 
+def basic_discrete_SIR(G, p, initial_infecteds=None, 
                                 initial_recovereds = None, rho = None,
                                 tmin = 0, tmax=float('Inf'), 
                                 return_full_data = False):
-    #tested in test_basic_discrete_SIR_epidemic   
+    #tested in test_basic_discrete_SIR   
     r'''
     Performs simple discrete SIR simulation assuming constant transmission probability p.
     
@@ -375,9 +375,9 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
     with probability p independently to each neighbor and then
     recovering.
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
             
         p : number
@@ -404,7 +404,7 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
 
-    Returns:
+    Returns : 
         :
         if return_full_data is False returns 
         
@@ -431,7 +431,7 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
         import EoN
         import matplotlib.pyplot as plt
         G = nx.fast_gnp_random_graph(1000,0.002)
-        t, S, I, R = EoN.basic_discrete_SIR_epidemic(G, 0.6)
+        t, S, I, R = EoN.basic_discrete_SIR(G, 0.6)
         plt.plot(t,S)
     
     
@@ -440,11 +440,11 @@ def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None,
 
 '''
 
-    return discrete_SIR_epidemic(G, _simple_test_transmission_, (p,), 
+    return discrete_SIR(G, _simple_test_transmission_, (p,), 
                                     initial_infecteds, initial_recovereds, 
                                     rho, tmin, tmax, return_full_data)
 
-def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
+def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
                                 tmin = 0, tmax = 100, return_full_data = False):
     
     '''Does a simulation of the simple case of all nodes transmitting
@@ -455,9 +455,9 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
     
     
     
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
             
         p : number
@@ -477,7 +477,7 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
 
-    Returns:
+    Returns : 
         :
             t, S, I, : 
                 All scipy arrays (if return_full_data is False)
@@ -544,7 +544,7 @@ def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
     
     
 def percolate_network(G, p):
-    #tested indirectly in test_basic_discrete_SIR_epidemic   
+    #tested indirectly in test_basic_discrete_SIR   
 
     r'''
     Performs percolation on a network G with each edge persisting with probability p
@@ -555,13 +555,13 @@ def percolate_network(G, p):
     Performs bond percolation on the network G, keeping edges with 
     probability p
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
         p : number between 0 and 1
             the probability of keeping edge
 
-    Returns:
+    Returns : 
         :
         H : NetworkX Graph
             A network with same nodes as G, but with each edge retained 
@@ -597,26 +597,26 @@ def _edge_exists_(u, v, H):
 
     Tests whether H has an edge from u to v.
 
-    Arguments:
+    Arguements : 
 
         u : node
         v : node
         H : graph
 
-    Returns:
+    Returns : 
         :
         True : if H has the edge
         False : if H does not have the edge
     '''
     return H.has_edge(u,v)
 
-def percolation_based_discrete_SIR_epidemic(G, p, 
+def percolation_based_discrete_SIR(G, p, 
                                             initial_infecteds=None, 
                                             initial_recovereds = None,
                                             rho = None, tmin = 0,
                                             tmax = float('Inf'),
                                             return_full_data = False):
-    #tested in test_basic_discrete_SIR_epidemic   
+    #tested in test_basic_discrete_SIR   
     r'''
     perfoms a simple SIR epidemic but using percolation as the underlying method.
     
@@ -630,7 +630,7 @@ def percolation_based_discrete_SIR_epidemic(G, p,
     
     Note:
         You probably DON'T REALLY WANT TO USE THIS.
-        See basic_discrete_SIR_epidemic which should produce equivalent 
+        See basic_discrete_SIR which should produce equivalent 
     outputs.  
     
         That algorithm will be faster than this one.  
@@ -641,9 +641,9 @@ def percolation_based_discrete_SIR_epidemic(G, p,
     This algorithm leads to a better understanding of the theory.
 
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
         p : number
             transmission probability
@@ -670,7 +670,7 @@ def percolation_based_discrete_SIR_epidemic(G, p,
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
 
-    Returns:
+    Returns : 
         :
         t, S, I, R : Scipy arrays
         
@@ -690,7 +690,7 @@ def percolation_based_discrete_SIR_epidemic(G, p,
         import EoN
         import matplotlib.pyplot as plt
         G = nx.fast_gnp_random_graph(1000,0.002)
-        t, S, I, R = EoN.percolation_based_discrete_SIR_epidemic(G, p)
+        t, S, I, R = EoN.percolation_based_discrete_SIR(G, p)
         plt.plot(t,S)
     
     This is equivalent to basic_discrete_epidemic (but many simulations
@@ -699,7 +699,7 @@ def percolation_based_discrete_SIR_epidemic(G, p,
 '''
 
     H = percolate_network(G, p)
-    return discrete_SIR_epidemic(H, test_transmission=H.has_edge, 
+    return discrete_SIR(H, test_transmission=H.has_edge, 
                                 initial_infecteds=initial_infecteds, 
                                 initial_recovereds = initial_recovereds,
                                 rho = rho, tmin = tmin, tmax = tmax, 
@@ -726,14 +726,14 @@ def estimate_SIR_prob_size(G, p):
     several densely connected components with very weak connections 
     between these components.
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
         p : number
             transmission probability
 
-    Returns:
+    Returns : 
         :
         PE, AR : 
             (numbers) estimates of the probability and proportion 
@@ -780,11 +780,11 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     -nonMarkov_directed_percolate_network which allows for more complex 
     rules
     
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -792,7 +792,7 @@ def directed_percolate_network(G, tau, gamma, weights = True):
             if True, then includes information on time to recovery
             and delay to transmission.  If False, just the directed graph.
 
-    Returns:
+    Returns : 
         :
         H : networkx DiGraph  (directed graph)
             a u->v edge exists in H if u would transmit to v if ever 
@@ -848,9 +848,9 @@ def _out_component_(G, source):
     finds the set of nodes (including source) which are reachable from 
     nodes in source.
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
         source : either a node or an iterable of nodes (set, list, tuple)
             The nodes from which the infections start.  We assume no node
@@ -862,7 +862,7 @@ def _out_component_(G, source):
         source of (1,2,3) is potentially ambiguous.  It will interpret
         the source as the single node (1,2,3)
 
-    Returns:
+    Returns : 
         :            
         reachable_nodes : set
             the set of nodes reachable from source (including source).
@@ -887,9 +887,9 @@ def _in_component_(G, target):
     r'''
     creates the _in_component_ by basically reversing _out_component_.
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
         target : a target node (or iterable of target nodes)
             The node whose infection we are interested in.
@@ -904,7 +904,7 @@ def _in_component_(G, target):
         target of (1,2,3) is potentially ambiguous.  It will interpret
         the target as the single node (1,2,3)
 
-    Returns:
+    Returns : 
 
         source_nodes : (set)
             the set of nodes (including target) from which target is 
@@ -953,11 +953,11 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     calculate anything.  Don't do it like this.  Use one of the other
     algorithms.  Try fast_SIR, for example.
     
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
@@ -969,7 +969,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
             if a single node, then this node is initially recovered
             if an iterable, then whole set is initially recovered
 
-    Returns:
+    Returns : 
         :
             
         infected_nodes : set
@@ -1026,16 +1026,16 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
 
     estimate_nonMarkov_SIR_prob_size which handles nonMarkovian versions
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The network the disease will transmit through.
-        tau : number
+        tau (positive float)
             transmission rate
         gamma : number
             recovery rate
 
-    Returns:
+    Returns : 
         :
         PE, AR  :  numbers (between 0 and 1)
             Estimates of epidemic probability and attack rate found by 
@@ -1066,12 +1066,12 @@ def estimate_SIR_prob_size_from_dir_perc(H):
     From figure 6.17 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm
 
-    Arguments:
+    Arguements : 
 
         H:  directed graph (assumed to be from directed percolation on 
             previous graph G)
 
-    Returns:
+    Returns : 
         :
         PE, AR  :  numbers
             Estimates of epidemic probability and attack rate found by 
@@ -1109,7 +1109,7 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
     '''
     estimates probability and size for user-input transmission and recovery time functions.
     
-       Arguments:
+       Arguements : 
         G : Networkx Graph
             the input graph
         trans_time_fxn : function
@@ -1124,7 +1124,7 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
         rec_time_args : tuple
             any additional arguments required by rec_time_fxn
 
-    Returns:
+    Returns : 
         :
         PE, AR  :  numbers (between 0 and 1)
             Estimates of epidemic probability and attack rate found by 
@@ -1187,9 +1187,9 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
         You probably DON'T REALLY WANT TO USE THIS.
         Check if estimate_nonMarkov_prob_size_with_timing fits your needs better.
     
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The input graph
 
         xi : dict
@@ -1202,7 +1202,7 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
             transmission(xi[u], zeta[v]) determines whether u transmits to 
             v.
 
-    Returns:
+    Returns : 
         :
         PE, AR  :  numbers (between 0 and 1)
             Estimates of epidemic probability and attack rate found by 
@@ -1269,7 +1269,7 @@ def nonMarkov_directed_percolate_network_with_timing(G,
     
     The arguments are very much like in fast_nonMarkov_SIR
     
-    Arguments:
+    Arguements : 
         G : Networkx Graph
             the input graph
         trans_time_fxn : function
@@ -1335,9 +1335,9 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
     transmissision is a user-defined function taking xi[u] and zeta[v] 
     and returning True if a transmission would occur
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The input graph
 
         xi : dict
@@ -1350,7 +1350,7 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
             transmission(xi[u], zeta[v]) determines whether u transmits to 
             v.
 
-    Returns:
+    Returns : 
         :
         H : networkx DiGraph (directed graph)
             Edge u,v exists in H if disease will transmit given the opportunity.
@@ -1401,11 +1401,11 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status,
     From figure A.4 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm.
 
-    Arguments:
+    Arguements : 
 
         time : number
             time of transmission
-        G : NetworkX Graph
+        G (networkx Graph)
         node : node
             node receiving transmission.
         times : list
@@ -1430,7 +1430,7 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status,
             versions of this function and then calls fast_nonMarkov_SIR.
         trans_and_rec_time_args : tuple (default empty)
             see trans_and_rec_time_fxn
-    Returns:
+    Returns : 
         :
         nothing returned
 
@@ -1480,7 +1480,7 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
     r'''From figure A.3 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Arguments:
+    Arguements : 
 
         event : event
             has details on node and time
@@ -1492,7 +1492,7 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
             dictionary giving status of each node
 
 
-    Returns:
+    Returns : 
         :
         Nothing
 
@@ -1537,12 +1537,12 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
     
     
 
-    Arguments:
+    Arguements : 
 
-        G : NetworkX Graph
+        G (networkx Graph)
             The underlying network
 
-        tau : number
+        tau (positive float)
             transmission rate per edge
 
         gamma : number
@@ -1586,7 +1586,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
 
-    Returns:
+    Returns : 
         :
         times, S, I, R : Scipy arrays
         
@@ -1694,7 +1694,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     determine both recovery and transmission times.  
     
 
-    Arguments:
+    Arguements : 
 
         G : Networkx Graph
         
@@ -1790,7 +1790,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             at t=0.
 
 
-    Returns:
+    Returns : 
         :
         times, S, I, R : Scipy arrays
         
@@ -1969,11 +1969,11 @@ def _process_trans_SIS_(time, G, source, target, times, infection_times, recover
     r'''From figure A.6 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Arguments:
+    Arguements : 
 
         time : number
             current time
-        G : NetworkX Graph
+        G (networkx Graph)
         source : node
             node causing transmission
         target : node
@@ -2000,7 +2000,7 @@ def _process_trans_SIS_(time, G, source, target, times, infection_times, recover
         rec_rate_fxn : function
             recovery rate rec_rate_fxn(u) is recovery rate of u.
 
-    Returns:
+    Returns : 
         :
         nothing returned
 
@@ -2058,7 +2058,7 @@ def _find_next_trans_SIS_(Q, time, tau, source, target, status, rec_time,
     determines if a transmission from source to target will occur and if 
     so puts into Q
 
-    Arguments:
+    Arguements : 
 
         Q : myQueue
             A priority queue of events
@@ -2071,7 +2071,7 @@ def _find_next_trans_SIS_(Q, time, tau, source, target, status, rec_time,
         rec_time : a dict giving the recovery time of every node that has 
                been infected.
 
-    Returns:
+    Returns : 
         :
         nothing returned
 
@@ -2127,12 +2127,12 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     From figure A.5 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Arguments:
+    Arguements : 
     
-        G : NetworkX Graph
+        G (networkx Graph)
             The underlying network
 
-        tau : number
+        tau (positive float)
             transmission rate per edge
 
         gamma : number
@@ -2168,7 +2168,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
 
-    Returns:
+    Returns : 
         :
         times, S, I : each a scipy array
             giving times and number in each status for corresponding time
@@ -2382,7 +2382,7 @@ def _Gillespie_recover_SIR_(G, S, I, R, times, infected, current_time, status,
                             infected_neighbor_count, risk_group, 
                             recovery_times, return_full_data):
     r''' Changes: S, I, R, infected, times'''
-    assert(I[-1]==len(infected))
+    #assert(I[-1]==len(infected))
     index = random.randint(0,I[-1]-1)
     infected[index], infected[-1] = infected[-1], infected[index] 
             #http://stackoverflow.com/a/14088129/2966723
@@ -2409,7 +2409,7 @@ def _Gillespie_recover_SIS_(G, S, I, times, infected, current_time, status,
     r''' From figure A.5 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
     
-    Arguments:
+    Arguements : 
     '''
     assert(I[-1]==len(infected))
     index = random.randint(0,I[-1]-1)
@@ -2475,10 +2475,10 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     
     
     
-    Arguments:
-        G : NetworkX Graph
+    Arguements : 
+        G (networkx Graph)
             The underlying network
-        tau : number
+        tau (positive float)
             transmission rate per edge
        
         gamma : number
@@ -2510,7 +2510,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
 
-    Returns:
+    Returns : 
         :
         times, S, I, R : each a scipy array
             giving times and number in each status for corresponding time
@@ -2636,11 +2636,11 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     fast_SIS which has the same inputs but uses a much faster method.
     
     
-    Arguments:
+    Arguements : 
         
-        G (NetworkX Graph):  
+        G (NetworkX Graph)
             The underlying network
-        tau : number 
+        tau (positive float) 
             transmission rate per edge
         gamma : number
             recovery rate per node
@@ -2665,7 +2665,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
         
-    Returns:
+    Returns : 
 
         : times, S, I; 
             each a scipy array giving times and number in each status for corresponding time
@@ -2766,11 +2766,11 @@ This is a low priority since it will be much slower than fast_SIR.
 
 def randomlychoose(D, r):
     r'''
-    Arguments:
+    Arguements : 
         D : defaultdict of rates
         r : number 
         
-    Returns:
+    Returns : 
         node : the node for which the action is occuring
     
     Modifies:
