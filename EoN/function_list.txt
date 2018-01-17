@@ -1,0 +1,90 @@
+analytic.py:def get_Nk_and_IC_as_arrays(G, initial_infecteds = None, initial_recovereds = None, rho=None, SIR=True):
+analytic.py:def get_NkNl_and_IC_as_arrays(G, initial_infecteds=None, initial_recovereds = None, 
+analytic.py:def get_Pk(G):
+analytic.py:def get_Psi(Pk):
+analytic.py:def get_PsiPrime(Pk):
+analytic.py:def get_PsiDPrime(Pk):
+analytic.py:def get_Pnk(G):
+analytic.py:def SIS_individual_based(G, tau, gamma, rho = None, Y0=None, nodelist = None, tmin = 0, 
+analytic.py:def SIR_individual_based(G, tau, gamma, rho = None, Y0 = None, X0= None, 
+analytic.py:def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = None,
+analytic.py:def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds, 
+analytic.py:def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
+analytic.py:def SIS_pair_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = None,
+analytic.py:def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None, 
+analytic.py:def SIR_pair_based_pure_IC(G, tau, gamma, initial_infecteds, 
+analytic.py:def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100, 
+analytic.py:def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100, 
+analytic.py:def SIS_homogeneous_meanfield_from_graph(G, tau, gamma, 
+analytic.py:def SIR_homogeneous_meanfield_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def SIS_homogeneous_pairwise(S0, I0, SI0, SS0, n, tau, gamma, tmin = 0, 
+analytic.py:def SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin = 0, 
+analytic.py:def SIS_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def SIR_homogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100, 
+analytic.py:def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100, 
+analytic.py:def SIS_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=None, 
+analytic.py:def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=None, 
+analytic.py:def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma, 
+analytic.py:def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma, 
+analytic.py:def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = None,
+analytic.py:def SIR_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def SIS_compact_pairwise(Sk0, Ik0, SI0, SS0, II0, tau, gamma, tmin = 0, 
+analytic.py:def SIR_compact_pairwise(Sk0, I0, R0, SS0, SI0, tau, gamma, tmin=0, tmax=100,
+analytic.py:def SIS_compact_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0, 
+analytic.py:def SIR_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None, 
+analytic.py:def SIS_super_compact_pairwise(S0, I0, SS0, SI0, II0, tau, gamma, k_ave, 
+analytic.py:def SIR_super_compact_pairwise(R0, SS0, SI0,  N, tau, gamma, psihat, 
+analytic.py:def SIS_super_compact_pairwise_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def SIR_super_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None, 
+analytic.py:def SIS_effective_degree(Ssi0, Isi0, tau, gamma, tmin = 0, tmax=100, 
+analytic.py:def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100, 
+analytic.py:def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def SIR_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def SIS_compact_effective_degree(Sk0, Ik0, SI0, SS0, II0, tau, gamma, 
+analytic.py:def SIS_compact_effective_degree_from_graph(G, tau, gamma, initial_infecteds = None,
+analytic.py:def SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, tmin=0, 
+analytic.py:def SIR_compact_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def Epi_Prob_discrete(Pk, p, number_its = 100):
+analytic.py:def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001, 
+analytic.py:def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
+analytic.py:def Attack_rate_discrete(Pk, p, rho = None, Sk0=None, 
+analytic.py:def Attack_rate_discrete_from_graph(G, p, initial_infecteds=None, 
+analytic.py:def Attack_rate_cts_time(Pk, tau, gamma, number_its =100, rho = None, 
+analytic.py:def Attack_rate_cts_time_from_graph(G,  tau, gamma, initial_infecteds=None, 
+analytic.py:def Attack_rate_non_Markovian(Pk, Pzetadzeta, pi, number_its = 100):
+analytic.py:def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmin = 0, tmax = 100,
+analytic.py:def EBCM_discrete_from_graph(G, p, initial_infecteds=None, 
+analytic.py:def EBCM_discrete_uniform_introduction(N, psi, psiPrime, p, rho, tmax=100, 
+analytic.py:def EBCM(N, psihat, psihatPrime, tau, gamma, phiS0, phiR0=0, R0=0, tmin=0, 
+analytic.py:def EBCM_from_graph(G, tau, gamma, initial_infecteds=None, 
+analytic.py:def EBCM_uniform_introduction(N, psi, psiPrime, tau, gamma, rho, tmin=0, 
+analytic.py:def EBCM_pref_mix(N, Pk, Pnk, tau, gamma, rho = None, tmin = 0, tmax = 100, tcount = 1001, return_full_data=False):
+analytic.py:def EBCM_pref_mix_from_graph(G, tau, gamma, rho = None, tmin = 0, tmax = 100, tcount = 1001, return_full_data=False):
+analytic.py:def EBCM_pref_mix_discrete(N, Pk, Pnk, p, rho = None, tmin = 0, tmax = 100, return_full_data=False):
+analytic.py:def EBCM_pref_mix_discrete_from_graph(G, p, rho = None, tmin = 0, tmax = 100, return_full_data=False):
+auxiliary.py:def subsample(report_times, times, status1, status2=None, 
+auxiliary.py:def get_time_shift(times, L, threshold):
+auxiliary.py:def visualize(G, plot_times, node_history, pos = None, 
+simulation.py:def discrete_SIR_epidemic(G, test_transmission=_simple_test_transmission_, args=(), 
+simulation.py:def basic_discrete_SIR_epidemic(G, p, initial_infecteds=None, 
+simulation.py:def basic_discrete_SIS_epidemic(G, p, initial_infecteds=None, rho = None,
+simulation.py:def percolate_network(G, p):
+simulation.py:def percolation_based_discrete_SIR_epidemic(G, p, 
+simulation.py:def estimate_SIR_prob_size(G, p):
+simulation.py:def directed_percolate_network(G, tau, gamma, weights = True):
+simulation.py:def get_infected_nodes(G, tau, gamma, initial_infecteds=None, 
+simulation.py:def estimate_directed_SIR_prob_size(G, tau, gamma):
+simulation.py:def estimate_SIR_prob_size_from_dir_perc(H):
+simulation.py:def estimate_nonMarkov_SIR_prob_size_with_timing(G, 
+simulation.py:def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
+simulation.py:def nonMarkov_directed_percolate_network_with_timing(G, 
+simulation.py:def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
+simulation.py:def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None, 
+simulation.py:def fast_nonMarkov_SIR(G, trans_time_fxn=None,
+simulation.py:def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100, 
+simulation.py:def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, 
+simulation.py:def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
+simulation.py:def randomlychoose(D, r):
+simulation.py:def update_infected_neighbors(G, node, status, infection_rate, total_infection_rate)
+simulation.py:def Gillespie_weighted_SIR(G, tau, gamma, initial_infecteds = None, rho = None,

@@ -1,0 +1,54 @@
+if about to submit anything to github:
+
+
+    run all examples.
+    run tests in EpidemicsonNetworksTest
+    repeat with other networkx version.
+    update version name in setup.py.
+    comment out download_url in setup.py
+    update version in docs/conf.py
+    update version in __init__.py
+    
+    
+if updating documentation:
+    Make sure all functions have been added to EoN.rst, both in
+    appropriate Quick list and short descriptions.  
+
+    in docs directory run 
+    sphinx-autobuild . _build/html
+    and check
+
+    any new functions .rst files in docs/functions/ should be added to
+    the repository.
+
+    Then after uploading, go to readthedocs and rebuild.
+
+
+    
+
+for major release
+    update the release's information at readme.md
+
+
+
+if about to put up to pypi
+    run steps for submitting to github
+
+    update version name in setup.py (including download_url)
+                 without  `rc1` - otherwise pip will ignore it
+    uncomment download_url
+    
+    add tag through sourcetree (under repository) and push to github
+    
+    run command below in SpringerGithub directory
+    python setup.py sdist upload -r pypi
+    
+    after waiting a while - check https://pypi.python.org/simple/eon/
+    go to home directory and
+    pip uninstall EoN
+    pip install EoN
+    
+    then update all versions to an *rc1 and comment out download_url
+    
+    
+    

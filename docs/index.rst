@@ -9,17 +9,18 @@ the spread of SIS and SIR diseases in networks.
    :maxdepth: 2
 
    Getting Started <GettingStarted>
+   Examples 
    EoN 
 
-Highlights
+Highlights 
 ----------
 
 **EoN** is based on the book 
 
   `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_ 
-**EoN** is built using tools from NetworkX_.  The repository_ is on github.   
-The tools fall into two broad 
-categories:
+
+  **EoN** is built using tools from NetworkX_.  The repository_ is on github.   
+  The tools fall into two broad categories:
 
 - **Stochastic simulation of SIS and SIR disease**
 

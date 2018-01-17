@@ -49,9 +49,9 @@ Quick list
    fast_SIS
    Gillespie_SIR
    Gillespie_SIS
-   basic_discrete_SIR_epidemic
-   basic_discrete_SIS_epidemic
-   discrete_SIR_epidemic
+   basic_discrete_SIR
+   basic_discrete_SIS
+   discrete_SIR
    percolate_network
    directed_percolate_network
    nonMarkov_directed_percolate_network_with_timing
@@ -62,7 +62,7 @@ Quick list
    estimate_nonMarkov_SIR_prob_size_with_timing
    estimate_nonMarkov_SIR_prob_size
    get_infected_nodes
-   percolation_based_discrete_SIR_epidemic
+   percolation_based_discrete_SIR
 
 Short descriptions
 ^^^^^^^^^^^^^^^^^^
@@ -91,12 +91,12 @@ Short descriptions
   These algirthms are appropriate for where we separate infection into 
   generations.  We assume infection lasts a single time step.  The `basic_*` 
   algorithms assume that transmission occurs with probability p for all edges.
-  In contrast `discrete_SIR_epidemic` allows for very general user-specified
+  In contrast `discrete_SIR` allows for very general user-specified
   transmission rules.
   
-  - **basic_discrete_SIR_epidemic**
-  - **basic_discrete_SIS_epidemic**
-  - **discrete_SIR_epidemic**
+  - **basic_discrete_SIR**
+  - **basic_discrete_SIS**
+  - **discrete_SIR**
 
 - Percolation-based approaches 
     
@@ -116,7 +116,7 @@ Short descriptions
   - **estimate_nonMarkov_SIR_prob_size_with_timing** (estimates based on user-generated transmission and recovery time distributions)
   - **estimate_nonMarkov_SIR_prob_size** (estimates based on user-generated transmission rules)
   - **get_infected_nodes** (simulates epidemic and returns final infected nodes)
-  - **percolation_based_discrete_SIR_epidemic**
+  - **percolation_based_discrete_SIR**
 
 
 Analytic Toolkit
@@ -194,9 +194,9 @@ Quick list
     get_PGFDPrime
     estimate_R0
 
-Relation to models in text
+Short description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-The numbers given below are the equation numbers in the book.
+These come from the book.  The numbers given below are the equation numbers in the book.
 
 - Chapter 3
   
@@ -382,13 +382,14 @@ Quick List
 .. autosummary::
    :toctree: functions
 
-   plot_graph
+   visualize
    animate
+   
 
 Short  Description
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
-    - **plot_graph** (allows us to plot a graph at a specific time
+    - **visualize** (allows us to plot a graph at a specific time
       point, and to optionally include the calculated time series)
 
     - **animate** (allows us to plot a graph at many time points
@@ -409,13 +410,21 @@ Quick List
    
    get_time_shift
    subsample
+   node_status
+   get_statuses
+   
 
 
 Short Description
 ^^^^^^^^^^^^^^^^^
 
     - **get_time_shift** (allows us to shift plots to eliminate the effect of early-time stochasticity)
-    - **subsample** (allows us to take output given at a stochastic set of times and get output at given times - particularly useful to allow for averageing multiple simulations)
+    - **subsample** (allows us to take output given at a stochastic
+      set of times and get output at given times - particularly useful
+      to allow for averageing multiple simulations)
+    - **node_status** returns the status of a node at a given time
+    - **get_statuses** returns the status of a collection of nodes at
+      a given time (in a dict).
     
     
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
