@@ -75,8 +75,17 @@ The code here provides an example of creating a Barabasi-Albert network.  Then i
     plt.plot(t, I, label = 'Pref mix EBCM', linewidth=5, dashes=[4, 2, 1, 2, 1, 2])
     
     plt.legend(loc = 'upper right')
-    plt.savefig('SIR_BA_model_vs_sim.pdf')
+    plt.savefig('SIR_BA_model_vs_sim.png')
     
+This produces
+
+.. image:: SIR_BA_model_vs_sim.png
+
+The preferential mixing version of the EBCM approach provides the best approximation
+to the (gray) simulated epidemics.  We now move on to SIS epidemics:
+
+::
+
     plt.clf()
    
     #Now run for SIS.   Simulation is much slower so need smaller network
@@ -104,7 +113,9 @@ The code here provides an example of creating a Barabasi-Albert network.  Then i
     plt.plot(t, I, '--', label = 'Compact pairwise', linewidth = 5)
     
     plt.legend(loc = 'lower right')
-    plt.savefig('SIS_BA_model_vs_sim.pdf')
+    plt.savefig('SIS_BA_model_vs_sim.png')
 
+This produces
 
-.. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
+.. image:: SIS_BA_model_vs_sim.png
+

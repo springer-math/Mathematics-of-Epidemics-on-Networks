@@ -15,7 +15,7 @@ the spread of SIS and SIR diseases in networks.
 Highlights 
 ----------
 
-**EoN** is based on the book 
+**EoN** is based on the book  
 
   `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_ 
 
@@ -37,6 +37,7 @@ Highlights
   - effective degree models
   - edge-based compartmental models
 
+There is also support for producing figures and animations.
 
 .. _repository: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
