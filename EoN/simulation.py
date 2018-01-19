@@ -1673,7 +1673,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                         initial_infecteds = None,
                         initial_recovereds = None,
                         rho=None, tmin = 0, tmax = float('Inf'), 
-                        return_full_data = False, Q=None):
+                        return_full_data = False):
     r'''
     A modification of the algorithm in figure A.3 of Kiss, Miller, & 
     Simon to allow for user-defined rules governing time of 
@@ -1762,32 +1762,6 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         return_full_data: boolean (default False)
             Tells whether `node_history` should be returned.  
 
-
-    
-         If Q is defined:
-             Then initial_infecteds consists of those nodes infected 
-             **PRIOR** to t=0.  
-             Those infected at t=0 will be handled by being in Q 
-             already.
-
-
-        Q : If user wants to predefine some events, this can be done.  This 
-            can be input as a heap or as a list (it will be heapified and 
-            modified).
-        
-            User should understand the how events are entered.
-        
-            Currently there is no guarantee this is properly supported,
-            so much so that right now I'm going to force the user to edit 
-            the source code before trying it.  
-        
-            When Q is input, initial_infecteds should be the nodes in 
-            I class **PRIOR** to t=0, and the events in Q must have all of 
-            their recoveries.  
-        
-            The best way to handle nodes that should be already recovered is 
-            to put them in initial_infecteds and give them a recovery event 
-            at t=0.
 
 
     Returns : 
@@ -1878,61 +1852,29 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         #infection time defaults to \infty  --- this could be set to tmax, 
         #probably with a slight improvement to performance.
     
-    #now set up Q if it's not already defined.
-    #if it is already defined, this is because user is using a feature
-    #that I hope to support in future, but don't right now.
-    if Q is None:
-        Q = myQueue(tmax)
+    Q = myQueue(tmax)
 
-        if initial_infecteds is None:  #create initial infecteds list if not given
-            if rho is None:
-                initial_number = 1
-            else:
-                initial_number = int(round(G.order()*rho))
-            initial_infecteds=random.sample(G.nodes(), initial_number)
-        elif G.has_node(initial_infecteds):
-            initial_infecteds=[initial_infecteds]
-        #else it is assumed to be a list of nodes.
+    if initial_infecteds is None:  #create initial infecteds list if not given
+        if rho is None:
+            initial_number = 1
+        else:
+            initial_number = int(round(G.order()*rho))
+        initial_infecteds=random.sample(G.nodes(), initial_number)
+    elif G.has_node(initial_infecteds):
+        initial_infecteds=[initial_infecteds]
+    #else it is assumed to be a list of nodes.
         
-        times, S, I, R= ([tmin], [G.order()], [0], [0])  
+    times, S, I, R= ([tmin], [G.order()], [0], [0])  
 
-        for u in initial_infecteds:
-            pred_inf_time[u] = tmin
-            Q.add(tmin, _process_trans_SIR_, args=(G, u, times, S, I, R, Q, 
-                                                        status, rec_time, 
-                                                        pred_inf_time, 
-                                                        trans_and_rec_time_fxn,
-                                                        trans_and_rec_time_args
-                                                    )
-                            )
-    else:
-        raise EoN.EoNError("inputting Q is not currently supported.\n \
-                        Email joel.c.miller.research@gmail.com for help.\n \
-                        I believe this code will work, but you will need to \
-                        delete this message.")
-
-        if initial_infecteds is None:
-            if rho is None:
-                initial_number = 0 #assuming that input Q has this 
-                                   #taken care of 
-            else:
-                initial_number = scipy.random.binomial(G.order(),rho)
-            initial_infecteds=random.sample(G.nodes(), initial_number)
-        elif G.has_node(initial_infecteds):
-            initial_infecteds=[initial_infecteds]
-
-        for node in initial_infecteds:
-            status[node] = 'I'
-            pred_inf_time[node] = tmin  #old version made -1, not sure why not 0?
-        for event in Q:
-            if event.action == 'transmit' and \
-                            event.time<pred_inf_time[event.node]:
-                pred_inf_time[event.node] = event.time
-            elif event.action == 'recover':
-                rec_time[event.node] = event.time
-        heapq.heapify(Q)            
-        times, S, I, R= ([tmin], [G.order()-len(initial_infecteds)], [0], [0])  
-        
+    for u in initial_infecteds:
+        pred_inf_time[u] = tmin
+        Q.add(tmin, _process_trans_SIR_, args=(G, u, times, S, I, R, Q, 
+                                                    status, rec_time, 
+                                                    pred_inf_time, 
+                                                    trans_and_rec_time_fxn,
+                                                    trans_and_rec_time_args
+                                                )
+                        )        
     
     #Note that when finally infected, pred_inf_time is correct
     #and rec_time is correct.  
