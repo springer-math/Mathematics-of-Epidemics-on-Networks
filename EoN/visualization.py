@@ -5,12 +5,38 @@ import random
 from matplotlib.animation import FuncAnimation
 
 class EoN_Plot(object):
-    def __init__(self, timeseries = ['S', 'I', 'R'], timelabel = r'$t$', SIR = True):
-        
+    r'''Class used for visualizing snapshots of epidemic spread.
+    
+    The defaults (for SIR) produce a single plot showing the network
+    at some snapshot time.  By default the infected nodes are plotted on
+    top of the other nodes.
+    
+    To the right of this plot it produces a 
+    collection of 3 plots, one of S, one of I, and one of R.
+    
+    Vertical lines in the S, I, and R plots show the time at which the
+    snapshot is created.
+    
+    Producing the network snapshot requires knowing what the status of
+    every node is at the given time.  
+    
+    
+    Sample Use
+    
+    ::
+    
+    import EoN
+    import networkx as nx
+    G = nx.fast_gnp_random_graph(200,0.03)
+    t, S, I, R, node_data= EoN.
+    '''
+    def __init__(self, G, timeseries = ['S', 'I', 'R'], IonTop=True, timelabel = r'$t$'):
+        self.G = G
         self.timeseries = timeseries
-
-        timeseries_count = len(self.timeseries)
         
+        self.IonTop = IonTop  #infected nodes are plotted on top
+        
+        timeseries_count = len(self.timeseries)
         self.timeseries_axi = [None for ts in timeseries] #plural of axes = axi?
 
         if timeseries_count==0:
@@ -31,28 +57,30 @@ class EoN_Plot(object):
                     plt.setp(ax.get_xticklabels(), visible=False)
             self.timeseries.reverse()
 
-    def plot_network(self, G, status, pos=None, nodelist=None, colordict={'S':'#009a80','I':'#ff2020', 'R':'gray'}, **nx_kwargs):
+    def plot_network(self, status, pos=None, nodelist=None, colordict={'S':'#009a80','I':'#ff2020', 'R':'gray'}, **nx_kwargs):
         r'''
         Plots the network in the axes self.networkx_ax.  Nodes are colored according to their status.
         if no ordered nodelist is provided, then the nodes are plotted so that 'I' nodes appear on top, while the order of the 'S' and 'R' nodes is random.  When the network is very dense this highlights 'I' nodes and allows the final state to more accurately represent the proportion of nodes having each status.
         '''
         colorlist = []
         if pos is None:
-            pos = nx.spring_layout(G)
+            pos = nx.spring_layout(self.G)
         if nodelist is None:
-            nodelist = list(G.nodes())
-            I_nodes = [node for node in nodelist if status[node] == 'I']
-            other_nodes = [node for node in nodelist if status[node]!='I']
+            nodelist = list(self.G.nodes())
             random.shuffle(other_nodes)
-            nodelist = other_nodes + I_nodes
-            edgelist = list(G.edges())
+            edgelist = list(self.G.edges())
         else:
             nodeset = set(nodelist)
-            edgelist = [edge for edge in G.edges() if edge[0] in nodeset and edge[1] in nodeset]
+            edgelist = [edge for edge in self.G.edges() if edge[0] in nodeset and edge[1] in nodeset]
+        if IonTop:
+            I_nodes = [node for node in nodelist if status[node] == 'I']
+            other_nodes = [node for node in nodelist if status[node]!='I']
+            nodelist = other_nodes + I_nodes
+
         for node in nodelist:
             colorlist.append(colordict[status[node]])
-        nx.draw_networkx_edges(G, pos, edgelist=edgelist, ax = self.network_axes, **nx_kwargs)
-        nx.draw_networkx_nodes(G, pos, nodelist = nodelist, node_color=colorlist, ax=self.network_axes, **nx_kwargs)
+        nx.draw_networkx_edges(self.G, pos, edgelist=edgelist, ax = self.network_axes, **nx_kwargs)
+        nx.draw_networkx_nodes(self.G, pos, nodelist = nodelist, node_color=colorlist, ax=self.network_axes, **nx_kwargs)
         self.network_axes.set_xticks([])
         self.network_axes.set_yticks([])
 
@@ -62,7 +90,7 @@ class EoN_Plot(object):
                 if label in plot_type and data is not None:
                     ax.plot(t, data, colordict[label], **kwargs)
 
-    def plot_timeseries_from_analytic_model(self, G, tau, gamma, initial_status, model = EoN.EBCM_from_graph, tmin = 0, tmax = 10, tcount = 1001, SIR = True, colordict={'S':'#009a80','I':'#ff2020', 'R':'gray'}, **kwargs):
+    def plot_timeseries_from_analytic_model(self, tau, gamma, initial_status, model = EoN.EBCM_from_graph, tmin = 0, tmax = 10, tcount = 1001, SIR = True, colordict={'S':'#009a80','I':'#ff2020', 'R':'gray'}, **kwargs):
         r''' Uses one of the analytic models to predict the curve.
         The analytic model needs to be one of the *_from_graph models.
 
@@ -79,17 +107,17 @@ class EoN_Plot(object):
             
         '''
         
-        initial_infecteds = [node for node in G.nodes() if initial_status[node]=='I']
+        initial_infecteds = [node for node in self.G.nodes() if initial_status[node]=='I']
 
         if SIR:
-            initial_recovereds = [node for node in G.nodes() if initial_status[node]=='R']
+            initial_recovereds = [node for node in self.G.nodes() if initial_status[node]=='R']
             
-            t, S, I, R = model(G, tau, gamma, initial_infecteds=initial_infecteds, 
+            t, S, I, R = model(self.G, tau, gamma, initial_infecteds=initial_infecteds, 
                     initial_recovereds = initial_recovereds, tmin = tmin, tmax=tmax,
                     tcount=tcount, return_full_data=False)
             
         else:
-            t, S, I = model(G, tau, gamma, initial_infecteds=initial_infecteds, 
+            t, S, I = model(self.G, tau, gamma, initial_infecteds=initial_infecteds, 
                     tmin = tmin, tmax=tmax,
                     tcount=tcount, return_full_data=False)
             R=None

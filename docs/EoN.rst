@@ -47,6 +47,7 @@ Quick list
    fast_SIR
    fast_nonMarkov_SIR
    fast_SIS
+   fast_nonMarkov_SIS
    Gillespie_SIR
    Gillespie_SIS
    basic_discrete_SIR
