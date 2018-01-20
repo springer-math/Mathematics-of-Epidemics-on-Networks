@@ -1,2 +1,0 @@
-return_full_data
-tmin and tmax for discrete simulations.
