@@ -9,9 +9,10 @@ You can install **EoN** with pip
 
     pip install EoN
 
-or by cloning or downloading the distribution from GitHub 
-at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks.  Just 
-move into the main directory and run
+This will currently install version 0.99.0.  You can also clone or download
+the distribution from GitHub 
+at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks to get
+a more recent version.  Then just move into the main directory and run
 
 :: 
 
@@ -29,7 +30,10 @@ way is
 QuickStart Guide
 ----------------
 
-The code here provides an example of creating a Barabasi-Albert network.  Then it performs several simulations of an SIR epidemic starting with a fraction rho randomly infected initially.  Finally it uses several analytic models to predict the spread of an epidemic in a random network with the given properties.
+The code here provides an example of creating a Barabasi-Albert network.  
+Then it performs several simulations of an SIR epidemic starting with a fraction 
+rho randomly infected initially.  Finally it uses several analytic models to 
+predict the spread of an epidemic in a random network with the given properties.
 
 ::
 
