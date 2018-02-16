@@ -21,6 +21,10 @@ object if we pass it `return_full_data = True`.
 Quick Examples
 ^^^^^^^^^^^^^^
 
+For these examples, we'll take a 100x100 grid of nodes [each node is (i,j)]
+connected to their nearest neighbors.  This isn't the most realistic network, 
+but it is a good example for showing the automatic plotting tools.
+
 ::
 
     import networkx as nx
