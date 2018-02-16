@@ -59,7 +59,7 @@ This produces an animation:
 
 .. raw:: html 
 
-   <video controls src="examples/SIR_2dgrid.mp4"></video> 
+   <video controls src="_static/SIR_2dgrid.mp4"></video> 
 
 Quick List
 ^^^^^^^^^^
