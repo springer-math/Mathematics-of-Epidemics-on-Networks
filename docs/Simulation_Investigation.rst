@@ -39,6 +39,7 @@ Quick Examples
 This produces a snapshot at time 6:
 
 .. image:: examples/SIS_2dgrid.png
+    :width: 90 %
 
 ::
 
@@ -59,7 +60,7 @@ This produces an animation:
 
 .. raw:: html 
 
-   <video controls src="_static/SIR_2dgrid.mp4"></video> 
+   <video controls src="_static/SIR_2dgrid.mp4", width = 90%></video> 
 
 Quick List
 ^^^^^^^^^^
