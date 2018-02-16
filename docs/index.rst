@@ -11,6 +11,7 @@ the spread of SIS and SIR diseases in networks.
    Getting Started <GettingStarted>
    Examples 
    EoN 
+   Simulation_Investigation
 
 Highlights 
 ----------
@@ -37,7 +38,8 @@ Highlights
   - effective degree models
   - edge-based compartmental models
 
-There is also support for producing figures and animations.
+There is also support for producing figures and animations and other detailed
+investigation of simulations.
 
 .. _repository: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047

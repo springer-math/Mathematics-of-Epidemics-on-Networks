@@ -11,6 +11,7 @@ Figure 2.11 (a and b)
 ::
 
     
+
     import EoN
     import networkx as nx
     import matplotlib.pyplot as plt
@@ -146,7 +147,7 @@ Figure 2.11 (a and b)
     tau = 0.005
     G = nx.complete_graph(N)
     t, S, I = complete_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount)
-    plt.plot(t, I/N)
+    plt.plot(t, I/N, label = 'Prediction')
     
     #now check with simulation
     obs_I = 0*report_times
@@ -155,10 +156,11 @@ Figure 2.11 (a and b)
         IC = random.sample(range(N),I0)
         t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = tmax)
         obs_I += EoN.subsample(report_times, t, I)
-    plt.plot(report_times, obs_I*1./(iterations*N), 'o')
+    plt.plot(report_times, obs_I*1./(iterations*N), 'o', label='Simulation')
     plt.axis(ymin=0, ymax=1)
     plt.xlabel('$t$')
-    plt.ylabel('$[I]$') 
+    plt.ylabel('$[I]$')
+    plt.legend()
     plt.savefig('fig2p11a.png')
     
     print("done with complete graph.  Now star --- warning, this may be slow")
@@ -178,7 +180,7 @@ Figure 2.11 (a and b)
     G = star(N)
     
     t, S, I = star_graph_lumped(N, tau, gamma, I0, tmin, tmax, tcount)
-    plt.plot(t, I/N)
+    plt.plot(t, I/N, label = 'Prediction')
     print("done with star ODE, now simulating")
     
     obs_I = 0*report_times
@@ -186,9 +188,10 @@ Figure 2.11 (a and b)
         IC = random.sample(range(N),I0)
         t, S, I = EoN.fast_SIS(G, tau, gamma, initial_infecteds = IC, tmax = tmax)
         obs_I += EoN.subsample(report_times, t, I)
-    plt.plot(report_times, obs_I*1./(iterations*N), 'o')
+    plt.plot(report_times, obs_I*1./(iterations*N), 'o', label='Simulation')
     plt.axis(ymin=0, ymax=1)
     plt.xlabel('$t$')
     plt.ylabel('$[I]$')
+    plt.legend()
     plt.savefig('fig2p11b.png')
     

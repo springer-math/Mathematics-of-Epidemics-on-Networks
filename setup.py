@@ -19,12 +19,12 @@ from distutils.core import setup
 
 setup(name='EoN',
       packages = ['EoN'], 
-      version='0.99.1rc3',  #http://semver.org/
+      version='0.99.1',  #http://semver.org/
       description = 'Epidemics on Networks',
       author = 'Joel C. Miller, Istvan Z. Kiss, and Peter Simon',
       author_email = 'joel.c.miller.research@gmail.com',
       url = 'https://springer-math.github.io/Mathematics-of-Epidemics-on-Networks/',
-      #download_url = 'https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/archive/0.99.0.tar.gz',
+      download_url = 'https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/archive/0.99.1.tar.gz',
       keywords = ['Epidemics on Networks', 'Epidemic Sonnet Works'],
       install_requires = [
           'networkx',

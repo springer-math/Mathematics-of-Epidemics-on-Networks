@@ -26,7 +26,7 @@ EoN consists of two sets of algorithms.
 - The second deals with solution of systems of equations derived in the book.  For these it is possible to either provide the degree distribution, or simply use a network and let the code determine the degree distribution.
 
 
-- There are a few additional algorithms which are not described in the book, but which we believe will be useful. Most notably, the function `visualize` which creates a sequence of images of a network which are appropriate for creating a movie showing disease spread.
+- There are a few additional algorithms which are not described in the book, but which we believe will be useful. Most notably, the some of the visualization/animation commands.
 
 Distributed under MIT license.  See :download:`license.txt<../license.txt>` for full details.
 
@@ -38,7 +38,7 @@ We start with a few useful auxiliary functions
 '''
 
 __author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
-__version__ = "0.99.1rc3"
+__version__ = "0.99.1"
 
 
 #print("warning - EoN is currently under significant development.  Interface"
@@ -102,8 +102,8 @@ import EoN.simulation
 from EoN.simulation import *
 import EoN.analytic
 from EoN.analytic import *
-import EoN.visualization
-from EoN.visualization import *
+import EoN.simulation_investigation
+from EoN.simulation_investigation import *
 
 '''
 These are the systems I want to include:

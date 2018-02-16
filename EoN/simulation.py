@@ -250,7 +250,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         tmax : stop time (if not extinct first).  Default step is 1.
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
             
 
@@ -262,13 +262,10 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
                 scipy arrays
             
         Or `if return_full_data is True` returns
-      
-        t, S, I, R, node_history
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
-
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
     
     :SAMPLE USE:
 
@@ -355,8 +352,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         return scipy.array(t), scipy.array(S), scipy.array(I), \
                scipy.array(R)
     else:
-        return scipy.array(t), scipy.array(S), scipy.array(I), \
-                scipy.array(R), node_history
+        return EoN.Simulation_Investigation(G, node_history)
 
 
 
@@ -402,24 +398,22 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
         tmax : stop time (if not extinct first).  Default step is 1.
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
     Returns : 
         :
         if return_full_data is False returns 
         
-        t, S, I, R:
-            scipy arrays
-            these scipy arrays give all the times observed and the number 
-            in each state at each time.
+            t, S, I, R:
+                scipy arrays
+                these scipy arrays give all the times observed and the number 
+                in each state at each time.
             
         Or `if return_full_data is True` returns
-      
-        t, S, I, R, node_history
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
 
     
     :SAMPLE USE:
@@ -475,19 +469,18 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
             initial fraction infected. number is int(round(G.order()*rho))
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
     Returns : 
         :
             t, S, I, : 
                 All scipy arrays (if return_full_data is False)
 
-            t, S, I, node_history
-                node_history is a dict and 
-                node_history[node] is a tuple (time_list, status_list)
-                the time_list is the times the node's status changes
-                the status_list is the status at those times.
-                (if return_full_data is True)
+        if return_full_data is True)
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
 
     '''
     
@@ -539,7 +532,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     if not return_full_data:
         return scipy.array(t), scipy.array(S), scipy.array(I)
     else:
-        return scipy.array(t), scipy.array(S), scipy.array(I), node_history
+        return EoN.Simulation_Investigation(G, node_history, SIR=False)
 
     
     
@@ -668,7 +661,7 @@ def percolation_based_discrete_SIR(G, p,
         tmax : stop time (if not extinct first).  Default step is 1.
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
     Returns : 
         :
@@ -676,11 +669,10 @@ def percolation_based_discrete_SIR(G, p,
         
         OR if `return_full_data is True`:
             
-        t, S, I, R, node_history 
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
     
     :SAMPLE USE:
 
@@ -1584,7 +1576,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
             gamma_i = G.node[i][recovery_weight]*gamma
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
     Returns : 
         :
@@ -1592,11 +1584,10 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         
         OR if `return_full_data is True`:
             
-        times, S, I, R, node_history 
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
 
     
     :SAMPLE USE:
@@ -1760,7 +1751,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             final time
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
 
 
@@ -1770,11 +1761,10 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         
         OR if `return_full_data is True`:
             
-        times, S, I, R, node_history 
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
 
     :SAMPLE USE:
 
@@ -1906,8 +1896,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                                 
                 
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
-        return scipy.array(times), scipy.array(S), scipy.array(I), \
-                scipy.array(R), node_history
+        return EoN.Simulation_Investigation(G, node_history)
 
 
 def _find_trans_and_rec_delays_SIS_(node, neighbors, trans_time_fxn, 
@@ -2211,7 +2200,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
             `gamma_i = G.node[i][recovery_weight]*gamma`
     
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
     Returns : 
         :
@@ -2219,12 +2208,10 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
             giving times and number in each status for corresponding time
         
         or if return_full_data=True:
-            
-        times, S, I, node_history
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
     
     :SAMPLE USE:
 
@@ -2292,8 +2279,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return scipy.array(times), scipy.array(S), scipy.array(I), \
-                node_history
+        return EoN.Simulation_Investigation(G, node_history, SIR=False)
 
 
 def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None, 
@@ -2371,7 +2357,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
             stop time
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
     Returns : 
         :
@@ -2380,11 +2366,10 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
         
         or if return_full_data=True:
             
-        times, S, I, node_history
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
     
     :SAMPLE USE:
 
@@ -2450,8 +2435,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return scipy.array(times), scipy.array(S), scipy.array(I), \
-                node_history
+        return EoN.Simulation_Investigation(G, node_history, SIR=False)
 
 
 
@@ -2704,19 +2688,18 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             stop time
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
 
     Returns : 
         :
         times, S, I, R : each a scipy array
             giving times and number in each status for corresponding time
 
-            OR if return_full_data=True:
-        times, S, I, R, node_history
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        OR if return_full_data=True:
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
 
     :SAMPLE USE:
 
@@ -2798,8 +2781,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         recovery_time = {node: L[0] for node, L in recovery_times.items()}
 
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
-        return scipy.array(times), scipy.array(S), scipy.array(I), \
-                scipy.array(R), node_history
+        return EoN.Simulation_Investigation(G, node_history)
 
 
 
@@ -2859,7 +2841,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             stop time
 
         return_full_data: boolean (default False)
-            Tells whether `node_history` should be returned.  
+            Tells whether a Simulation_Investigation object should be returned.  
         
     Returns : 
 
@@ -2867,12 +2849,10 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             each a scipy array giving times and number in each status for corresponding time
 
         or if `return_full_data==True`
-        
-        times, S, I, node_history
-            node_history is a dict and 
-            node_history[node] is a tuple (time_list, status_list)
-            the time_list is the times the node's status changes
-            the status_list is the status at those times.
+        full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes
+            We can also plot the network at given times
+            and even create animations using class methods.
 
     :SAMPLE USE:
 
@@ -2950,8 +2930,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return scipy.array(times), scipy.array(S), scipy.array(I), \
-                node_history
+        return EoN.Simulation_Investigation(G, node_history, SIR=False)
 
 
 

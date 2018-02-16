@@ -119,6 +119,13 @@ Short descriptions
   - **get_infected_nodes** (simulates epidemic and returns final infected nodes)
   - **percolation_based_discrete_SIR**
 
+Simulation Investigation toolkit
+--------------------------------
+We can study simulations in detail through the Simulation_Investigation class.
+
+This is described in more detail in the :doc:`Simulation_Investigation` section.
+
+
 
 Analytic Toolkit
 ----------------
@@ -371,20 +378,6 @@ These come from the book.  The numbers given below are the equation numbers in t
        - **EBCM_pref_mix_discrete**
        - **EBCM_pref_mix_discrete_from_graph**
 
-
-Visualization Functions
-------------------------
-
-Quick List
-^^^^^^^^^^
-
-..  currentmodule:: EoN
-
-.. autosummary::
-   :toctree: functions
-
-   visualize
-   animate
    
 
 Short  Description
@@ -411,8 +404,6 @@ Quick List
    
    get_time_shift
    subsample
-   node_status
-   get_statuses
    
 
 

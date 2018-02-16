@@ -53,6 +53,8 @@ predict the spread of an epidemic in a random network with the given properties.
     
     for counter in range(iterations): #run simulations
         t, S, I, R = EoN.fast_SIR(G, tau, gamma, rho=rho, tmax = tmax)
+        if counter == 0:
+            plt.plot(t, I, color = 'k', alpha=0.3, label='Simulation')
         plt.plot(t, I, color = 'k', alpha=0.3)
             
     #Now compare with ODE predictions.  Read in the degree distribution of G
@@ -77,8 +79,11 @@ predict the spread of an epidemic in a random network with the given properties.
     #the preferential mixing model captures degree correlations.
     t, S, I, R = EoN.EBCM_pref_mix_from_graph(G, tau, gamma, rho=rho, tmax=tmax)
     plt.plot(t, I, label = 'Pref mix EBCM', linewidth=5, dashes=[4, 2, 1, 2, 1, 2])
-    
-    plt.legend(loc = 'upper right')
+
+    plt.xlabel('$t$')
+    plt.ylabel('Number infected')
+
+    plt.legend()
     plt.savefig('SIR_BA_model_vs_sim.png')
     
 This produces
@@ -96,8 +101,9 @@ to the (gray) simulated epidemics.  We now move on to SIS epidemics:
     N=10**4  
     G=nx.barabasi_albert_graph(N, 5) #create a barabasi-albert graph
     for counter in range(iterations):
-        initial_infections = random.sample(G.nodes(), int(round(rho*N))) 
         t, S, I = EoN.fast_SIS(G, tau, gamma, rho=rho, tmax = tmax)
+        if counter == 0:
+            plt.plot(t, I, color = 'k', alpha=0.3, label='Simulation')
         plt.plot(t, I, color = 'k', alpha=0.3)
             
     #Now compare with ODE predictions.  Read in the degree distribution of G
@@ -115,8 +121,10 @@ to the (gray) simulated epidemics.  We now move on to SIS epidemics:
     
     t, S, I = EoN.SIS_compact_pairwise_from_graph(G, tau, gamma, rho=rho, tmax=tmax)
     plt.plot(t, I, '--', label = 'Compact pairwise', linewidth = 5)
-    
-    plt.legend(loc = 'lower right')
+
+    plt.xlabel('$t$')
+    plt.ylabel('Number infected')
+    plt.legend()
     plt.savefig('SIS_BA_model_vs_sim.png')
 
 This produces
