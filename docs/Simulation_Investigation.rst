@@ -59,7 +59,7 @@ This produces an animation:
 
 .. raw:: html 
 
-   <video controls src="https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/blob/master/docs/SIR_2dgrid.mp4"></video> 
+   <video controls src="https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/blob/master/docs/SIR_2dgrid.mp4?raw=true"></video> 
 
 Quick List
 ^^^^^^^^^^
