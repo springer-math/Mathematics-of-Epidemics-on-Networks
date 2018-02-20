@@ -299,7 +299,7 @@ class Simulation_Investigation():
         self.label=label
 
     def sim_update_colordict(self, colordict):
-        r'''updates the colordict for the simulation in the time series plots
+        r'''updates the colordict for the simulation 
         
         Arguments :
             colordict (dict) 

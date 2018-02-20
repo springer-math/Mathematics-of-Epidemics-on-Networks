@@ -20,8 +20,8 @@ Highlights
 
   `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_ 
 
-  **EoN** is built using tools from NetworkX_.  The repository_ is on github.   
-  The tools fall into two broad categories:
+  **EoN** is built on top of NetworkX_.  Its repository_ is on github.   
+  EoN's tools fall into two broad categories:
 
 - **Stochastic simulation of SIS and SIR disease**
 
@@ -29,7 +29,7 @@ Highlights
   
     - much faster than traditional Gillespie simulation
     - allows weighted graphs 
-    - allows non-Markovian dynamics (for SIR)
+    - allows non-Markovian dynamics
   - Gillespie algorithms for Markovian dynamics on unweighted graphs
   - discrete-time (synchronous update) models
 - **Numerical solvers for ODE models**

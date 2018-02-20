@@ -1,7 +1,7 @@
 ..  _Simulation_Investigation:
 
-Simulation_Investigation class
-==============================
+Detailed Simulaiton Investigation
+=================================
 
 When EoN performs a simulation with `return_full_data` set to True, it returns
 a Simulation_Investigation object.  At it's core, this has the data about when
@@ -18,8 +18,8 @@ another simulation.
 In general, any of the dynamic simulations will produce a Simulation_Investigation
 object if we pass it `return_full_data = True`.  
 
-Quick Examples
-^^^^^^^^^^^^^^
+Quick Examples (including animation)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For these examples, we'll take a 100x100 grid of nodes [each node is (i,j)]
 connected to their nearest neighbors.  This isn't the most realistic network, 

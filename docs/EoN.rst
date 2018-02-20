@@ -26,7 +26,8 @@ graphs; see https://networkx.github.io/
 
 
 - There are a few additional algorithms which are not described in the
-  book, but which we believe will be useful. Most notably, related to visualization.
+  book, but which we believe will be useful. Most notably, related to 
+  visualization and generation of animations.
 
 Distributed under MIT license.  See :download:`license.txt<../license.txt>` for full details.
 
@@ -122,8 +123,10 @@ Short descriptions
 Simulation Investigation toolkit
 --------------------------------
 We can study simulations in detail through the Simulation_Investigation class.
+This includes automated generation of animations.
 
-This is described in more detail in the :doc:`Simulation_Investigation` section.
+The class is described in more detail in the :doc:`Simulation_Investigation` 
+section.
 
 
 
