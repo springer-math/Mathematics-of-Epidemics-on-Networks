@@ -125,9 +125,20 @@ Simulation Investigation toolkit
 We can study simulations in detail through the Simulation_Investigation class.
 This includes automated generation of animations.
 
-The class is described in more detail in the :doc:`Simulation_Investigation` 
-section.
+The class and its methods are described in more detail in the 
+:doc:`Simulation_Investigation` section.
 
+
+Short  Description
+^^^^^^^^^^^^^^^^^^^^^
+
+    - **visualize** (allows us to plot a graph at a specific time
+      point, and to optionally include the calculated time series)
+
+    - **animate** (allows us to plot a graph at many time points
+      We can create a visualization such as mp4, or save each
+      individual frame of an animation.  The time series are optional.
+  
 
 
 Analytic Toolkit
@@ -382,17 +393,6 @@ These come from the book.  The numbers given below are the equation numbers in t
        - **EBCM_pref_mix_discrete_from_graph**
 
    
-
-Short  Description
-^^^^^^^^^^^^^^^^^^^^^
-
-    - **visualize** (allows us to plot a graph at a specific time
-      point, and to optionally include the calculated time series)
-
-    - **animate** (allows us to plot a graph at many time points
-      We can create a visualization such as mp4, or save each
-      individual frame of an animation.  The time series are optional.
-  
 Auxiliary Functions
 -------------------
 We have a few additional functions which are of value.

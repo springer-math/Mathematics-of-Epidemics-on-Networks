@@ -1,6 +1,6 @@
 ..  _Simulation_Investigation:
 
-Detailed Simulaiton Investigation
+Detailed Simulation Investigation
 =================================
 
 When EoN performs a simulation with `return_full_data` set to True, it returns

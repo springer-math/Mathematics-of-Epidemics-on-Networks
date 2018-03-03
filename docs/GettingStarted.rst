@@ -40,7 +40,6 @@ predict the spread of an epidemic in a random network with the given properties.
     import networkx as nx
     import matplotlib.pyplot as plt
     import EoN
-    import random
     
     N=10**5
     G=nx.barabasi_albert_graph(N, 5) #create a barabasi-albert graph
