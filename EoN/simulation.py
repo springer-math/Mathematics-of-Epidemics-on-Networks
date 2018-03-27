@@ -24,23 +24,27 @@ def _truncated_exponential_(rate, T):
    
 class myQueue(object):
     r'''
-    This class is used to store and act on a priority queue of events
-    for event-driven simulations.
+    This class is used to store and act on a priority queue of events for 
+    event-driven simulations.  It is based on heapq.
 
-    Each queue is given a tmax (default is infinity) so that any event at later time is ignored.
+    Each queue is given a tmax (default is infinity) so that any event at later 
+    time is ignored.
     
-    This is a priority queue of 4-tuples of the form (t, counter, function, function_arguments)
+    This is a priority queue of 4-tuples of the form 
+                   `(t, counter, function, function_arguments)`
 
-    The 'counter' is present just to break ties, which generally only occur when multiple events
-    are put in place for the initial condition.
+    The 'counter' is present just to break ties, which generally only occur when 
+    multiple events are put in place for the initial condition, but could also 
+    occur in cases where events tend to happen at discrete times.
 
-    note that the function is understood to have its first argument be t, and the tuple
-    function_arguments does not include this first t.
+    note that the function is understood to have its first argument be t, and 
+    the tuple `function_arguments` does not include this first t.
 
-    So function is called as function(t, *function_arguments)
+    So function is called as 
+        `function(t, *function_arguments)`
 
-    Previously I used a class of events, but sorting using the __lt__ function I wrote was
-    significantly slower than simply using tuples.
+    Previously I used a class of events, but sorting using the __lt__ function I
+    wrote was significantly slower than simply using tuples.
     '''
     def __init__(self, tmax=float("Inf")):
         self._Q_ = []
@@ -53,9 +57,11 @@ class myQueue(object):
             heapq.heappush(self._Q_, (time, self.counter, function, args))
             self.counter += 1
     def pop_and_run(self):
+        r'''Pops the next event off the queue and performs the function'''
         t, counter, function, args = heapq.heappop(self._Q_)
         function(t, *args)
-    def __len__(self): #this will allow for something like "while Q:" 
+    def __len__(self): 
+        r'''this will allow us to use commands like "while Q:" '''
         return len(self._Q_)
         
         
@@ -206,7 +212,8 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
 
     Arguments : 
 
-        G: NetworkX Graph (or some other structure which quacks like a NetworkX Graph)
+        G: NetworkX Graph (or some other structure which quacks like a 
+                           NetworkX Graph)
             The network on which the epidemic will be simulated.
         
         test_transmission: function(u,v,*args)
@@ -362,7 +369,8 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
                                 return_full_data = False):
     #tested in test_basic_discrete_SIR   
     r'''
-    Performs simple discrete SIR simulation assuming constant transmission probability p.
+    Performs simple discrete SIR simulation assuming constant transmission 
+    probability p.
     
     From figure 6.8 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm.
@@ -482,6 +490,17 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
             We can also plot the network at given times
             and even create animations using class methods.
 
+    :SAMPLE USE:
+
+    ::
+
+        import networkx as nx
+        import EoN
+        import matplotlib.pyplot as plt
+        G = nx.fast_gnp_random_graph(1000,0.002)
+        t, S, I = EoN.basic_discrete_SIS(G, 0.6, tmax = 20)
+        plt.plot(t,S)
+
     '''
     
     if rho is not None and initial_infecteds is not None:
@@ -512,7 +531,8 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     while infecteds and t[-1]<tmax:
         next_infecteds = set()
         for u in infecteds:
-            next_infecteds.union({v for v in G.neighbors(u) if random.random()<p and v not in infecteds})
+            next_infecteds.union({v for v in G.neighbors(u) 
+                                  if random.random()<p and v not in infecteds})
 
         if return_full_data:
             next_time = t[-1]+1
@@ -540,7 +560,8 @@ def percolate_network(G, p):
     #tested indirectly in test_basic_discrete_SIR   
 
     r'''
-    Performs percolation on a network G with each edge persisting with probability p
+    Performs percolation on a network G with each edge persisting with 
+    probability p
     
     From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
@@ -611,7 +632,8 @@ def percolation_based_discrete_SIR(G, p,
                                             return_full_data = False):
     #tested in test_basic_discrete_SIR   
     r'''
-    perfoms a simple SIR epidemic but using percolation as the underlying method.
+    perfoms a simple SIR epidemic but using percolation as the underlying 
+    method.
     
     From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
@@ -701,7 +723,8 @@ def percolation_based_discrete_SIR(G, p,
 def estimate_SIR_prob_size(G, p):
     #tested in test_estimate_SIR_prob_size
     r'''
-    Uses percolation to estimate the probability and size of epidemics assuming constant transmission probability p
+    Uses percolation to estimate the probability and size of epidemics 
+    assuming constant transmission probability p
     
     From figure 6.12 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
@@ -754,7 +777,8 @@ def estimate_SIR_prob_size(G, p):
 def directed_percolate_network(G, tau, gamma, weights = True):
     #indirectly tested in test_estimate_SIR_prob_size
     r'''
-    performs directed percolation, assuming that transmission and recovery are Markovian
+    performs directed percolation, assuming that transmission and recovery 
+    are Markovian
     
     
     From figure 6.13 of Kiss, Miller, & Simon.  Please cite the
@@ -1520,7 +1544,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
                 rho = None, tmin = 0, tmax=float('Inf'), transmission_weight = None, 
                 recovery_weight = None, return_full_data = False):
     r'''
-    fast SIR simulation assuming exponentially distributed infection and
+    fast SIR simulation for exponentially distributed infection and 
     recovery times
     
     From figure A.3 of Kiss, Miller, & Simon.  Please cite the
@@ -1968,7 +1992,13 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
         I.append(I[-1]+1) #one more infected
         S.append(S[-1]-1) #one less susceptible
         times.append(time)
-        rec_time[target] = time + random.expovariate(rec_rate_fxn(target))
+        rec_rate = rec_rate_fxn(target)
+        if rec_rate>0:
+            rec_time[target] = time + random.expovariate(rec_rate_fxn(target))
+        elif rec_rate == 0:
+            rec_time[target] = float('Inf')
+        else:
+            raise EoN.EoNError('recovery rate must be non-negative')
         
         if rec_time[target]<Q.tmax:
             Q.add(rec_time[target], _process_rec_SIS_, 
@@ -2127,7 +2157,12 @@ def _find_next_trans_SIS_Markov(Q, time, tau, source, target, status, rec_time,
     #assert(status[source]=='I')
     if rec_time[target]<rec_time[source]: 
         #if target is susceptible, then rec_time[target]<time
-        delay = random.expovariate(tau)
+        if tau>0:
+            delay = random.expovariate(tau)
+        elif tau == 0:
+            delay = float('Inf')
+        else:
+            raise EoN.EoNError('rate must be non-negative')
         #transmission_time = max(time, rec_time[target]) + delay
         transmission_time = time + delay
         if transmission_time<rec_time[target]:
@@ -2777,8 +2812,10 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
                 scipy.array(R)
     else:
         #need to change data type of infection_times and recovery_times
-        infection_time = {node: L[0] for node, L in infection_times.items()}
-        recovery_time = {node: L[0] for node, L in recovery_times.items()}
+        infection_times = {node: L[0] for node, L in infection_times.items()}
+        recovery_times = {node: L[0] for node, L in recovery_times.items()}
+        
+        #print(type(infection_times), type(recovery_times), type(tmin))
 
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
         return EoN.Simulation_Investigation(G, node_history)

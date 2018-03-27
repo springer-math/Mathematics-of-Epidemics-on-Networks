@@ -1107,6 +1107,9 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
     Encodes System (3.26) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
+    WARNING: this does NOT solve the pairwise equations.  Look at
+    SIS_homogeneous_pairwise and SIS_heterogeneous_pairwise for that.
+    
     This system solves equations for an SIS disease model spreading on a 
     given graph.  
     
@@ -1356,6 +1359,9 @@ def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None,
     Encodes System (3.39) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
+    WARNING This does not solve the pairwise equations.  Look at 
+    SIR_homogeneous_pairwise and SIR_heterogeneous_pairwise for that.
+    
     This system solves equations for an SIR disease model spreading on a
     given graph.  It captures the dependence with pairs, but not 
     triples.
