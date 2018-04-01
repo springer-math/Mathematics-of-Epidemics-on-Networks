@@ -2656,7 +2656,7 @@ def _Gillespie_recover_SIS_(G, S, I, times, infected, current_time, status,
         recovery_times[recovering_node].append(current_time)
 
 def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, 
-                    initial_recovereds = None,rho = None, tmin = 0, 
+                    initial_recovereds = None, rho = None, tmin = 0, 
                     tmax=float('Inf'), return_full_data = False):
     #tested in test_SIR_dynamics
     r'''
@@ -2795,7 +2795,6 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
                                     status, infected_neighbor_count, 
                                     risk_group, recovery_times, 
                                     return_full_data)
-            total_rec_rate = gamma*I[-1]
         else:
             #an infection occurs
             _Gillespie_infect_(G, S, I, R, times, infected, next_time, 
@@ -2803,9 +2802,11 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
                                 infection_times, return_full_data, SIR=True)
         total_trans_rate = tau*sum(n*len(risk_group[n]) 
                                     for n in risk_group.keys())
+        total_rec_rate = gamma*I[-1]
         total_rate = total_rec_rate + total_trans_rate
         if total_rate >0:  
             next_time += random.expovariate(total_rate)
+        #print(total_trans_rate, total_rec_rate)
 
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I), \
@@ -2947,7 +2948,6 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
                                     status, infected_neighbor_count, 
                                     risk_group, recovery_times, 
                                     return_full_data)
-            total_rec_rate = gamma*I[-1]
         else:
             #an infection occurs
             _Gillespie_infect_(G, S, I, [], times, infected, next_time, 
@@ -2956,6 +2956,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             #updates variables as needed and calculates new max_trans_rate
         total_trans_rate = tau*sum(n*len(risk_group[n]) 
                                     for n in risk_group.keys())
+        total_rec_rate = gamma*I[-1]
         total_rate = total_rec_rate + total_trans_rate
         if total_rate>0:
             next_time += random.expovariate(total_rate)
