@@ -6,7 +6,6 @@ import scipy
 import EoN
 import matplotlib.pyplot as plt
 
-
 #######################
 #                     #
 #   Auxiliary stuff   #
@@ -21,6 +20,12 @@ def _truncated_exponential_(rate, T):
     t = random.expovariate(rate)
     L = int(t/T)
     return t - L*T
+# def _truncated_exponential_(rate, T):
+#     r'''returns a number between 0 and T from an
+#     exponential distribution conditional on the outcome being between 0 and T'''
+#     t = random.expovariate(rate)
+#     #L = int(t/T)
+#     return t%T          #t - L*T
    
 class myQueue(object):
     r'''
@@ -1475,6 +1480,7 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status,
 
         trans_delay, rec_delay = trans_and_rec_time_fxn(node, suscep_neighbors,
                                                 *trans_and_rec_time_args)
+
                                 
         rec_time[node] = time + rec_delay
         if rec_time[node]<=Q.tmax:
@@ -1527,6 +1533,12 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
     status[node] = 'R'
     
 def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rate_fxn):
+    r'''I introduced this with a goal of making the code run faster.  It looks
+    like the fancy way of selecting the infectees and then choosing their 
+    infection times is slower than just cycling through, finding infection
+    times and checking if that time is less than recovery time.  So I've
+    commented out the more "sophisticated" approach.
+    '''
     
     duration = random.expovariate(rec_rate_fxn(node))
 
@@ -1538,6 +1550,37 @@ def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rat
     trans_delay = {}
     for v in transmission_recipients:
         trans_delay[v] = _truncated_exponential_(tau, duration)
+    return trans_delay, duration
+#     duration = random.expovariate(rec_rate_fxn(node))
+#     trans_delay = {}
+# 
+#         
+#     for v in sus_neighbors:
+#         if tau == 0:
+#             trans_delay[v] = float('Inf')
+#         else:
+#             trans_delay[v] = random.expovariate(tau)
+# #        if delay<duration:
+# #            trans_delay[v] = delay
+#     return trans_delay, duration
+                
+##slow approach 1:
+#    next_delay = random.expovariate(tau)
+#    index, delay = int(next_delay//duration), next_delay%duration
+#    while index<len(sus_neighbors):
+#        trans_delay[sus_neighbors[index]] = delay
+#        next_delay = random.expovariate(tau)
+#        jump, delay = int(next_delay//duration), next_delay%duration
+#        index += jump
+
+##slow approach 2:
+    #trans_prob = 1-scipy.exp(-tau*duration)
+    #number_to_infect = scipy.random.binomial(len(sus_neighbors),trans_prob)
+        #print(len(suscep_neighbors),number_to_infect,trans_prob, tau, duration)
+    #transmission_recipients = random.sample(sus_neighbors,number_to_infect)
+    #trans_delay = {}
+    #for v in transmission_recipients:
+    #    trans_delay[v] = _truncated_exponential_(tau, duration)
     return trans_delay, duration
 
 def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None, 
@@ -1716,15 +1759,24 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         trans_time_fxn : a user-defined function that returns the delay until 
                          transmission for an edge.  May depend on various 
                          arguments and need not be Markovian.  Returns float
-            Called using the form
-            trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)
+
+                         Called using the form
+                 trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)
+                         Here trans_time_args is a tuple of the additional
+                         arguments the functions needs.
+
+            the source_node is the infected node
+            the target_node is the node that may receive transmission
+            rec_delay is the duration of source_node's infection, calculated by rec_time_fxn.
 
         rec_time_fxn : a user-defined function that returns the delay until 
                        recovery for a node.  May depend on various arguments 
-                       and need not be Markovian.  Returns float
-            Called using the form
-            rec_delay = rec_time_fxn(node, *rec_time_args)
+                       and need not be Markovian.  Returns float.
 
+                       Called using the form
+                         rec_delay = rec_time_fxn(node, *rec_time_args)
+                       Here rec_time_args is a uple of additional arguments
+                       the function needs.
     
         trans_and_rec_time_fxn : a user-defined function that returns both 
                                  a dict giving delay until transmissions for 
@@ -2342,8 +2394,14 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
                         arguments and need not be Markovian.                          
             Called using the form
             trans_delay = trans_time_fxn(source_node, target_node, rec_delay, *trans_time_args)
+            the source_node is the infected node
+            the target_node is the node that may receive transmission
+            rec_delay is the duration of source_node's infection, calculated by rec_time_fxn.
 
-        rec_time_fxn : a user-defined function that returns the delay until 
+
+        rec_time_fxn : Returns a float
+        
+                       a user-defined function that returns the delay until 
                        recovery for a node.  May depend on various arguments 
                        and need not be Markovian.  Returns float
             Called using the form
@@ -2476,184 +2534,6 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 
 #####Now dealing with Gillespie code#####
 
-def _Gillespie_initialize_SIR_(G, initial_infecteds, initial_recovereds, 
-                            infection_times, recovery_times, tmin, 
-                            return_full_data):
-    '''Initializes the network'''
-    times = [tmin]
-    S = [G.order()-len(initial_infecteds)]
-    I = [len(initial_infecteds)]
-    R = [0]
-    status = defaultdict(lambda:'S') #by default all are susceptible
-    infected = list(initial_infecteds)
-    infected_neighbor_count = defaultdict(lambda:0)#
-    risk_group = defaultdict(lambda:_ListDict_()) 
-    for node in initial_infecteds:
-        status[node]='I'
-    if initial_recovereds is not None:
-        for node in initial_recovereds:
-            status[node] = 'R'
-            if return_full_data:
-                recovery_times[node] = [tmin-1]
-    for node in initial_infecteds:
-        for neighbor in G.neighbors(node):
-            if status[neighbor]=='S':
-                infected_neighbor_count[neighbor] += 1
-                if infected_neighbor_count[neighbor]>1:
-                    risk_group[infected_neighbor_count[neighbor]-1].remove(
-                                                                    neighbor)
-                risk_group[infected_neighbor_count[neighbor]].add(neighbor)
-
-    if return_full_data:
-        for node in initial_infecteds:
-            infection_times[node] = [tmin]
-
-    return times, S, I, R, status, infected, infected_neighbor_count, risk_group
-
-        
-def _Gillespie_initialize_SIS_(G, initial_infecteds, infection_times, 
-                                recovery_times, tmin, return_full_data):
-    '''Initializes the network'''
-    times = [tmin]
-    S = [G.order()-len(initial_infecteds)]
-    I = [len(initial_infecteds)]
-    status = defaultdict(lambda:'S') #by default all are susceptible
-    infected = list(initial_infecteds)
-    infected_neighbor_count = defaultdict(lambda:0)#
-    risk_group = defaultdict(lambda:_ListDict_()) 
-    for node in initial_infecteds:
-        status[node]='I'
-    for node in initial_infecteds:
-        for neighbor in G.neighbors(node):
-            if status[neighbor]=='S':
-                infected_neighbor_count[neighbor] += 1
-                if infected_neighbor_count[neighbor]>1:
-                    risk_group[infected_neighbor_count[neighbor]-1].remove(
-                                                                    neighbor)
-                risk_group[infected_neighbor_count[neighbor]].add(neighbor)
-
-    if return_full_data:
-        for node in initial_infecteds:
-            infection_times[node] = [tmin]
-    return times, S, I, status, infected, infected_neighbor_count, risk_group
-    
-def _Gillespie_infect_(G, S, I, R, times, infected, current_time, 
-                        infected_neighbor_count, risk_group, status, 
-                        infection_times, return_full_data, SIR=True):
-    '''
-    Chooses the node to infect.
-
-    First chooses which risk_group the node is in.  
-    Then choose the node.
-
-    An alternative which may be cleaner (not sure about faster?) is to 
-    create a data type which tracks maximum risk.  
-    
-    Then choose a random node and do a rejection sampling step.  
-    
-    If rejected, then select again.  
-    
-    May need a very careful rejection sampling to account for repeated 
-    selection.  
-    
-    We could probably define this as a method of the class.
-    '''
-    r = random.random()*sum(n*len(risk_group[n]) for n in risk_group.keys())
-    for n in risk_group.keys():
-        r-= n*len(risk_group[n])
-        if r<0:
-            break
-    #we've got n now
-
-    recipient = risk_group[n].choose_random()
-        #OLD VERSION choose random element from dict
-        #based on http://stackoverflow.com/a/24949742/2966723
-        #question by http://stackoverflow.com/users/2237265/jamyn
-        #answer by http://stackoverflow.com/users/642757/scott-ritchie
-        #
-        #CURRENT VERSION
-        #http://stackoverflow.com/a/15993515/2966723
-    assert(status[recipient]=='S')
-    risk_group[n].remove(recipient)
-    infected.append(recipient)
-    infection_times[recipient].append(current_time)
-    status[recipient]='I'
-    S.append(S[-1]-1)
-    I.append(I[-1]+1)
-    times.append(current_time)
-    if SIR:
-        R.append(R[-1])
-
-    for neighbor in G.neighbors(recipient):
-        if status[neighbor]=='S':
-            if infected_neighbor_count[neighbor]>0:
-                risk_group[infected_neighbor_count[neighbor]].remove(neighbor)
-            infected_neighbor_count[neighbor]+=1
-            risk_group[infected_neighbor_count[neighbor]].add(neighbor)
-    
-            
-
-def _Gillespie_recover_SIR_(G, S, I, R, times, infected, current_time, status,
-                            infected_neighbor_count, risk_group, 
-                            recovery_times, return_full_data):
-    r''' Changes: S, I, R, infected, times'''
-    #assert(I[-1]==len(infected))
-    index = random.randint(0,I[-1]-1)
-    infected[index], infected[-1] = infected[-1], infected[index] 
-            #http://stackoverflow.com/a/14088129/2966723
-    recovering_node = infected.pop()
-
-    I.append(I[-1]-1)
-    status[recovering_node]='R'
-    S.append(S[-1])
-    R.append(R[-1]+1)
-    times.append(current_time)
-    for neighbor in G.neighbors(recovering_node):
-        if status[neighbor] == 'S': #neighbor susceptible, 
-                                    #its risk just got smaller
-            risk_group[infected_neighbor_count[neighbor]].remove(neighbor)
-            infected_neighbor_count[neighbor] -= 1
-            if infected_neighbor_count[neighbor]>0:
-                risk_group[infected_neighbor_count[neighbor]].add(neighbor)            
-    if return_full_data:
-        recovery_times[recovering_node].append(current_time)
-
-def _Gillespie_recover_SIS_(G, S, I, times, infected, current_time, status, 
-                            infected_neighbor_count, risk_group, 
-                            recovery_times, return_full_data):
-    r''' From figure A.5 of Kiss, Miller, & Simon.  Please cite the
-    book if using this algorithm.
-    
-    Arguments : 
-    '''
-    assert(I[-1]==len(infected))
-    index = random.randint(0,I[-1]-1)
-    infected[index], infected[-1] = infected[-1], infected[index] 
-                    #http://stackoverflow.com/a/14088129/2966723
-    recovering_node = infected.pop()
-
-    I.append(I[-1]-1)
-    status[recovering_node]='S'
-    S.append(S[-1]+1)
-    times.append(current_time)
-    infected_neighbor_count[recovering_node] = 0
-    for neighbor in G.neighbors(recovering_node):
-        if neighbor == recovering_node:
-            continue  #Deals with selfloops
-                      #there is probably a good way to count the 
-                      #number of infected neighbors
-        if status[neighbor] == 'I':
-            infected_neighbor_count[recovering_node] += 1
-        else: #neighbor susceptible, its risk just got smaller
-            risk_group[infected_neighbor_count[neighbor]].remove(neighbor)
-            infected_neighbor_count[neighbor] -= 1
-            if infected_neighbor_count[neighbor]>0:
-                risk_group[infected_neighbor_count[neighbor]].add(neighbor)
-    if infected_neighbor_count[recovering_node]>0:
-        risk_group[infected_neighbor_count[recovering_node]].add(
-                                                            recovering_node)
-    if return_full_data:
-        recovery_times[recovering_node].append(current_time)
 
 def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, 
                     initial_recovereds = None, rho = None, tmin = 0, 
@@ -2665,23 +2545,32 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     However, Gillespie_SIR relies on the lack of edge/node weights in order
     to achieve a significant improvement.  fast_SIR permits weighted networks.
     
-    Adapted from figure A.1 of Kiss, Miller, & Simon.  Please cite the
-    book if using this algorithm.
+    Rather than using figure A.1 of Kiss, Miller, & Simon, this uses a method 
+    from Petter Holme 
+        "Model versions and fast algorithms for network epidemiology"
+    which focuses on SI edges (versions before 0.99.2 used a
+    method more like fig A.1).  I expect this to perform poorly if adapted to 
+    weighted edges.  For this, we may add a separate method based on figure A.1 
+    once we try to put weights in or perhaps Cota & Ferreira:
+        "Optimized Gillespie algorithms for the simulation of Markovian
+        epidemic processes on large and heterogeneous networks"
+    If adjusting to weighted networks, note that 0.99.2rc3 has a bug fix in the
+    Gillespie algorithms.  So do not use an earlier version.
+    
 
     A significant improvement compared to the obvious implementation of
     figure A.1 is that at_risk_nodes is actually broken into multiple risk 
     groups based on what the nodes' risks are.  This allows for a more 
-    efficient step to correctly choose a random node to be infected.  
+    efficient step to correctly choose a random edge to transmit.  
     
-    To handle weighted networks would prevent us from having the risk 
-    groups.  If we modify the code to have weights, then we cannot (easily) 
-    put nodes into separate risk groups.  This will dramatically slow down 
-    the calculation because it becomes much harder to choose which node 
-    becomes infected.
             
-    This code will not work for nonMarkovian transmission.  There is ongoing
-    work by Boguna and collaborators on how to do Gillespie algorithms for
-    nonMarkovian transmission.
+    This approach will not work for nonMarkovian transmission.  Boguna et al
+        "Simulating non-Markovian stochastic processes"
+    have looked at how to handle nonMarkovian transmission in a Gillespie 
+    Algorithm.  At present I don't see a way to adapt their approach at all
+    efficiently - I think each substep will take O(N) time.  So the full
+    algorithm will be O(N^2).  For this, it will be much better to use fast_SIR
+    which I believe is O(N log N)
     
     :SEE ALSO:
 
@@ -2760,8 +2649,9 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
     
-    infection_times = defaultdict(lambda: []) #defaults to an empty list for each node
-    recovery_times = defaultdict(lambda: [])
+    if return_full_data:
+        infection_times = defaultdict(lambda: []) #defaults to an empty list for each node
+        recovery_times = defaultdict(lambda: [])
 
     tau = float(tau)  #just to avoid integer division problems in python 2.
     gamma = float(gamma)
@@ -2774,39 +2664,83 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         initial_infecteds=random.sample(G.nodes(), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
+        
+    if initial_recovereds is None:
+        initial_recovereds = []
+        
+    I = [len(initial_infecteds)]
+    R = [len(initial_recovereds)]
+    S = [G.order()-I[0]-R[0]]
+    times = [tmin]
+    
+    t = tmin
+    
+    status = defaultdict(lambda : 'S')
+    for node in initial_infecteds:
+        status[node] = 'I'
+        if return_full_data:
+            infection_times[node].append(t)
+    for node in initial_recovereds:
+        status[node] = 'R'
+        if return_full_data:
+            recovery_times[node].append(t)
 
+    infecteds = _ListDict_()
+    IS_links = _ListDict_()
+    for node in initial_infecteds:
+        infecteds.add(node)
 
-    times, S, I, R, status, infected, infected_neighbor_count, risk_group = \
-                    _Gillespie_initialize_SIR_(G, initial_infecteds, 
-                                            initial_recovereds,
-                                            infection_times, recovery_times, 
-                                            tmin, return_full_data)
-
-    total_trans_rate = tau*sum(n*len(risk_group[n]) 
-                                    for n in risk_group.keys())
-    total_rec_rate = gamma*len(infected)
-    total_rate = total_rec_rate + total_trans_rate
-    next_time = times[-1] + random.expovariate(total_rate)
-    while next_time<tmax and infected:
-        r = random.random()*total_rate
-        if r<total_rec_rate:
-            #a recovery occurs
-            _Gillespie_recover_SIR_(G, S, I, R, times, infected, next_time, 
-                                    status, infected_neighbor_count, 
-                                    risk_group, recovery_times, 
-                                    return_full_data)
+        for nbr in G.neighbors(node):
+            if status[nbr] == 'S':
+                IS_links.add((node, nbr))
+    
+    total_recovery_rate = gamma*len(infecteds)
+    
+    total_transmission_rate = tau*len(IS_links)
+        
+    total_rate = total_recovery_rate + total_transmission_rate
+    delay = random.expovariate(total_rate)
+    t = t+delay
+    
+    while infecteds and t<tmax:
+        if random.random()<total_recovery_rate/total_rate: #recover
+            recovering_node = infecteds.choose_random()
+            status[recovering_node]='R'
+            if return_full_data:
+                recovery_times[node].append(t)
+            infecteds.remove(recovering_node)
+            for nbr in G.neighbors(recovering_node):
+                if status[nbr] == 'S':
+                    IS_links.remove((recovering_node, nbr))
+            times.append(t)
+            S.append(S[-1])
+            I.append(I[-1]-1)
+            R.append(R[-1]+1)
         else:
-            #an infection occurs
-            _Gillespie_infect_(G, S, I, R, times, infected, next_time, 
-                                infected_neighbor_count, risk_group, status, 
-                                infection_times, return_full_data, SIR=True)
-        total_trans_rate = tau*sum(n*len(risk_group[n]) 
-                                    for n in risk_group.keys())
-        total_rec_rate = gamma*I[-1]
-        total_rate = total_rec_rate + total_trans_rate
-        if total_rate >0:  
-            next_time += random.expovariate(total_rate)
-        #print(total_trans_rate, total_rec_rate)
+            transmitter, recipient = IS_links.choose_random()
+            status[recipient]='I'
+            if return_full_data:
+                infection_times[node].append(t)
+            infecteds.add(recipient)
+            for nbr in G.neighbors(recipient):
+                if status[nbr] == 'S':
+                    IS_links.add((recipient, nbr))
+                elif status[nbr]=='I':
+                    IS_links.remove((nbr, recipient))
+                    
+            times.append(t)
+            S.append(S[-1]-1)
+            I.append(I[-1]+1)
+            R.append(R[-1])
+        total_recovery_rate = gamma*len(infecteds)
+        
+        total_transmission_rate = tau*len(IS_links)
+        
+
+        total_rate = total_recovery_rate + total_transmission_rate
+        if total_rate>0:
+            delay = random.expovariate(total_rate)
+            t += delay
 
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I), \
@@ -2830,17 +2764,14 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     networks.  The run time is slower than fast_SIS, but they are comparable.
     However, Gillespie_SIS relies on the lack of edge/node weights in order
     to achieve a significant improvement.  fast_SIS permits weighted networks.
-    
-    Based on figure A.1 of Kiss, Miller, & Simon.  Please cite the
-    book if using this algorithm.
+
+    Based on an algorithm by Petter Holme.  See Gillespie_SIR for more detail.
     
     See comments in Gillespie_SIR for limitations in weighted and nonMarkovian
     models.
     
     :WARNING: 
         
-    self-edges will cause this to die.  
-    You can remove self-edges by G.remove_edges_from(G.selfloop_edges())
 
     At present, this does not accept recovery or transmission weights.
     This is because including that will force us to sum up these weights
@@ -2849,7 +2780,8 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     
     :SEE ALSO:
 
-    fast_SIS which has the same inputs but uses a much faster method.
+    fast_SIS which has the same inputs but uses a faster method and can take a weighted
+    graph.
     
     
     Arguments : 
@@ -2913,8 +2845,9 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    infection_times = defaultdict(lambda: []) #defaults to an empty list 
-    recovery_times = defaultdict(lambda: [])  #for each node
+    if return_full_data:
+        infection_times = defaultdict(lambda: []) #defaults to an empty list 
+        recovery_times = defaultdict(lambda: [])  #for each node
 
     tau = float(tau)  #just to avoid integer division problems.
     gamma = float(gamma)
@@ -2928,143 +2861,85 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
-    times, S, I, status, infected, infected_neighbor_count, risk_group = \
-                _Gillespie_initialize_SIS_(G, initial_infecteds, infection_times,  
-                                        recovery_times, tmin, return_full_data)
-    #note that at this point times, S, and I must all be lists 
+    I = [len(initial_infecteds)]
+    S = [G.order()-I[0]]
+    times = [tmin]
     
-    #since we will be appending to them
+    t = tmin
+    
+    status = defaultdict(lambda : 'S')
+    for node in initial_infecteds:
+        status[node] = 'I'
+        if  return_full_data:
+            infection_times[node].append(t)
 
-    total_trans_rate = tau*sum(n*len(risk_group[n]) 
-                                    for n in risk_group.keys())
-    total_rec_rate = gamma*len(infected)
-    total_rate = total_rec_rate + total_trans_rate
-    next_time = times[-1] + random.expovariate(total_rate)
-    while next_time<tmax and infected:
-        r = random.random()*total_rate
-        if r<total_rec_rate:
-            #a recovery occurs
-            _Gillespie_recover_SIS_(G, S, I, times, infected, next_time, 
-                                    status, infected_neighbor_count, 
-                                    risk_group, recovery_times, 
-                                    return_full_data)
+    infecteds = _ListDict_()
+    IS_links = _ListDict_()
+    for node in initial_infecteds:
+        infecteds.add(node)
+
+        for nbr in G.neighbors(node):
+            if status[nbr] == 'S':
+                IS_links.add((node, nbr))
+    
+    total_recovery_rate = gamma*len(infecteds)
+    
+    total_transmission_rate = tau*len(IS_links)
+        
+    total_rate = total_recovery_rate + total_transmission_rate
+    delay = random.expovariate(total_rate)
+    t = t+delay
+    
+    while infecteds and t<tmax:
+        if random.random()<total_recovery_rate/total_rate: #recover
+            recovering_node = infecteds.choose_random()
+            status[recovering_node]='S'
+            if return_full_data:
+                recovery_times[node].append(t)
+            infecteds.remove(recovering_node)
+            for nbr in G.neighbors(recovering_node):
+                if status[nbr] == 'S':
+                    IS_links.remove((recovering_node, nbr))
+                else:
+                    IS_links.add((nbr, recovering_node))
+            times.append(t)
+            S.append(S[-1])
+            I.append(I[-1]-1)
         else:
-            #an infection occurs
-            _Gillespie_infect_(G, S, I, [], times, infected, next_time, 
-                                infected_neighbor_count, risk_group, status, 
-                                infection_times, return_full_data, SIR=False)
-            #updates variables as needed and calculates new max_trans_rate
-        total_trans_rate = tau*sum(n*len(risk_group[n]) 
-                                    for n in risk_group.keys())
-        total_rec_rate = gamma*I[-1]
-        total_rate = total_rec_rate + total_trans_rate
+            transmitter, recipient = IS_links.choose_random()
+            status[recipient]='I'
+            if  return_full_data:
+                infection_times[node].append(t)
+            infecteds.add(recipient)
+            for nbr in G.neighbors(recipient):
+                if status[nbr] == 'S':
+                    IS_links.add((recipient, nbr))
+                else:
+                    IS_links.remove((nbr, recipient))
+                    
+            times.append(t)
+            S.append(S[-1]-1)
+            I.append(I[-1]+1)
+
+        total_recovery_rate = gamma*len(infecteds)
+        
+        total_transmission_rate = tau*len(IS_links)
+        
+
+        total_rate = total_recovery_rate + total_transmission_rate
         if total_rate>0:
-            next_time += random.expovariate(total_rate)
-        else:  #occurs if everyone recovered
-            next_time = float('Inf')
-        #        print next_time, I[-1]
+            delay = random.expovariate(total_rate)
+            t += delay
 
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
-        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return EoN.Simulation_Investigation(G, node_history, SIR=False)
-
-
-
-"""
-What follows is code from a first step towards a weighted Gillespie algorithm
-This is a low priority since it will be much slower than fast_SIR.
-
-
-def randomlychoose(D, r):
-    r'''
-    Arguments : 
-        D : defaultdict of rates
-        r : number 
+        #need to change data type of infection_times and recovery_times
+        infection_times = {node: L[0] for node, L in infection_times.items()}
+        recovery_times = {node: L[0] for node, L in recovery_times.items()}
         
-    Returns : 
-        node : the node for which the action is occuring
-    
-    Modifies:
-        D : removes node.
-    '''
-    for node in D:
-        if r< D[node]:
-            break
-        else:
-            r-= D[node]
-    D.pop(node)
-    return node
-    
-def update_infected_neighbors(G, node, status, infection_rate, total_infection_rate)
-    for neighbor in G.neighbors(node):
-        if status[neighbor]=='S':
-            infection_rate[neighbor] = infection_rate[neighbor]+trans_rate_fxn(node, neighbor)
-            total_infection_rate += trans_rate_fxn(node, neighbor)
-    return total_infection_rate
-    
-def Gillespie_weighted_SIR(G, tau, gamma, initial_infecteds = None, rho = None,
-                tmax=float('Inf'), transmission_weight = None, 
-                recovery_weight = None, return_full_data = False):
-    
-    if rho is not None and initial_infecteds is not None:
-        raise EoN.EoNError("cannot define both initial_infecteds and rho")
+        #print(type(infection_times), type(recovery_times), type(tmin))
 
-    
-    infection_times = defaultdict(lambda: []) #defaults to an empty list for each node
-    recovery_times = defaultdict(lambda: [])
+        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
+        return EoN.Simulation_Investigation(G, node_history)
 
-    tau = float(tau)  #just to avoid integer division problems in python 2.
-    gamma = float(gamma)
-
-    trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
-                                                transmission_weight,
-                                                recovery_weight)
-    
-    if initial_infecteds is None:
-        if rho is None:
-            initial_number = 1
-        else:
-            initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
-    elif G.has_node(initial_infecteds):
-        initial_infecteds=[initial_infecteds]
-    
-    times = [0]
-    S = [G.order()-len(initial_infecteds)]
-    I = [len(initial_infecteds)]
-    R = [0]
-    status = defaultdict(lambda:'S') #by default all are susceptible
-    infection_rate = defaultdict(lambda: 0)
-    recovery_rate = defaultdict(lambda: 0)
-    infecteds = list(initial_infecteds)
-    
-    total_infection_rate=0
-    total_recovery_rate = 0
-    
-    for node in infecteds:
-        status[node]='I'
-        recovery_rate[node] = rec_rate_fxn(node)
-        total_recovery_rate += recovery_rate[node]
-    for node in infecteds:
-        total_infection_rate = update_infected_neighbors(G, node, status, 
-                                    infection_rate, total_infection_rate)
-                            
-    total_rate = total_infection_rate + total_recovery_rate
-    
-    time = random.expovariate(total_rate)
-    
-    while time<tmax and infecteds:
-        r = total_rate*random.random()
-        if r< total_recovery_rate: #a recovery happens
-            u = randomlychoose(infection_rate, r)
-            for nbr in G.neighbors(u):
-                localtau = trans_rate_fxn(node, neighbor)
-                total_infection_rate[nbr] -= localtau
-                total_infection_rate -= localtau
-        else: # a transmission happens.
-            r -= total_recovery_rate
-            u = randomlychoose(recovery_rate, r)
-        
-"""

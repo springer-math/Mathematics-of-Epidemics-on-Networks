@@ -10,9 +10,8 @@ To demonstrate that stopping and restarting doesn't do anything weird, we first
 run to time t0, stop, and then restart with the original parameters.  The resulting
 simulation should just look like nothing changes.
 
-Once the nonMarkovian SIS function exists, another way to do this may be
-through writing a custom transmission rate
-function 
+Another way to do this is through writing a custom transmission rate
+function into the nonMarkovian SIS code.  I hope to do this at a later time.
 '''
 
     
