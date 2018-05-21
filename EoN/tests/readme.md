@@ -6,10 +6,10 @@ Normal functional tests are written using nosetests package. It allow many diffe
 
 Examples:
 
-	nosetests test.module
-	nosetests another.test:TestCase.test_method
-	nosetests a.test:TestCase
-	nosetests /path/to/test/file.py:test_function
+	nosetests -v tests\test_sim_sweep_parameters.py
+	nosetests -v EoN.tests.test_sim_sweep_parameters
+	nosetests -v EoN.tests.test_sim_sweep_parameters:TestSimSweepParameters.test_Gillespie_SIS_type
+	
 
 For more details on usage, please see [http://nose.readthedocs.io/en/latest/usage.html](http://nose.readthedocs.io/en/latest/usage.html)
  
