@@ -2,7 +2,11 @@
 
 ## Functional Tests   
 
-Normal functional tests are written using nosetests package. It allow many different way of running tests. For e.g. test names specified may be file or module names, and may optionally indicate the test case to run by separating the module or file name from the test case name with a colon. 
+Normal functional tests are written using nosetests package. To install: 
+
+	pip install nose 
+
+Nose allow many different way of running tests. For e.g. test names specified may be file or module names, and may optionally indicate the test case to run by separating the module or file name from the test case name with a colon. 
 
 Examples:
 
@@ -10,13 +14,68 @@ Examples:
 	nosetests -v EoN.tests.test_sim_sweep_parameters
 	nosetests -v EoN.tests.test_sim_sweep_parameters:TestSimSweepParameters.test_Gillespie_SIS_type
 	
+Example test module execution with verbose logs: 
+
+	C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\tests>nosetests -v test_sim_sweep_parameters.py
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_Gillespie_SIR_sweep_gamma ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_Gillespie_SIR_sweep_tau ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_Gillespie_SIS_sweep_gamma ... ERROR
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_Gillespie_SIS_sweep_tau ... ERROR
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_Gillespie_SIS_type ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_basic_discrete_SIR_sweep_p ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_basic_discrete_SIS_sweep_p ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_fast_SIR_sweep_gamma ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_fast_SIR_sweep_tau ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_fast_SIS_sweep_gamma ... ok
+	EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_fast_SIS_sweep_tau ... ok
+	
+	======================================================================
+	ERROR: EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_Gillespie_SIS_sweep_gamma
+	----------------------------------------------------------------------
+	Traceback (most recent call last):
+	  File "c:\users\tting\appdata\local\programs\python\python36\lib\site-packages\nose\case.py", line 198, in runTest
+	    self.test(*self.arg)
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\tests\test_sim_sweep_parameters.py", line 41, in test_Gillespie_SIS_sweep_gamma
+	    [EoN.Gillespie_SIS(G, 1.0, i, initial_infecteds=initial_infections, return_full_data=True, tmax=10) for i in np.arange(0.0, 1.0, 0.1)]
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\tests\test_sim_sweep_parameters.py", line 41, in <listcomp>
+	    [EoN.Gillespie_SIS(G, 1.0, i, initial_infecteds=initial_infections, return_full_data=True, tmax=10) for i in np.arange(0.0, 1.0, 0.1)]
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\simulation.py", line 3039, in Gillespie_SIS
+	    node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\simulation.py", line 136, in _transform_to_node_history_
+	    Rtimes = recovery_times[node]
+	KeyError: (24, 24)
+	
+	======================================================================
+	ERROR: EoN.tests.test_sim_sweep_parameters.TestSimSweepParameters.test_Gillespie_SIS_sweep_tau
+	----------------------------------------------------------------------
+	Traceback (most recent call last):
+	  File "c:\users\tting\appdata\local\programs\python\python36\lib\site-packages\nose\case.py", line 198, in runTest
+	    self.test(*self.arg)
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\tests\test_sim_sweep_parameters.py", line 53, in test_Gillespie_SIS_sweep_tau
+	    [EoN.Gillespie_SIS(G, i, 1.0, initial_infecteds=initial_infections, return_full_data=True, tmax=10) for i in np.arange(0.0, 1.0, 0.1)]
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\tests\test_sim_sweep_parameters.py", line 53, in <listcomp>
+	    [EoN.Gillespie_SIS(G, i, 1.0, initial_infecteds=initial_infections, return_full_data=True, tmax=10) for i in np.arange(0.0, 1.0, 0.1)]
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\simulation.py", line 3039, in Gillespie_SIS
+	    node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
+	  File "C:\GitRepos\tinghf_Math_Epidemics_Networks\EoN\simulation.py", line 136, in _transform_to_node_history_
+	    Rtimes = recovery_times[node]
+	KeyError: (24, 24)
+	
+	----------------------------------------------------------------------
+	Ran 11 tests in 2.435s
+	
+	FAILED (errors=2)
 
 For more details on usage, please see [http://nose.readthedocs.io/en/latest/usage.html](http://nose.readthedocs.io/en/latest/usage.html)
  
 
 ## Performance Tests  
 
-Perf tests are created using the Python perf modules. It features: 
+Perf tests are created using the Python perf modules. To install: 
+
+	pip install perf
+
+It features: 
 
 - Simple API to run reliable benchmarks
 - Automatically calibrate a benchmark for a time budget.
@@ -48,7 +107,7 @@ Then you could take perf stats on this script simply by:
 
 The benchmark file generated for each execution include the environment context(so you could do a apple-2-apple comparison of benchmarks later on). It is at the tail end of the json file generated and can also be displayed by: 
 
-	python -m perf metadata telco.json
+	python -m perf metadata bench.json
 	Metadata:
 	- cpu_count: 4
 	- hostname: NA00327L
