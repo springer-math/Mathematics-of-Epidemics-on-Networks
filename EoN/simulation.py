@@ -1635,7 +1635,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         transmission_weight : string       (default None)
             the label for a weight given to the edges.
             transmission rate is
-            G.edge[i][j][transmission_weight]*tau
+            G.adj[i][j][transmission_weight]*tau
 
         recovery_weight : string       (default None)
             a label for a weight given to the nodes to scale their 
@@ -1676,7 +1676,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         plt.plot(t, I)
     '''
     #tested in test_SIR_dynamics
-    if transmission_weight is not None:
+    if transmission_weight is not None or tau*gamma == 0:
         trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                     transmission_weight,
                                                     recovery_weight)
@@ -2279,7 +2279,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         transmission_weight : string       (default None)
             the label for a weight given to the edges.
             transmission rate is
-            G.edge[i][j][transmission_weight]*tau
+            G.adj[i][j][transmission_weight]*tau
 
         recovery_weight : string       (default None)
             a label for a weight given to the nodes to scale their 
@@ -2537,31 +2537,24 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 
 def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, 
                     initial_recovereds = None, rho = None, tmin = 0, 
-                    tmax=float('Inf'), return_full_data = False):
+                    tmax=float('Inf'), return_full_data = False, 
+                    recovery_weight = None, transmission_weight = None):
     #tested in test_SIR_dynamics
     r'''
-    Performs SIR simulations for epidemics on unweighted
-    networks.  The run time is slower than fast_SIR, but they are comparable.
-    However, Gillespie_SIR relies on the lack of edge/node weights in order
-    to achieve a significant improvement.  fast_SIR permits weighted networks.
+    
+    COMMENTS ARE NOT UPDATED FOR WEIGHTS
+    
+    
+    Performs SIR simulations for epidemics.
+    
+    For unweighted networks, the run time is slower than fast_SIR, but they are 
+    close.  If we add weights, then fast_SIR becomes much faster.
     
     Rather than using figure A.1 of Kiss, Miller, & Simon, this uses a method 
     from Petter Holme 
         "Model versions and fast algorithms for network epidemiology"
     which focuses on SI edges (versions before 0.99.2 used a
-    method more like fig A.1).  I expect this to perform poorly if adapted to 
-    weighted edges.  For this, we may add a separate method based on figure A.1 
-    once we try to put weights in or perhaps Cota & Ferreira:
-        "Optimized Gillespie algorithms for the simulation of Markovian
-        epidemic processes on large and heterogeneous networks"
-    If adjusting to weighted networks, note that 0.99.2rc3 has a bug fix in the
-    Gillespie algorithms.  So do not use an earlier version.
-    
-
-    A significant improvement compared to the obvious implementation of
-    figure A.1 is that at_risk_nodes is actually broken into multiple risk 
-    groups based on what the nodes' risks are.  This allows for a more 
-    efficient step to correctly choose a random edge to transmit.  
+    method more like fig A.1).  
     
             
     This approach will not work for nonMarkovian transmission.  Boguna et al
@@ -2575,7 +2568,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     :SEE ALSO:
 
     fast_SIR which has the same inputs but uses a different method to 
-    run faster (and can handle weighted networks).
+    run faster.
     
     
     
@@ -2614,6 +2607,17 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         return_full_data: boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
+        recovery_weight : string (default None)
+            the string used to define the node attribute for the weight.
+            Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
+            If None, then just uses gamma without scaling.
+        
+        transmission_weight : string (default None)
+            the string used to define the edge attribute for the weight.
+            Assumes that the transmission rate from u to v is 
+            tau*G.adj[u][v][transmission_weight]
+            If None, then just uses tau without scaling.
+
     Returns : 
         :
         times, S, I, R : each a scipy array
@@ -2643,6 +2647,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
                                     
         plt.plot(t, I)
     
+    #SIR
     '''
 
     if rho is not None and initial_infecteds is not None:
@@ -2652,6 +2657,30 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     if return_full_data:
         infection_times = defaultdict(lambda: []) #defaults to an empty list for each node
         recovery_times = defaultdict(lambda: [])
+
+    if transmission_weight is not None:
+        def edgeweight(u,v):
+            return G.adj[u][v][transmission_weight]
+        max_edgeweight = 0.
+        for u, v in G.edges():
+            max_edgeweight = max(max_edgeweight, edgeweight(u,v))
+	    #check if this is the fastest way.
+    else:
+        max_edgeweight=1.
+        def edgeweight(u,v):
+            return 1.
+    
+    if recovery_weight is not None:
+        def nodeweight(u):
+            return G.node[u][recovery_weight]
+        max_nodeweight = 0
+        for u in G.nodes():
+            max_nodeweight = max(max_nodeweight, nodeweight(u))
+            #check if this is the fastest way.
+    else:
+        max_nodeweight=1.
+        def nodeweight(u):
+            return 1.
 
     tau = float(tau)  #just to avoid integer division problems in python 2.
     gamma = float(gamma)
@@ -2687,60 +2716,79 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
 
     infecteds = _ListDict_()
     IS_links = _ListDict_()
+    IS_weight_sum = 0 #sum of weights for IS edges
+    I_weight_sum = 0 #sum of weights for I nodes
     for node in initial_infecteds:
         infecteds.add(node)
-
-        for nbr in G.neighbors(node):
+        I_weight_sum += nodeweight(node)
+        for nbr in G.neighbors(node):  #must have this in a separate loop 
+                                       #from assigning status
             if status[nbr] == 'S':
                 IS_links.add((node, nbr))
+                IS_weight_sum += edgeweight(node, nbr)
     
-    total_recovery_rate = gamma*len(infecteds)
+    total_recovery_rate = gamma*I_weight_sum
     
-    total_transmission_rate = tau*len(IS_links)
+    total_transmission_rate = tau*IS_weight_sum
         
     total_rate = total_recovery_rate + total_transmission_rate
     delay = random.expovariate(total_rate)
-    t = t+delay
+    t += delay
     
     while infecteds and t<tmax:
         if random.random()<total_recovery_rate/total_rate: #recover
-            recovering_node = infecteds.choose_random()
+            while True:
+                recovering_node = infecteds.choose_random()
+                if random.random()<nodeweight(recovering_node)/float(max_nodeweight):
+                    break
             status[recovering_node]='R'
             if return_full_data:
                 recovery_times[node].append(t)
             infecteds.remove(recovering_node)
+            I_weight_sum -= nodeweight(recovering_node)
+
             for nbr in G.neighbors(recovering_node):
                 if status[nbr] == 'S':
                     IS_links.remove((recovering_node, nbr))
+                    IS_weight_sum -= edgeweight(recovering_node, nbr)
             times.append(t)
             S.append(S[-1])
             I.append(I[-1]-1)
             R.append(R[-1]+1)
-        else:
-            transmitter, recipient = IS_links.choose_random()
+        else: #transmit
+            while True:
+                transmitter, recipient = IS_links.choose_random()
+                if random.random()<edgeweight(transmitter, recipient)/float(max_edgeweight):
+                    break
+            #assert(status[recipient] == 'S')
             status[recipient]='I'
             if return_full_data:
                 infection_times[node].append(t)
             infecteds.add(recipient)
+            I_weight_sum += nodeweight(recipient)
             for nbr in G.neighbors(recipient):
                 if status[nbr] == 'S':
                     IS_links.add((recipient, nbr))
-                elif status[nbr]=='I':
+                    IS_weight_sum += edgeweight(recipient, nbr)
+                elif status[nbr]=='I' and nbr != recipient: #self edge would break this without last test.elif
                     IS_links.remove((nbr, recipient))
-                    
+                    IS_weight_sum -= edgeweight(nbr, recipient)
+                     
             times.append(t)
             S.append(S[-1]-1)
             I.append(I[-1]+1)
             R.append(R[-1])
-        total_recovery_rate = gamma*len(infecteds)
+            
+        total_recovery_rate = gamma*I_weight_sum
+        total_transmission_rate = tau*IS_weight_sum
         
-        total_transmission_rate = tau*len(IS_links)
-        
-
+                
         total_rate = total_recovery_rate + total_transmission_rate
         if total_rate>0:
             delay = random.expovariate(total_rate)
-            t += delay
+        else:
+            delay = float('Inf')
+        t += delay
 
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I), \
@@ -2756,32 +2804,24 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         return EoN.Simulation_Investigation(G, node_history)
 
 
-
 def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
-                    tmax=100, return_full_data = False):
+                    tmax=100, return_full_data = False, recovery_weight=None,
+                    transmission_weight = None):
     r'''
-    Performs SIS simulations for epidemics on unweighted
-    networks.  The run time is slower than fast_SIS, but they are comparable.
-    However, Gillespie_SIS relies on the lack of edge/node weights in order
-    to achieve a significant improvement.  fast_SIS permits weighted networks.
+    Performs SIS simulations for epidemics on networks with or without weighted edges.
+    
+    It assumes that the edges have a weight associated with them and that the
+    transmission rate for an edge is tau*weight[edge]
+    
+    Based on an algorithm by Petter Holme.  It requires a weighted choice of edges
+    and this will be done by tracking the maximum edge weight and then using 
+    repeated rejection samples until a successful selection.
+    
 
-    Based on an algorithm by Petter Holme.  See Gillespie_SIR for more detail.
-    
-    See comments in Gillespie_SIR for limitations in weighted and nonMarkovian
-    models.
-    
-    :WARNING: 
-        
-
-    At present, this does not accept recovery or transmission weights.
-    This is because including that will force us to sum up these weights
-    more frequently rather than just counting how many exist
-    which will slow the code down.  For weights, try fast_SIS
-    
     :SEE ALSO:
 
-    fast_SIS which has the same inputs but uses a faster method and can take a weighted
-    graph.
+    fast_SIS which has the same inputs but uses a faster method (esp for weighted
+    graphs).
     
     
     Arguments : 
@@ -2812,7 +2852,17 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
 
         return_full_data: boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
+            
+        recovery_weight : string (default None)
+            the string used to define the node attribute for the weight.
+            Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
+            If None, then just uses gamma without scaling.
         
+        transmission_weight : string (default None)
+            the string used to define the edge attribute for the weight.
+            Assumes that the transmission rate from u to v is 
+            tau*G.adj[u][v][transmission_weight]
+            
     Returns : 
 
         : times, S, I; 
@@ -2849,6 +2899,30 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         infection_times = defaultdict(lambda: []) #defaults to an empty list 
         recovery_times = defaultdict(lambda: [])  #for each node
 
+    if transmission_weight is not None:
+        def edgeweight(u,v):
+            return G.adj[u][v][transmission_weight]
+        max_edgeweight = 0.
+        for u, v in G.edges():
+            max_edgeweight = max(max_edgeweight, edgeweight(u,v))
+	    #check if this is the fastest way.
+    else:
+        max_edgeweight=1.
+        def edgeweight(u,v):
+            return 1.
+    
+    if recovery_weight is not None:
+        def nodeweight(u):
+            return G.node[u][recovery_weight]
+        max_nodeweight = 0.
+        for u in G.nodes():
+            max_nodeweight = max(max_nodeweight, nodeweight(u))
+            #check if this is the fastest way.
+    else:
+        max_nodeweight=1.
+        def nodeweight(u):
+            return 1.
+            
     tau = float(tau)  #just to avoid integer division problems.
     gamma = float(gamma)
     
@@ -2873,63 +2947,85 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         if  return_full_data:
             infection_times[node].append(t)
 
+            
     infecteds = _ListDict_()
     IS_links = _ListDict_()
+    
+    IS_weight_sum = 0 #sum of weights for IS edges
+    I_weight_sum = 0 #sum of weights for I nodes
     for node in initial_infecteds:
         infecteds.add(node)
-
-        for nbr in G.neighbors(node):
+        I_weight_sum += nodeweight(node)
+        for nbr in G.neighbors(node):  #must have this in a separate loop 
+                                       #from assigning status
             if status[nbr] == 'S':
                 IS_links.add((node, nbr))
+                IS_weight_sum += edgeweight(node, nbr)
     
-    total_recovery_rate = gamma*len(infecteds)
+    total_recovery_rate = gamma*I_weight_sum
     
-    total_transmission_rate = tau*len(IS_links)
-        
+    total_transmission_rate = tau*IS_weight_sum
+            
     total_rate = total_recovery_rate + total_transmission_rate
     delay = random.expovariate(total_rate)
     t = t+delay
     
     while infecteds and t<tmax:
         if random.random()<total_recovery_rate/total_rate: #recover
-            recovering_node = infecteds.choose_random()
+            while True:
+                recovering_node = infecteds.choose_random()
+                if random.random()<nodeweight(recovering_node)/max_nodeweight:
+                    break
             status[recovering_node]='S'
             if return_full_data:
                 recovery_times[node].append(t)
             infecteds.remove(recovering_node)
+            I_weight_sum -= nodeweight(recovering_node)
+                
             for nbr in G.neighbors(recovering_node):
                 if status[nbr] == 'S':
                     IS_links.remove((recovering_node, nbr))
+                    IS_weight_sum -= edgeweight(recovering_node, nbr)
                 else:
                     IS_links.add((nbr, recovering_node))
+                    IS_weight_sum += edgeweight(recovering_node, nbr)
+                        
             times.append(t)
             S.append(S[-1])
             I.append(I[-1]-1)
         else:
-            transmitter, recipient = IS_links.choose_random()
+            while True:
+                transmitter, recipient = IS_links.choose_random()
+                if random.random()< edgeweight(transmitter, recipient)/max_edgeweight:
+                    break
             status[recipient]='I'
+            I_weight_sum += nodeweight(recipient)
             if  return_full_data:
                 infection_times[node].append(t)
             infecteds.add(recipient)
             for nbr in G.neighbors(recipient):
                 if status[nbr] == 'S':
                     IS_links.add((recipient, nbr))
-                else:
+                    IS_weight_sum += edgeweight(recipient, nbr)
+                elif nbr != recipient: #otherwise a self-loop breaks the code
                     IS_links.remove((nbr, recipient))
+                    IS_weight_sum -= edgeweight(nbr, recipient)
                     
             times.append(t)
             S.append(S[-1]-1)
             I.append(I[-1]+1)
 
-        total_recovery_rate = gamma*len(infecteds)
+        total_recovery_rate = gamma*I_weight_sum
         
-        total_transmission_rate = tau*len(IS_links)
+        total_transmission_rate = tau*IS_weight_sum
         
 
         total_rate = total_recovery_rate + total_transmission_rate
         if total_rate>0:
             delay = random.expovariate(total_rate)
-            t += delay
+        else:
+            delay = float('Inf')
+        t += delay
 
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I)
@@ -2940,6 +3036,6 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         
         #print(type(infection_times), type(recovery_times), type(tmin))
 
-        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
+        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         return EoN.Simulation_Investigation(G, node_history)
 

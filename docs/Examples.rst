@@ -121,6 +121,22 @@ are given here.
 Additional Examples
 -------------------
 
+
+
+Visualizing or animating disease spread
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We can visualize snapshots or animations of disease spread in a network.
+
+.. toctree:: 
+   :maxdepth: 1
+   
+   Visualizing disease spread in a lattice network <examples/Simulation_Investigation.rst>
+
+
+Changing parameters
+^^^^^^^^^^^^^^^^^^^
+
 Sometimes you might want to have the values of parameters change at different 
 times.
 
@@ -128,6 +144,9 @@ times.
 
 * :download:`SIR varying tau <examples/changing_parameters/SIR_change_tau.py>`
 
+
+Weighted networks
+^^^^^^^^^^^^^^^^^
 You may have edges (or nodes) with weights affecting transmission or recovery
 rates.
 

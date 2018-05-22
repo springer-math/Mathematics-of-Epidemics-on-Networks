@@ -11,7 +11,6 @@ the spread of SIS and SIR diseases in networks.
    Getting Started <GettingStarted>
    Examples 
    EoN 
-   Simulation_Investigation
 
 Highlights 
 ----------

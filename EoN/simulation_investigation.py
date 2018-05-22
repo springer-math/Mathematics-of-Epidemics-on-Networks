@@ -447,29 +447,6 @@ class Simulation_Investigation():
         of the network.  There are options to control how many plots appear
         and which time series objects are plotted in it.
         
-        If you only want to plot the graph, set ts_plots equal to [].  
-        
-        If you want S, I, and R on a singleplot, set ts_plots equal to ['SIR']
-        
-        If you only want some of the timeseries objects, set ts_list to be those
-        (the simulation time series will always be plotted).
-        
-        To show a plot where sim is the Simulation_Investigation object
-        simply do
-        
-        sim.display()
-        plt.show()
-        
-        To save it,
-        
-        sim.display()
-        plt.savefig(filename).
-        
-        If you want to do more detailed modifications of the plots, this 
-        returns the axes:
-            
-        network_ax, timeseries_axes = sim.display()
-        
         
         Arguments :
             time (float)
@@ -512,6 +489,40 @@ class Simulation_Investigation():
             network_ax, ts_ax_list (axis, list of axises)
             The axes for the network plot and a list of all the axes for the
             timeseries plots
+
+        
+        Notes : 
+            
+            If you only want to plot the graph, set ts_plots equal to [].  
+         
+            If you want S, I, and R on a single plot, set ts_plots equal to ['SIR']
+        
+            If you only want some of the timeseries objects, set ts_list to be those
+            (the simulation time series will always be plotted).
+        
+        Examples :
+            
+        To show a plot where sim is the Simulation_Investigation object
+        simply do
+        
+        ::
+        
+            sim.display()
+            plt.show()
+        
+        To save it,
+        
+        ::
+        
+            sim.display()
+            plt.savefig(filename).
+        
+        If you want to do more detailed modifications of the plots, this 
+        returns the axes:
+            
+        ::
+        
+            network_ax, timeseries_axes = sim.display()
         
         '''
             
@@ -561,27 +572,35 @@ class Simulation_Investigation():
     def animate(self, frame_times=None, ts_plots = ['S', 'I', 'R'], ts_list = None, nodelist=None, IonTop=True, timelabel=r'$t$',  pos = None, **nx_kwargs):
         r'''As in display, but this produces an animation.  
         
-        To display an animation where sim is the Simulation_Investigation object
-        simply do
-        
-        sim.animate()
-        plt.show()
-        
-        To save an animation [on a mac with appropriate additional libraries
-        installed], you can do
-        
-        ani = sim.animate()
-        ani.save(filename, fps=5, extra_args=['-vcodec', 'libx264'])
-        
-        here ani is a matplotlib animation.
-        See https://matplotlib.org/api/_as_gen/matplotlib.animation.Animation.save.html
-        for more about the save command for matplotlib animations.
         
         Arguments :
             The same as in display, except that time is replaced by frame_times
             
             frame_times (list/scipy array)
                 The times for animation frames.
+
+        Examples : 
+
+        To display an animation where sim is the Simulation_Investigation object
+        simply do
+        
+        ::
+        
+            sim.animate()
+            plt.show()
+        
+        To save an animation [on a mac with appropriate additional libraries
+        installed], you can do
+        
+        ::
+
+            ani = sim.animate()
+            ani.save(filename, fps=5, extra_args=['-vcodec', 'libx264'])
+        
+        here ani is a matplotlib animation.
+        See https://matplotlib.org/api/_as_gen/matplotlib.animation.Animation.save.html
+        for more about the save command for matplotlib animations.
+        
         '''
         
         if frame_times is None:

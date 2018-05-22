@@ -125,20 +125,81 @@ Simulation Investigation toolkit
 We can study simulations in detail through the Simulation_Investigation class.
 This includes automated generation of animations.
 
-The class and its methods are described in more detail in the 
-:doc:`Simulation_Investigation` section.
+This is particularly useful if we want to look at time series or at animations
+of the network as the disease spreads.
 
 
-Short  Description
-^^^^^^^^^^^^^^^^^^^^^
+Quick List
+^^^^^^^^^^
 
-    - **visualize** (allows us to plot a graph at a specific time
+.. currentmodule:: EoN.Simulation_Investigation
+
+.. autosummary::
+   :toctree: functions
+   
+   display
+   animate
+   node_history
+   node_status
+   get_statuses
+   summary
+   t
+   S
+   I
+   R
+   add_timeseries
+   update_ts_kwargs
+   update_ts_label
+   update_ts_colordict
+   sim_update_kwargs
+   sim_update_label
+   sim_update_colordict
+   set_pos
+   
+Short description
+^^^^^^^^^^^^^^^^^
+- Visualizations
+
+  There are two main commands for visualization.  We can either produce a 
+  snapshot at a given time, or produce an animation.  In either case we can
+  optionally include plots of S, I, (and R) as functions of time.
+  
+  - **display** (allows us to plot a graph at a specific time
       point, and to optionally include the calculated time series)
 
-    - **animate** (allows us to plot a graph at many time points
+  - **animate** (allows us to plot a graph at many time points
       We can create a visualization such as mp4, or save each
       individual frame of an animation.  The time series are optional.
   
+  
+- Data about simulation
+
+  Often we'll want to be able to check what happened to specific nodes in the
+  network, or we'll want to know what the time history of the outbreak looked
+  like
+  
+  - **node_history**
+  - **node_status**
+  - **get_statuses**
+  - **summary**
+  - **t**
+  - **S**
+  - **I**
+  - **R**
+  
+- Details for plotting
+
+  The remaining commands are to do with the specifics of how the plots appear
+  
+  - **update_ts_kwargs**
+  - **update_ts_label**
+  - **update_ts_colordict**
+  - **sim_update_kwargs**
+  - **sim_update_label**
+  - **sim_update_colordict**
+  - **set_pos**
+
+
 
 
 Analytic Toolkit

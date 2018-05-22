@@ -19,7 +19,7 @@ from distutils.core import setup
 
 setup(name='EoN',
       packages = ['EoN'], 
-      version='0.99.2rc3',  #http://semver.org/
+      version='0.99.2rc4',  #http://semver.org/
       description = 'Epidemics on Networks',
       author = 'Joel C. Miller, Istvan Z. Kiss, and Peter Simon',
       author_email = 'joel.c.miller.research@gmail.com',
