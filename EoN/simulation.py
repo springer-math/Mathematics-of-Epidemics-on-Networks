@@ -2899,29 +2899,29 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         infection_times = defaultdict(lambda: []) #defaults to an empty list 
         recovery_times = defaultdict(lambda: [])  #for each node
 
-    if transmission_weight is not None:
+    if transmission_weight is None:
+        max_edgeweight=1.
+        def edgeweight(u,v):
+            return 1.
+    else:
         def edgeweight(u,v):
             return G.adj[u][v][transmission_weight]
         max_edgeweight = 0.
         for u, v in G.edges():
             max_edgeweight = max(max_edgeweight, edgeweight(u,v))
 	    #check if this is the fastest way.
-    else:
-        max_edgeweight=1.
-        def edgeweight(u,v):
-            return 1.
     
-    if recovery_weight is not None:
+    if recovery_weight is None:
+        max_nodeweight=1.
+        def nodeweight(u):
+            return 1.
+    else:
         def nodeweight(u):
             return G.node[u][recovery_weight]
         max_nodeweight = 0.
         for u in G.nodes():
             max_nodeweight = max(max_nodeweight, nodeweight(u))
             #check if this is the fastest way.
-    else:
-        max_nodeweight=1.
-        def nodeweight(u):
-            return 1.
             
     tau = float(tau)  #just to avoid integer division problems.
     gamma = float(gamma)
@@ -2963,6 +2963,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
                 IS_weight_sum += edgeweight(node, nbr)
     
     total_recovery_rate = gamma*I_weight_sum
+    print(total_recovery_rate)
     
     total_transmission_rate = tau*IS_weight_sum
             
@@ -2972,16 +2973,19 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     
     while infecteds and t<tmax:
         if random.random()<total_recovery_rate/total_rate: #recover
+#            print(total_recovery_rate/total_rate)
             while True:
-                recovering_node = infecteds.choose_random()
+                recovering_node = infecteds.choose_random()                    
                 if random.random()<nodeweight(recovering_node)/max_nodeweight:
                     break
+            #print(recovering_node)
             status[recovering_node]='S'
             if return_full_data:
-                recovery_times[node].append(t)
+                recovery_times[recovering_node].append(t)
             infecteds.remove(recovering_node)
             I_weight_sum -= nodeweight(recovering_node)
-                
+
+                                
             for nbr in G.neighbors(recovering_node):
                 if status[nbr] == 'S':
                     IS_links.remove((recovering_node, nbr))
@@ -3030,12 +3034,6 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     if not return_full_data:
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
-        #need to change data type of infection_times and recovery_times
-        infection_times = {node: L[0] for node, L in infection_times.items()}
-        recovery_times = {node: L[0] for node, L in recovery_times.items()}
-        
-        #print(type(infection_times), type(recovery_times), type(tmin))
-
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return EoN.Simulation_Investigation(G, node_history)
+        return EoN.Simulation_Investigation(G, node_history, SIR=False)
 
