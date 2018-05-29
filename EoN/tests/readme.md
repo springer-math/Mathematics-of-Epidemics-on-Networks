@@ -1,18 +1,22 @@
 # Tests for EoN package:  #
 
+&nbsp;
+
 ## Functional Tests   
 
-Normal functional tests are written using nosetests package. To install: 
+Normal functional tests are written using *nose* package. To install *nose*: 
 
 	pip install nose 
 
-Nose allow many different way of running tests. For e.g. test names specified may be file or module names, and may optionally indicate the test case to run by separating the module or file name from the test case name with a colon. 
+*Nose* allow many different ways of running tests. For e.g. test names specified may be file or module names, and may optionally indicate the test case to run by separating the module or file name from the test case name with a colon. 
+&nbsp;
 
 Examples:
 
 	nosetests -v tests\test_sim_sweep_parameters.py
 	nosetests -v EoN.tests.test_sim_sweep_parameters
 	nosetests -v EoN.tests.test_sim_sweep_parameters:TestSimSweepParameters.test_Gillespie_SIS_type
+
 	
 Example test module execution with verbose logs: 
 
@@ -68,14 +72,17 @@ Example test module execution with verbose logs:
 
 For more details on usage, please see [http://nose.readthedocs.io/en/latest/usage.html](http://nose.readthedocs.io/en/latest/usage.html)
  
+&nbsp;
 
-## Performance Tests  
 
-Perf tests are created using the Python perf modules. To install: 
+
+## Performance benchmark capturing 
+
+Perf benchmark run/analyzer are created using the Python *perf* module. To install *perf*: 
 
 	pip install perf
 
-It features: 
+In a nutshell, *perf* features: 
 
 - Simple API to run reliable benchmarks
 - Automatically calibrate a benchmark for a time budget.
@@ -85,7 +92,7 @@ It features:
 - JSON format to store benchmark results.
 - Support multiple units: seconds, bytes and integer. 
 
-To run a benchmark use the perf timeit command, with result written into perf_run.json, as follows: 
+To run a benchmark use the *perf timeit* command, with result written into perf_run.json, use: 
 
 	python tests\perf_run.py -o perf_run.json
 
@@ -105,7 +112,7 @@ Then you could take perf stats on this script simply by:
 	.....................
 	sort a sorted list: Mean +- std dev: 93.4 us +- 7.4 us
 
-The benchmark file generated for each execution include the environment context(so you could do a apple-2-apple comparison of benchmarks later on). It is at the tail end of the json file generated and can also be displayed by: 
+The benchmark file generated for each execution include the environment context(so you could do a apple-2-apple comparison of benchmarks later on). It is stored at the end of the json file generated and can also be displayed by: 
 
 	python -m perf metadata bench.json
 	Metadata:
@@ -123,7 +130,7 @@ The benchmark file generated for each execution include the environment context(
 	- timer: QueryPerformanceCounter(), resolution: 395 ns
 	- unit: second
 
-To analyze benchmark results use the perf stats command:
+To analyze benchmark results use the *perf stats* command:
 
 	python -m perf stats bench.json
 	Total duration: 16.6 sec
@@ -156,7 +163,7 @@ To analyze benchmark results use the perf stats command:
 	
 	Number of outlier (out of 83.0 us..99.6 us): 7
 
-Or you could render an histogram in text mode as follows: 
+Or you could render an histogram in text mode using the *perf hist* command as follows: 
 
 	python -m perf hist bench.json
 	86.5 us:  3 ################
@@ -186,12 +193,12 @@ Or you could render an histogram in text mode as follows:
 	 113 us:  2 ###########
 	 114 us:  3 ################
 
-Use compare_to to compare between benchmarks to see if there's no significant difference:
+Use *compare_to* to compare between benchmarks to see if there's any significant difference, output when it's looking good:
  
 	python -m perf compare_to bench.json bench2.json
 	Benchmark hidden because not significant (1): sort a sorted list
 
-or not 
+or when there's significant difference:  
 
 	python -m perf compare_to bench.json bench2.json
 	+-----------+---------+------------------------------+
@@ -201,5 +208,5 @@ or not
 	+-----------+---------+------------------------------+
 
 
-For more details on usage, please see [https://github.com/vstinner/perf](https://github.com/vstinner/perf)
+For more details on usage of *perf*, please see [https://github.com/vstinner/perf](https://github.com/vstinner/perf)
  
