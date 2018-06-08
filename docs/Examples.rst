@@ -126,6 +126,7 @@ Additional Examples
 Visualizing or animating disease spread
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
 We can visualize snapshots or animations of disease spread in a network.
 
 .. toctree:: 

@@ -128,6 +128,7 @@ This includes automated generation of animations.
 This is particularly useful if we want to look at time series or at animations
 of the network as the disease spreads.
 
+Some :ref:`examples <Simulation_Investigation>` are provided.
 
 Quick List
 ^^^^^^^^^^
