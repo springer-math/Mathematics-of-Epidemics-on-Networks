@@ -3,7 +3,7 @@ Bipartite example
 
 :download:`Downloadable Source Code <changing_parameters/SIS_weighted.py>` 
 
-.. image:: changing_parameters/SIS_weighted.png
+.. image:: weighted_graph/SIS_weighted.png
     :width: 80 %
     
 ::
