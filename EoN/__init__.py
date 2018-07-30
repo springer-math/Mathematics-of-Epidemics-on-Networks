@@ -85,7 +85,7 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
     else:
         try:
             trans_rate_fxn = lambda x, y: tau*G.edges[x,y][transmission_weight]
-        except AttributeError: #apparently this is networkx v1.x not v2.x
+        except AttributeError: #apparently you have networkx v1.x not v2.x
             trans_rate_fxn = lambda x, y: tau*G.edge[x][y][transmission_weight]
 
     if recovery_weight is None:
@@ -109,7 +109,7 @@ import EoN.simulation_investigation
 from EoN.simulation_investigation import *
 
 '''
-These are the systems I want to include:
+These are the systems I still want to include:
 
 (8.1) SIS pairwise contact conserving rewiring
 (8.5) SIS eff. deg. contact conserving rewiring
@@ -124,9 +124,5 @@ These are the systems I want to include:
 (9.35) SIR homogeneous pairwise, general recovery
 (9.36) SIR EBCM non-Markovian trans/recovery
 
-add models that take in graph, measure degree distribution and run EBCM
-similarly for EBCM with neighbor degrees (see barabasi_SIR.py)
-
-consider explicitly defining toast graph etc.
 '''
 
