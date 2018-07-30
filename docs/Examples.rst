@@ -144,8 +144,10 @@ is more infectious than the other.  This example includes a user-defined transmi
 function and uses the simulation investigation tools to look at the dynamics in
 each population.
 
+.. toctree::
+   :maxdepth: 1
 
-* :download:`bipartite population <examples/bipartite.rst>`
+   Bipartite population <examples/bipartite.rst>
 
 Changing parameters
 ^^^^^^^^^^^^^^^^^^^
