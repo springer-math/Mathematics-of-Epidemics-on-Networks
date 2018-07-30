@@ -152,6 +152,7 @@ each population.
 
 Weighted networks
 ^^^^^^^^^^^^^^^^^
+
 You may have edges (or nodes) with weights affecting transmission or recovery
 rates.  (for this be aware that the syntax of edge/node attributes is different
 for networkx 2.x and 1.x).
@@ -160,6 +161,9 @@ for networkx 2.x and 1.x).
    :maxdepth: 1
 
    SIS weighted edges <examples/SIS_weighted.rst>
+
+Other
+^^^^^
 
 Are you trying to do something but can't figure it out and would like an example?  
 
