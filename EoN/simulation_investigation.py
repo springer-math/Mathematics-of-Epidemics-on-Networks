@@ -12,8 +12,6 @@ from collections import defaultdict
 
 class Simulation_Investigation():
 
-    #I want to improve how the labels, colors, linetypes etc are passed through
-    #here.
     r'''Simulation_Display is a class which is used for creating a particular
     type of plot or an animation.
     
@@ -24,6 +22,8 @@ class Simulation_Investigation():
     A longer term goal is to have the *_from_graph methods be directly callable and
     read in the IC and then get   
     '''
+    #I want to improve how the labels, colors, linetypes etc are passed through
+    #here.
     
     class _time_series_():
         def __init__(self, t, S, I, R=None, colordict=None, label=None, **kwargs):
@@ -139,12 +139,15 @@ class Simulation_Investigation():
         return status
     
 
-    def summary(self):
+    def summary(self, nodelist = None):
         r'''
         Provides the population-scale summary of the dynamics: t, S, I, and R
         
         Arguments :
-            empty
+            nodelist (default None)
+                The nodes that we want to focus on.  By default this is all nodes.
+                If you want all nodes, the most efficient thing to do is to
+                not include 'nodelist'.  Otherwise it will recalculate everything.
                     
         Returns :
             
@@ -154,31 +157,43 @@ class Simulation_Investigation():
                 t, S, I --- scipy arrays.
                 
         Assumes that all entries in node_history start with same tmin'''
-        try:
-            self._t_  #after first time through, don't recalculate.
-        except AttributeError: #not defined yet (first time through)
-            times = set()
-            delta = {'S':defaultdict(int), 'I':defaultdict(int), 'R':defaultdict(int)}
-            for node in self.G:
-                node_times = self._node_history_[node][0]
-                node_statuses = self._node_history_[node][1]
-                tmin = node_times[0] #should be the same for each node, but hard to choose a single node at start.
-                times.add(tmin)
-                delta[node_statuses[0]][tmin]+=1
-                for new_status, old_status, time in zip(node_statuses[1:], node_statuses[:-1], node_times[1:]):
-                    delta[new_status][time] = delta[new_status][time]+1
-                    delta[old_status][time] = delta[old_status][time]-1
-                    times.add(time)
-            self._t_ = scipy.array(sorted(list(times)))
+        if nodelist is None:  #calculate everything.
+            nodelist =self.G
+        if nodelist is self.G:
+            try:
+                self._t_  #after first time through, don't recalculate.
+                if self.SIR:
+                    return self._t_, self._S_, self._I_, self._R_
+                else:
+                    return self._t_, self._S_, self._I_
+            except AttributeError:
+                pass
+
+        times = set()
+        delta = {'S':defaultdict(int), 'I':defaultdict(int), 'R':defaultdict(int)}
+        for node in nodelist:
+            node_times = self._node_history_[node][0]
+            node_statuses = self._node_history_[node][1]
+            tmin = node_times[0] #should be the same for each node, but hard to choose a single node at start.
+            times.add(tmin)
+            delta[node_statuses[0]][tmin]+=1
+            for new_status, old_status, time in zip(node_statuses[1:], node_statuses[:-1], node_times[1:]):
+                delta[new_status][time] = delta[new_status][time]+1
+                delta[old_status][time] = delta[old_status][time]-1
+                times.add(time)
+        t = scipy.array(sorted(list(times)))
         
-            tmin = self._t_[0]
-            S=[delta['S'][tmin]]
-            I=[delta['I'][tmin]]
-            R=[delta['R'][tmin]]
-            for time in self._t_[1:]:
-                S.append(S[-1]+delta['S'][time])
-                I.append(I[-1]+delta['I'][time])
-                R.append(R[-1]+delta['R'][time])
+        tmin = t[0]
+        S=[delta['S'][tmin]]
+        I=[delta['I'][tmin]]
+        R=[delta['R'][tmin]]
+        for time in t[1:]:
+            S.append(S[-1]+delta['S'][time])
+            I.append(I[-1]+delta['I'][time])
+            R.append(R[-1]+delta['R'][time])
+
+        if nodelist == self.G:   #we're going to save these to avoid recalculating 
+            self._t_ = t
             self._S_ = scipy.array(S)
             self._I_ = scipy.array(I)
             if self.SIR:
@@ -186,11 +201,19 @@ class Simulation_Investigation():
             else:
                 self._R_ = None
         
-        if self.SIR:
-            return self._t_, self._S_, self._I_, self._R_
         else:
-            return self._t_, self._S_, self._I_
-            
+            S = scipy.array(S)
+            I = scipy.array(I)
+            if self.SIR:
+                R = scipy.array(R)
+            else:
+                R = None
+        
+            if self.SIR:
+                return t, S, I, R
+            else:
+                return t, S, I
+                
     def t(self):
         r''' Returns the times of events
         Generally better to get these all through summary()'''

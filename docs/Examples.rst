@@ -135,6 +135,18 @@ We can visualize snapshots or animations of disease spread in a network.
    Visualizing disease spread in a lattice network <examples/Simulation_Investigation.rst>
 
 
+Non-uniform infectiousness
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Perhaps the population is made up of different types of individuals with different
+infectiousness.  This example considers a heterosexual population where one group
+is more infectious than the other.  This example includes a user-defined transmission
+function and uses the simulation investigation tools to look at the dynamics in
+each population.
+
+
+* :download:`bipartite population <examples/bipartite/bipartite.py>`
+
 Changing parameters
 ^^^^^^^^^^^^^^^^^^^
 
