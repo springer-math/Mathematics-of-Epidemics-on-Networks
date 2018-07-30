@@ -2540,15 +2540,16 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
                     tmax=float('Inf'), return_full_data = False, 
                     recovery_weight = None, transmission_weight = None):
     #tested in test_SIR_dynamics
-    r'''
-    
-    COMMENTS ARE NOT UPDATED FOR WEIGHTS
-    
+    r'''    
     
     Performs SIR simulations for epidemics.
     
     For unweighted networks, the run time is slower than fast_SIR, but they are 
-    close.  If we add weights, then fast_SIR becomes much faster.
+    close.  If we add weights, then this version slows down much more.  I think
+    there are better ways to implement the algorithm to remove this.  This
+    would need a new data type that allows us to quickly sample a random event
+    with appropriate weight.  I think this is doable through a binary tree and
+    it is in development.
     
     Rather than using figure A.1 of Kiss, Miller, & Simon, this uses a method 
     from Petter Holme 
@@ -2568,7 +2569,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     :SEE ALSO:
 
     fast_SIR which has the same inputs but uses a different method to 
-    run faster.
+    run faster, particularly in the weighted case.
     
     
     
