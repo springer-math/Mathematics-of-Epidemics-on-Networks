@@ -1,7 +1,7 @@
 Weighted network example
 ------------------------
 
-:download:`Downloadable Source Code <changing_parameters/SIS_weighted.py>` 
+:download:`Downloadable Source Code <weighted_graph/SIS_weighted.py>` 
 
 .. image:: weighted_graph/SIS_weighted.png
     :width: 80 %
