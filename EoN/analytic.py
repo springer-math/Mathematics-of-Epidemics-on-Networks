@@ -171,6 +171,8 @@ def _get_Nk_and_IC_as_arrays_(G, initial_infecteds = None, initial_recovereds = 
             else:# status[node] == 'R'
                 Rk0[k] += 1  
     else:
+        if rho is None:
+            rho = 1./G.order()
         Sk0 = (1-rho)*Nk
         Ik0 = rho*Nk
         Rk0 = 0*Nk
@@ -282,7 +284,9 @@ def _get_NkNl_and_IC_as_arrays_(G, initial_infecteds=None, initial_recovereds = 
                 elif status[v] == 'I':
                     IkIl0[Ks.index(k)][Ks.index(l)] += 1
                     IkIl0[Ks.index(l)][Ks.index(k)] += 1
-    else: #rho is not None      
+    else: 
+        if rho is None:
+            rho = 1./G.order()      
         SkSl0 = (1-rho)*(1-rho)*NkNl
         SkIl0 = (1-rho)*rho*NkNl
         IkIl0 = rho*rho*NkNl
