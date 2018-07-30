@@ -30,6 +30,7 @@ Bipartite example
             
     #We have defined the two types of nodes.
     
+    #now define the transmission and recovery functions:
     def trans_time_function(source, target, tau):
         if G.node[source]['type'] is 'A':
             return random.expovariate(2*tau)

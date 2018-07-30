@@ -38,7 +38,7 @@ We start with a few useful auxiliary functions
 '''
 
 __author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
-__version__ = "0.99.2rc9"
+__version__ = "0.99.2rc10"
 
 
 #print("warning - EoN is currently under significant development.  Interface"
@@ -83,7 +83,10 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
     if transmission_weight is None:
         trans_rate_fxn = lambda x, y: tau
     else:
-        trans_rate_fxn = lambda x, y: tau*G.edge[x][y][transmission_weight]
+        try:
+            trans_rate_fxn = lambda x, y: tau*G.edges[x,y][transmission_weight]
+        except AttributeError: #apparently this is networkx v1.x not v2.x
+            trans_rate_fxn = lambda x, y: tau*G.edge[x][y][transmission_weight]
 
     if recovery_weight is None:
         rec_rate_fxn = lambda x : gamma
