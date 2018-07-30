@@ -33,7 +33,9 @@ rho = 0.01
 G = nx.fast_gnp_random_graph(N, kave/(N-1.))
 
 
-times0, S0, I0, infection_time, recovery_time = EoN.fast_SIS(G, tau0, gamma, rho = rho, tmax = t0, return_full_data=True)
+#times0, S0, I0, infection_time, recovery_time = EoN.fast_SIS(G, tau0, gamma, rho = rho, tmax = t0, return_full_data=True)
+sim = EoN.fast_SIS(G, tau0, gamma, rho=rho, tmax = t0, return_full_data=True)
+
 
 
 #the infected nodes are those that either were infected and never recovered 
@@ -66,4 +68,4 @@ plt.plot(times1, I1, '-.')#the first two have the same parameters, so the transi
 plt.plot(times2, I2, '-.')#the infectiousness reduced, so a sharp change should be visible
 
 plt.legend(loc = 'lower right')
-plt.savefig('SIS_change_tau.pdf')
+plt.savefig('SIS_change_tau.png')
