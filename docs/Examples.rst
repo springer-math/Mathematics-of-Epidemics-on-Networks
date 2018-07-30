@@ -145,7 +145,7 @@ function and uses the simulation investigation tools to look at the dynamics in
 each population.
 
 
-* :download:`bipartite population <examples/bipartite/bipartite.py>`
+* :download:`bipartite population <examples/bipartite.rst>`
 
 Changing parameters
 ^^^^^^^^^^^^^^^^^^^
