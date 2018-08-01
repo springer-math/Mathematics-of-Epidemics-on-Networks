@@ -17,13 +17,15 @@ For simulations, we assume that input networks are **NetworkX**
 graphs; see https://networkx.github.io/
 
 
-**EoN** consists of two sets of algorithms.  
+**EoN** consists of several sets of algorithms.  
 
 - The first deals with **stochastic simulation of epidemics on networks**.  The most significant of these are `fast_SIS` and `fast_SIR` which significantly outperform Gillespie algorithms (also included).  These algorithms are discussed in more detail in the appendix of the book.
 
-
-- The second deals with **numerical solution of systems of equations** derived in the book.  For these it is possible to either provide the degree distribution, or simply use a network and let the code determine the degree distribution.
-
+- A significant extension of these simulations is a set of tools
+  designed to **visualize and animate simulated epidemics**, and
+  generally help investigate a given stochastic simulation.
+  
+- Another set deals with **numerical solution of systems of analytic equations** derived in the book.  For these it is possible to either provide the degree distribution, or simply use a network and let the code determine the degree distribution.
 
 - There are a few additional algorithms which are not described in the
   book, but which we believe will be useful. Most notably, related to 
@@ -178,13 +180,16 @@ Short description
   Often we'll want to be able to check what happened to specific nodes in the
   network, or we'll want to know what the time history of the outbreak looked
   like
-  
+
+
   - **node_history**
-  - **node_status**
-  - **get_statuses**
-  - **summary**
-  - **t**
-  - **S**
+  - **node_status** returns the status of a node at a given time
+  - **get_statuses** returns the status of a collection of nodes at
+     a given time (in a dict).
+  - **summary**  returns t, S, I, (and if SIR R) for the population
+    (or a subset of the population)
+  - **t** 
+  - **S** 
   - **I**
   - **R**
   
@@ -478,10 +483,7 @@ Short Description
     - **get_time_shift** (allows us to shift plots to eliminate the effect of early-time stochasticity)
     - **subsample** (allows us to take output given at a stochastic
       set of times and get output at given times - particularly useful
-      to allow for averageing multiple simulations)
-    - **node_status** returns the status of a node at a given time
-    - **get_statuses** returns the status of a collection of nodes at
-      a given time (in a dict).
+      to allow for averaging multiple simulations)
     
     
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047

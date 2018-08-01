@@ -9,7 +9,7 @@ You can install **EoN** with pip
 
     pip install EoN
 
-This will currently install version 0.99.1.  You can also clone or download
+This will currently install version 0.99.2.  You can also clone or download
 the distribution from GitHub 
 at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks to get
 a more recent version.  Then just move into the main directory and run

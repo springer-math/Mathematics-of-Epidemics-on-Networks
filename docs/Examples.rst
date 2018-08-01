@@ -2,7 +2,10 @@ EoN Examples
 ==============
 
 
-We have collected a number of examples using **EoN** to generate figures.
+We have collected a number of examples using **EoN** to generate figures.    We 
+start with examples from the book Mathematics of Epidemics on Networks.  Then
+we give a few other examples.  If none of these examples helps with the particular
+problem you are facing, `Submit an issue`_ and I'll try to help.
 
 Reproducing figures from "Mathematics of Epidemics on Networks"
 ---------------------------------------------------------------
@@ -62,9 +65,11 @@ Chapter 5
 ^^^^^^^^^
 Heterogeneous meanfield
 
-For Chapter 5 figures, these examples use larger populations than the figures in the text.
+For Chapter 5 figures, these examples use larger populations than the figures in 
+the text.
 
-Figures 5.3, 5.4, and 5.5 demonstrate the ease of the X_from_graph versions of the analytic equations
+Figures 5.3, 5.4, and 5.5 demonstrate the ease of the X_from_graph versions of 
+the analytic equations
 
 .. toctree::
    :maxdepth: 2
@@ -78,7 +83,8 @@ Chapter 6
 ^^^^^^^^^
 Percolation and EBCM
 
-The remainder of these simulations use reduced sizes or numbers of iterations compared to the published figure.  This is to save time.
+The remainder of these simulations use reduced sizes or numbers of iterations 
+compared to the published figure.  This is to save time.
 
 .. toctree::
    :maxdepth: 2

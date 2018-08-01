@@ -31,8 +31,13 @@ Highlights
     - much faster than traditional Gillespie simulation
     - allows weighted graphs 
     - allows non-Markovian dynamics
-  - Gillespie algorithms for Markovian dynamics on unweighted graphs
+  - Gillespie algorithms for Markovian dynamics
+
+    - lots of effort to optimize these (making the unweighted version comparable to the
+      event-based simulation)
+     - The weighted version is slower, but still reasonably fast.
   - discrete-time (synchronous update) models
+  - tools for visualizing and animating simulated epidemics.
 - **Numerical solvers for ODE models**
 
   - pair approximation models
