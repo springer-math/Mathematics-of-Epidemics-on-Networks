@@ -12,7 +12,7 @@ Documentation (including installation instructions) is available at http://epide
 
 ## Releases
 
-We are close to releasing version 1.0.  If you would like to help test, we welcome your involvement.
+We released v1.0 on 9 Aug 2018
 
 ## Corrections
 
