@@ -35,7 +35,7 @@ Highlights
 
     - lots of effort to optimize these (making the unweighted version comparable to the
       event-based simulation)
-     - The weighted version is slower, but still reasonably fast.
+    - The weighted version is slower, but still reasonably fast.
   - discrete-time (synchronous update) models
   - tools for visualizing and animating simulated epidemics.
 - **Numerical solvers for ODE models**
