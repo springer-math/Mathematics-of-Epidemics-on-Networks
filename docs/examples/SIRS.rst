@@ -1,4 +1,4 @@
-SEIR
+SIRS
 ----
 
 :download:`Downloadable Source Code <arbitrary_dynamics/SIRS.py>` 

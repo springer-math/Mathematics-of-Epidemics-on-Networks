@@ -127,8 +127,6 @@ are given here.
 Additional Examples
 -------------------
 
-
-
 Visualizing or animating disease spread
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -3220,13 +3220,17 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         
     :Returns: 
 
-        times (scipy array)
-            the times at which events happen
-        D (dict of scipy arrays)
-            Depending on 
+        (times, status1, status2, ...)  (list of scipy arrays)
+            first entry is the times at which events happen.
+            second (etc) entry is number at given time of status in corresponding
+                position of `return_statuses`
+        
+            
 
     
     :SAMPLE USE:
+
+    More examples in `online documentation <../Examples.html#non-sis-sir-processes-with-gillespie-arbitrary>`_
 
     ::
 
@@ -3268,7 +3272,6 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         plt.legend()
         plt.show()
         
-    More examples in `online documentation <../Examples.html#non-sis-sir-processes>`_
 '''
 
     if return_full_data:
