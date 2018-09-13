@@ -45,6 +45,11 @@ This produces a snapshot at time 6:
 .. image:: SIS_2dgrid.png
     :width: 90 %
 
+
+We can also produce animations.  You may need to install additional software 
+for this to work and modify `extra_args` appropriately.  The commands below 
+work on a mac with ffmpeg installed.
+
 ::
 
     import networkx as nx

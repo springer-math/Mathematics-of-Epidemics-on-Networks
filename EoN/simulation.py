@@ -1,10 +1,10 @@
-from collections import defaultdict
 import networkx as nx
 import random
 import heapq
 import scipy
 import EoN
-import matplotlib.pyplot as plt
+from collections import defaultdict
+from collections import Counter
 
 #######################
 #                     #
@@ -48,8 +48,8 @@ class myQueue(object):
     So function is called as 
         `function(t, *function_arguments)`
 
-    Previously I used a class of events, but sorting using the __lt__ function I
-    wrote was significantly slower than simply using tuples.
+    Previously I used a class of events, but sorting using the __lt__ function 
+    I wrote was significantly slower than simply using tuples.
     '''
     def __init__(self, tmax=float("Inf")):
         self._Q_ = []
@@ -169,7 +169,7 @@ def _simple_test_transmission_(u, v, p):
     This handles the simple case where transmission occurs with 
     probability p.
 
-    Arguments :
+    :Arguments:
 
         u (node)
             the infected node
@@ -178,7 +178,7 @@ def _simple_test_transmission_(u, v, p):
         p : number between 0 and 1
             the transmission probability
 
-    Returns :
+    :Returns:
         
         :
             
@@ -215,7 +215,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     `_simple_test_transmission_`
     in which case args should be entered as (p,)
 
-    Arguments : 
+    :Arguments: 
 
         G: NetworkX Graph (or some other structure which quacks like a 
                            NetworkX Graph)
@@ -266,7 +266,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
 
             
 
-    Returns : 
+    :Returns: 
         :
         if return_full_data is False returns 
         
@@ -312,10 +312,13 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
 
     if return_full_data:
         node_history = defaultdict(lambda : ([tmin], ['S']))
+        transmissions = []
         for node in initial_infecteds:
             node_history[node] = ([tmin], ['I'])
+            transmissions.append((tmin, None, node))
         if initial_recovereds is not None:
-            node_history[node] = ([tmin], ['R'])
+            for node in initial_recovereds:
+                node_history[node] = ([tmin], ['R'])
     
     N=G.order()
     t = [tmin]
@@ -332,19 +335,24 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         for u in initial_recovereds:
             susceptible[u] = False
         
-    infecteds = initial_infecteds
+    infecteds = set(initial_infecteds)
     
-    #may be useful to rewrite this someday to be more like SIS version
-    #taking advantage of sets.
     while infecteds and t[-1]<tmax:
-        new_infecteds = []
+        new_infecteds = set()
+        infector = {}  #used for returning full data.  a waste of time otherwise
         for u in infecteds:
             for v in G.neighbors(u):
-                if susceptible[v] and test_transmission(u, v, *args):
-                    new_infecteds.append(v)
+                if susceptible[v] and test_transmission(u, v, *args): 
+                    new_infecteds.add(v)
                     susceptible[v] = False
+                    infector[v] = [u]
+                elif return_full_data and v in new_infecteds and test_transmission(u, v, *args):
+                    infector[v].append(u)
+                    
 
         if return_full_data:
+            for v in infector.keys():
+                transmissions.append((t[-1], random.choice(infector[v]), v))
             next_time = t[-1]+1
             if next_time <= tmax:
                 for u in infecteds:
@@ -364,7 +372,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         return scipy.array(t), scipy.array(S), scipy.array(I), \
                scipy.array(R)
     else:
-        return EoN.Simulation_Investigation(G, node_history)
+        return EoN.Simulation_Investigation(G, node_history, transmissions)
 
 
 
@@ -384,7 +392,7 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
     with probability p independently to each neighbor and then
     recovering.
 
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -413,7 +421,7 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
         return_full_data: boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
-    Returns : 
+    :Returns: 
         :
         if return_full_data is False returns 
         
@@ -462,7 +470,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     
     
     
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -484,7 +492,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
         return_full_data: boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
-    Returns : 
+    :Returns: 
         :
             t, S, I, : 
                 All scipy arrays (if return_full_data is False)
@@ -511,8 +519,6 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    
-    
     if initial_infecteds is None:  #create initial infecteds list if not given
         if rho is None:
             initial_number = 1
@@ -524,9 +530,11 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     #else it is assumed to be a list of nodes.
 
     if return_full_data:
+        transmissions = {}
         node_history = defaultdict(lambda : ([tmin], ['S']))
         for u in initial_infecteds:
             node_history[u] = ([tmin], ['I'])
+            transmissions.append(tmin, None, u)
     N=G.order()
     t = [tmin]
     S = [N-len(initial_infecteds)]
@@ -534,21 +542,33 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     
     infecteds = set(initial_infecteds)
     while infecteds and t[-1]<tmax:
-        next_infecteds = set()
+        new_infecteds = set()
+        infector={}
         for u in infecteds:
-            next_infecteds.union({v for v in G.neighbors(u) 
-                                  if random.random()<p and v not in infecteds})
+            for v in G.neighbors(u):
+                if v not in infecteds and random.random()<p:
+                    if v not in new_infecteds:
+                        new_infecteds.add(v)
+                        infector[v] = u
+                    else:
+                        infector[v].append(u)
+                        
+                        
+#            new_infecteds.union({v for v in G.neighbors(u) 
+#                                  if random.random()<p and v not in infecteds})
 
         if return_full_data:
+            for v in infector.keys():
+                transmissions.append((t[-1], random.choice(infector[v]), v))
             next_time = t[-1]+1
             if next_time<= tmax:
                 for u in infecteds:
                     node_history[u][0].append(next_time)
                     node_history[u][1].append('S')
-                for v in next_infecteds:
+                for v in new_infecteds:
                     node_history[v][0].append(next_time)
                     node_history[v][1].append('I')
-        infecteds = next_infecteds
+        infecteds = new_infecteds
         t.append(t[-1]+1)
         S.append(N-len(infecteds))
         I.append(len(infecteds))
@@ -557,7 +577,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     if not return_full_data:
         return scipy.array(t), scipy.array(S), scipy.array(I)
     else:
-        return EoN.Simulation_Investigation(G, node_history, SIR=False)
+        return EoN.Simulation_Investigation(G, node_history, transmissions, SIR=False)
 
     
     
@@ -574,13 +594,13 @@ def percolate_network(G, p):
     Performs bond percolation on the network G, keeping edges with 
     probability p
 
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
         p : number between 0 and 1
             the probability of keeping edge
 
-    Returns : 
+    :Returns: 
         :
         H : NetworkX Graph
             A network with same nodes as G, but with each edge retained 
@@ -616,13 +636,13 @@ def _edge_exists_(u, v, H):
 
     Tests whether H has an edge from u to v.
 
-    Arguments : 
+    :Arguments: 
 
         u : node
         v : node
         H : graph
 
-    Returns : 
+    :Returns: 
         :
         True : if H has the edge
         False : if H does not have the edge
@@ -648,10 +668,11 @@ def percolation_based_discrete_SIR(G, p,
     independently to each neighbor and then recovering, but using a 
     percolation-based approach.  
     
-    Note:
-        You probably DON'T REALLY WANT TO USE THIS.
-        See basic_discrete_SIR which should produce equivalent 
-    outputs.  
+    Warning:
+        
+        You probably **shouldn't use this algorithm**.
+        
+        See basic_discrete_SIR which should produce equivalent outputs.  
     
         That algorithm will be faster than this one.  
     
@@ -661,7 +682,7 @@ def percolation_based_discrete_SIR(G, p,
     This algorithm leads to a better understanding of the theory.
 
 
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -690,7 +711,7 @@ def percolation_based_discrete_SIR(G, p,
         return_full_data: boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
-    Returns : 
+    :Returns: 
         :
         t, S, I, R : Scipy arrays
         
@@ -746,14 +767,14 @@ def estimate_SIR_prob_size(G, p):
     several densely connected components with very weak connections 
     between these components.
 
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
         p : number
             transmission probability
 
-    Returns : 
+    :Returns: 
         :
         PE, AR : 
             (numbers) estimates of the probability and proportion 
@@ -793,15 +814,15 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     assuming that transmission is at rate tau and recovery at rate 
     gamma
 
-    :SEE ALSO:
+    See Also:
 
-    -nonMarkov_directed_percolate_network which allows for duration and time
-    to infect to come from other distributions.
+        -nonMarkov_directed_percolate_network which allows for duration and 
+            time to infect to come from other distributions.
     
-    -nonMarkov_directed_percolate_network which allows for more complex 
-    rules
+        -nonMarkov_directed_percolate_network which allows for more complex 
+            rules
     
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -813,7 +834,7 @@ def directed_percolate_network(G, tau, gamma, weights = True):
             if True, then includes information on time to recovery
             and delay to transmission.  If False, just the directed graph.
 
-    Returns : 
+    :Returns: 
         :
         H : networkx DiGraph  (directed graph)
             a u->v edge exists in H if u would transmit to v if ever 
@@ -869,7 +890,7 @@ def _out_component_(G, source):
     finds the set of nodes (including source) which are reachable from 
     nodes in source.
 
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -883,7 +904,7 @@ def _out_component_(G, source):
         source of (1,2,3) is potentially ambiguous.  It will interpret
         the source as the single node (1,2,3)
 
-    Returns : 
+    :Returns: 
         :            
         reachable_nodes : set
             the set of nodes reachable from source (including source).
@@ -908,7 +929,7 @@ def _in_component_(G, target):
     r'''
     creates the _in_component_ by basically reversing _out_component_.
 
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -925,7 +946,7 @@ def _in_component_(G, target):
         target of (1,2,3) is potentially ambiguous.  It will interpret
         the target as the single node (1,2,3)
 
-    Returns : 
+    :Returns: 
 
         source_nodes : (set)
             the set of nodes (including target) from which target is 
@@ -974,7 +995,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     calculate anything.  Don't do it like this.  Use one of the other
     algorithms.  Try fast_SIR, for example.
     
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -990,7 +1011,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
             if a single node, then this node is initially recovered
             if an iterable, then whole set is initially recovered
 
-    Returns : 
+    :Returns: 
         :
             
         infected_nodes : set
@@ -1043,11 +1064,11 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
     
     
     
-    :SEE ALSO:
+    See Also:
 
-    estimate_nonMarkov_SIR_prob_size which handles nonMarkovian versions
+        **estimate_nonMarkov_SIR_prob_size** which handles nonMarkovian versions
 
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The network the disease will transmit through.
@@ -1056,7 +1077,7 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
         gamma : number
             recovery rate
 
-    Returns : 
+    :Returns: 
         :
         PE, AR  :  numbers (between 0 and 1)
             Estimates of epidemic probability and attack rate found by 
@@ -1087,12 +1108,12 @@ def estimate_SIR_prob_size_from_dir_perc(H):
     From figure 6.17 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm
 
-    Arguments : 
+    :Arguments: 
 
         H:  directed graph (assumed to be from directed percolation on 
             previous graph G)
 
-    Returns : 
+    :Returns: 
         :
         PE, AR  :  numbers
             Estimates of epidemic probability and attack rate found by 
@@ -1130,7 +1151,7 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
     '''
     estimates probability and size for user-input transmission and recovery time functions.
     
-       Arguments : 
+       :Arguments: 
         G : Networkx Graph
             the input graph
         trans_time_fxn : function
@@ -1145,7 +1166,7 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
         rec_time_args : tuple
             any additional arguments required by rec_time_fxn
 
-    Returns : 
+    :Returns: 
         :
         PE, AR  :  numbers (between 0 and 1)
             Estimates of epidemic probability and attack rate found by 
@@ -1204,11 +1225,11 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
     
     This is not directly described in Kiss, Miller, & Simon, but is based on (fig 6.18).
     
-    Note:
+    Warning:
         You probably DON'T REALLY WANT TO USE THIS.
         Check if estimate_nonMarkov_prob_size_with_timing fits your needs better.
     
-    Arguments : 
+    :Arguments: 
 
         G (networkx Graph)
             The input graph
@@ -1223,7 +1244,7 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
             transmission(xi[u], zeta[v]) determines whether u transmits to 
             v.
 
-    Returns : 
+    :Returns: 
         :
         PE, AR  :  numbers (between 0 and 1)
             Estimates of epidemic probability and attack rate found by 
@@ -1281,44 +1302,57 @@ def nonMarkov_directed_percolate_network_with_timing(G,
     
     A generalization of figure 6.13 of Kiss, Miller & Simon
     
-    The returned graph is built by assigning each node an infection duration 
-    and then each edge (in each direction) a delay until transmission.  
-    If   delay<duration  it adds directed edge to H.  
-    
-    if weights is True, then returned graph contains the duration and delays
-    as weights.  Else it's just a directed graph.
-    
-    The arguments are very much like in fast_nonMarkov_SIR
-    
-    Arguments : 
-        G : Networkx Graph
-            the input graph
-        trans_time_fxn : function
-            trans_time_fxn(u, v, *trans_time_args) 
-            returns the delay from u's infection to transmission to v.
-        rec_time_fxn : function
-            rec_time_fxn(u, *rec_time_args)
-            returns the delay from u's infection to its recovery.
-        trans_time_args : tuple
-            any additional arguments required by trans_time_fxn.  For example
-            weights of nodes.
-        rec_time_args : tuple
-            any additional arguments required by rec_time_fxn
-        weights : boolean
-            if true, then return network with these weights.
-    Note:
-        if delay == duration, we assume infection happens.
           
-    :SEE ALSO:
-        -directed_percolate_network
+    See Also:
+        
+        **directed_percolate_network**
         if it's just a constant transmission and recovery rate.
 
-        -nonMarkov_directed_percolate_network
+        **nonMarkov_directed_percolate_network**
         if your rule for creating the percolated network cannot be expressed
         as simply calculating durations and delays until transmission.
     
+    The arguments are very much like in fast_nonMarkov_SIR
+    
+    :Arguments: 
+        
+    **G**  Networkx Graph
+        the input graph
+    **trans_time_fxn** user-defined function
+        returns the delay from u's infection to transmission to v.
+        
+        delay=trans_time_fxn(u, v, *trans_time_args) 
+        
+    **rec_time_fxn** user-defined function
+        returns the duration of from u's infection (delay to its recovery).
+        
+        duration = rec_time_fxn(u, *rec_time_args)
+        
 
-        '''
+    Note:
+        if delay == duration, we assume infection happens.
+            
+    **trans_time_args** tuple
+        any additional arguments required by trans_time_fxn.  For example
+        weights of nodes.
+    **rec_time_args** tuple
+        any additional arguments required by rec_time_fxn
+    **weights** boolean
+        if true, then return directed network with the delay and duration as
+        weights.
+    
+    :Returns:
+        
+    **H** directed graph.
+        
+    The returned graph is built by assigning each node an infection duration 
+    and then each edge (in each direction) a delay until transmission.  
+    If   delay<duration  it adds directed edge to `H`.  
+    
+    if weights is True, then `H` contains the duration and delays
+    as weights.  Else it's just a directed graph.
+
+    '''
     H = nx.DiGraph()
     if weights:
         for u in G.nodes():
@@ -1345,50 +1379,51 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
     From figure 6.18 of Kiss, Miller, & Simon.  
     Please cite the book if using this algorithm.
     
-    Note:
-        You probably DON'T REALLY WANT TO USE THIS.
+
+    Warning:
+        You probably **shouldn't use this**.
         Check if nonMarkov_directed_percolate_with_timing fits your needs better.
 
-    xi and zeta are dictionaries of whatever data is needed so that 
-    xi[u] and zeta[v] 
-    are enough to determine the probability of a u-v transmission.
+    See Also:
+        
+        **nonMarkov_directed_percolate_network_with_timing**
+        if your rule for creating the percolated network is based on calculating
+        a recovery time for each node and then calculating a separate
+        transmission time for the edges this will be better.
+    
+        **directed_percolate_network**
+        if it's just a constant transmission and recovery rate.
 
-    transmissision is a user-defined function taking xi[u] and zeta[v] 
-    and returning True if a transmission would occur
+    This algorithm is particularly intended for a case where the duration and
+    delays from infection to transmission are somehow related to one another.
+    
+    
+    :Arguments: 
 
-    Arguments : 
+    **G** networkx Graph
+        The input graph
 
-        G (networkx Graph)
-            The input graph
+    **xi** dict
+        xi[u] gives all necessary information to determine what us 
+        infectiousness is.
+    **zeta** dict
+        zeta[v] gives everything needed about vs susceptibility
 
-        xi : dict
-            xi[u] gives all necessary information to determine what us 
-            infectiousness is.
-        zeta : dict
-            zeta[v] gives everything needed about vs susceptibility
+    **transmission** user-defined function
+        transmission(xi[u], zeta[v]) determines whether u transmits to v.
+        
+        returns True if transmission happens and False if it does not
 
-        transmission : user-defined function
-            transmission(xi[u], zeta[v]) determines whether u transmits to 
-            v.
-
-    Returns : 
-        :
-        H : networkx DiGraph (directed graph)
-            Edge u,v exists in H if disease will transmit given the opportunity.
+    :Returns: 
+        
+    **H** networkx DiGraph (directed graph)
+        Edge (u,v) exists in H if disease will transmit given the opportunity.
     
     :SAMPLE USE:
 
     for now, I'm being lazy.  
     Look at the sample for estimate_nonMarkov_SIR_prob_size to infer it.
     
-    :SEE ALSO:
-    -nonMarkov_directed_percolate_network_with_timing
-    if your rule for creating the percolated network is based on calculating
-    a recovery time for each node and then calculating a transmission time for 
-    the edges this will be better.
-    
-    -directed_percolate_network
-    if it's just a constant transmission and recovery rate.
 '''
     H = nx.DiGraph()
     for u in G.nodes():
@@ -1415,48 +1450,50 @@ def _find_trans_and_rec_delays_SIR_(node, sus_neighbors, trans_time_fxn,
     return trans_delay, rec_delay
     
 
-def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status, 
-                            rec_time, pred_inf_time, trans_and_rec_time_fxn, 
+def _process_trans_SIR_(time, G, source, target, times, S, I, R, Q, status, 
+                            rec_time, pred_inf_time, transmissions, 
+                            trans_and_rec_time_fxn, 
                             trans_and_rec_time_args = ()):
     r'''
     From figure A.4 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm.
 
-    Arguments : 
+    :Arguments: 
 
-        time : number
-            time of transmission
-        G (networkx Graph)
-        node : node
-            node receiving transmission.
-        times : list
-            list of times at which events have happened
-        S, I, R : lists
-            lists of numbers of nodes of each status at each time
-        Q : myQueue
-            the queue of events
-        status : dict
-            dictionary giving status of each node
-        rec_time : dict
-            dictionary giving recovery time of each node
-        pred_inf_time : dict
-            dictionary giving predicted infeciton time of nodes 
-        trans_and_rec_time_fxn : function
-            trans_and_rec_time_fxn(node, susceptible_neighbors, *trans_and_rec_time_args) 
-            returns tuple consisting of
-               dict of delays until transmission from node to neighbors and 
-               float having delay until recovery of node
-            An example of how to use this appears in the code fast_SIR where
-            depending on whether inputs are weighted, it constructs different
-            versions of this function and then calls fast_nonMarkov_SIR.
-        trans_and_rec_time_args : tuple (default empty)
-            see trans_and_rec_time_fxn
-    Returns : 
-        :
-        nothing returned
+    time : number
+        time of transmission
+    G (networkx Graph)
+    node : node
+        node receiving transmission.
+    times : list
+        list of times at which events have happened
+    S, I, R : lists
+        lists of numbers of nodes of each status at each time
+    Q : myQueue
+        the queue of events
+    status : dict
+        dictionary giving status of each node
+    rec_time : dict
+        dictionary giving recovery time of each node
+    pred_inf_time : dict
+        dictionary giving predicted infeciton time of nodes 
+    trans_and_rec_time_fxn : function
+        trans_and_rec_time_fxn(node, susceptible_neighbors, *trans_and_rec_time_args) 
+        returns tuple consisting of
+           dict of delays until transmission from node to neighbors and 
+           float having delay until recovery of node
+        An example of how to use this appears in the code fast_SIR where
+        depending on whether inputs are weighted, it constructs different
+        versions of this function and then calls fast_nonMarkov_SIR.
+    trans_and_rec_time_args : tuple (default empty)
+        see trans_and_rec_time_fxn
 
-    MODIFIES
-    --------
+    :Returns: 
+    
+    nothing returned
+
+    :MODIFIES:
+    
     status : updates status of newly infected node
     rec_time : adds recovery time for node
     times : appends time of event
@@ -1468,31 +1505,32 @@ def _process_trans_SIR_(time, G, node, times, S, I, R, Q, status,
 
     '''
 
-    if status[node] == 'S':  #nothing happens if already infected.
-        status[node] = 'I'
+    if status[target] == 'S':  #nothing happens if already infected.
+        status[target] = 'I'
         times.append(time)
+        transmissions.append((time, source, target))
         S.append(S[-1]-1) #one less susceptible
         I.append(I[-1]+1) #one more infected
         R.append(R[-1])   #no change to recovered
         
         
-        suscep_neighbors = [v for v in G.neighbors(node) if status[v]=='S']
+        suscep_neighbors = [v for v in G.neighbors(target) if status[v]=='S']
 
-        trans_delay, rec_delay = trans_and_rec_time_fxn(node, suscep_neighbors,
+        trans_delay, rec_delay = trans_and_rec_time_fxn(target, suscep_neighbors,
                                                 *trans_and_rec_time_args)
 
                                 
-        rec_time[node] = time + rec_delay
-        if rec_time[node]<=Q.tmax:
-            Q.add(rec_time[node], _process_rec_SIR_, 
-                            args = (node, times, S, I, R, status))
+        rec_time[target] = time + rec_delay
+        if rec_time[target]<=Q.tmax:
+            Q.add(rec_time[target], _process_rec_SIR_, 
+                            args = (target, times, S, I, R, status))
         for v in trans_delay:
             inf_time = time + trans_delay[v]
-            if inf_time<= rec_time[node] and inf_time < pred_inf_time[v] and inf_time<=Q.tmax:
+            if inf_time<= rec_time[target] and inf_time < pred_inf_time[v] and inf_time<=Q.tmax:
                 Q.add(inf_time, _process_trans_SIR_, 
-                              args = (G, v, times, S, I, R, Q, 
+                              args = (G, target, v, times, S, I, R, Q, 
                                         status, rec_time, pred_inf_time, 
-                                        trans_and_rec_time_fxn,
+                                        transmissions, trans_and_rec_time_fxn,
                                         trans_and_rec_time_args
                                      )
                              )
@@ -1502,7 +1540,7 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
     r'''From figure A.3 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Arguments : 
+    :Arguments: 
 
         event : event
             has details on node and time
@@ -1514,7 +1552,7 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
             dictionary giving status of each node
 
 
-    Returns : 
+    :Returns: 
         :
         Nothing
 
@@ -1596,66 +1634,72 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
     
     
 
-    Arguments : 
-
-        G (networkx Graph)
-            The underlying network
-
-        tau (positive float)
-            transmission rate per edge
-
-        gamma : number
-            recovery rate per node
-
-        initial_infecteds: node or iterable of nodes
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
-       
-        initial_recovereds: iterable of nodes (default None)
-            this whole collection is made recovered.
-            Currently there is no test for consistency with initial_infecteds.
-            Understood that everyone who isn't infected or recovered initially
-            is initially susceptible.
-
-        rho : number
-            initial fraction infected. number is int(round(G.order()*rho))
-
-        tmin : number (default 0)
-            starting time
-            
-        tmax : number   (default float('Inf'))
-            maximum time after which simulation will stop.
-            the default of running to infinity is okay for SIR, 
-            but not for SIS.
-
-        transmission_weight : string       (default None)
-            the label for a weight given to the edges.
-            transmission rate is
-            G.adj[i][j][transmission_weight]*tau
-
-        recovery_weight : string       (default None)
-            a label for a weight given to the nodes to scale their 
-            recovery rates
-            gamma_i = G.node[i][recovery_weight]*gamma
-
-        return_full_data: boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
-
-    Returns : 
-        :
-        times, S, I, R : Scipy arrays
+    :Arguments: 
         
-        OR if `return_full_data is True`:
-            
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+    
 
+    G (networkx Graph)
+        The underlying network
+
+    tau (positive float)
+        transmission rate per edge
+
+    gamma (number)
+        recovery rate per node
+        
+    initial_infecteds (node or iterable of nodes)
+        if a single node, then this node is initially infected
+        
+        if an iterable, then whole set is initially infected
+        
+        if None, then choose randomly based on rho.  
+        
+        If rho is also None, a random single node is chosen.
+        
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
+       
+    initial_recovereds (iterable of nodes (default None))
+        this whole collection is made recovered.
+        Currently there is no test for consistency with initial_infecteds.
+        Understood that everyone who isn't infected or recovered initially
+        is initially susceptible.
+
+    rho (number)
+        initial fraction infected. number is int(round(G.order()*rho))
+
+    tmin (number (default 0))
+        starting time
+            
+    tmax (number   (default float('Inf')))
+        maximum time after which simulation will stop.
+        the default of running to infinity is okay for SIR, 
+        but not for SIS.
+
+    transmission_weight (string       (default None))
+        the label for a weight given to the edges.
+        transmission rate is
+        G.adj[i][j][transmission_weight]*tau
+
+    recovery_weight (string       (default None))
+        a label for a weight given to the nodes to scale their 
+        recovery rates
+        gamma_i = G.node[i][recovery_weight]*gamma
+
+    return_full_data (boolean (default False))
+        Tells whether a Simulation_Investigation object should be returned.  
+
+    
+    :Returns:
+        
+    times, S, I, R (Scipy arrays)
+        
+    Or if `return_full_data is True`
+            
+    full_data  (Simulation_Investigation object)
+            from this we can extract the status history of all nodes.
+            We can also plot the network at given times
+            and create animations using class methods.
     
     :SAMPLE USE:
 
@@ -1752,99 +1796,114 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     determine both recovery and transmission times.  
     
 
-    Arguments : 
+    :Arguments: 
 
-        G : Networkx Graph
+    **G** Networkx Graph
         
-        trans_time_fxn : a user-defined function that returns the delay until 
-                         transmission for an edge.  May depend on various 
-                         arguments and need not be Markovian.  Returns float
+    **trans_time_fxn** a user-defined function
+        returns the delay until transmission for an edge.  May depend 
+        on various arguments and need not be Markovian.  
+                 
+        Returns float
 
-                         Called using the form
-                 trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)
-                         Here trans_time_args is a tuple of the additional
-                         arguments the functions needs.
+        Will be called using the form
+                 
+        `trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)`
+            Here trans_time_args is a tuple of the additional
+            arguments the functions needs.
 
-            the source_node is the infected node
-            the target_node is the node that may receive transmission
-            rec_delay is the duration of source_node's infection, calculated by rec_time_fxn.
+        the source_node is the infected node
+        the target_node is the node that may receive transmission
+        rec_delay is the duration of source_node's infection, calculated 
+        by rec_time_fxn.
 
-        rec_time_fxn : a user-defined function that returns the delay until 
-                       recovery for a node.  May depend on various arguments 
-                       and need not be Markovian.  Returns float.
+    **rec_time_fxn** a user-defined function
+        returns the delay until recovery for a node.  May depend on various 
+        arguments and need not be Markovian.  
+            
+        Returns float.
 
-                       Called using the form
-                         rec_delay = rec_time_fxn(node, *rec_time_args)
-                       Here rec_time_args is a uple of additional arguments
-                       the function needs.
+        Called using the form
+            
+        `rec_delay = rec_time_fxn(node, *rec_time_args)`
+            Here rec_time_args is a uple of additional arguments
+            the function needs.
     
-        trans_and_rec_time_fxn : a user-defined function that returns both 
-                                 a dict giving delay until transmissions for 
-                                 all edges from source to susceptible 
-                                 neighbors and a float giving delay until 
-                                 recovery of the source.  
+    **trans_and_rec_time_fxn** a user-defined function
+        returns both a dict giving delay until transmissions for all edges 
+        from source to susceptible neighbors and a float giving delay until 
+        recovery of the source.  
                                  
-                                 CAN ONLY BE USED INSTEAD OF trans_time_fxn
-                                 AND rec_time_fxn.  ERROR IF THESE ARE ALSO
-                                 DEFINED.
-            Called using the form 
-            trans_delay_dict, rec_delay = trans_and_rec_time_fxn(
-                                               node, susceptible_neighbors,
-                                               *trans_and_rec_time_args)
-            here trans_delay_dict is a dict whose keys are those neighbors
-            who receive a transmission and rec_delay is a float.
+        Can only be used **INSTEAD OF** `trans_time_fxn` AND `rec_time_fxn`.
+              
+        Gives an **ERROR** if these are also defined
             
-        trans_time_args : tuple
-            see trans_time_fxn
+        Called using the form 
+        `trans_delay_dict, rec_delay = trans_and_rec_time_fxn(
+                                           node, susceptible_neighbors,
+                                           *trans_and_rec_time_args)`
+        here trans_delay_dict is a dict whose keys are those neighbors
+        who receive a transmission and rec_delay is a float.
+            
+    **trans_time_args** tuple
+        see trans_time_fxn
         
-        rec_time_args : tuple
-            see rec_time_fxn
+    **rec_time_args** tuple
+        see rec_time_fxn
 
-        trans_and_rec_time_args : tuple
-            see trans_and_rec_tim_fxn
+    **trans_and_rec_time_args** tuple)
+        see trans_and_rec_tim_fxn
         
-        initial_infecteds: node or iterable of nodes
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
             
-        initial_recovereds: iterable of nodes (default None)
-            this whole collection is made recovered.
-            Currently there is no test for consistency with initial_infecteds.
-            Understood that everyone who isn't infected or recovered initially
-            is initially susceptible.
-       
-        rho : number
-            initial fraction infected. number is int(round(G.order()*rho))
-
-        tmin : number (default 0)
-            starting time
-            
-        tmax : (default infinity)
-            final time
-
-        return_full_data: boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
-
-
-
-    Returns : 
-        :
-        times, S, I, R : Scipy arrays
+        if an iterable, then whole set is initially infected
         
-        OR if `return_full_data is True`:
+        if None, then choose randomly based on rho.  If rho is also
+        None, a random single node is chosen.
             
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
+            
+    **initial_recovereds** iterable of nodes (default None)
+        this whole collection is made recovered.
+        
+        Currently there is no test for consistency with initial_infecteds.
+        
+        Understood that everyone who isn't infected or recovered initially
+        is initially susceptible.
+    
+    **rho** number
+        initial fraction infected. number is int(round(G.order()*rho))
 
+    **tmin** number (default 0)
+        starting time
+            
+    **tmax** number (default infinity)
+        final time
+
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
+
+
+    
+    :Returns: 
+        
+    **times, S, I, R** Scipy arrays
+        
+    Or if `return_full_data is True`
+            
+    **full_data**  Simulation_Investigation object
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
+
+    
     :SAMPLE USE:
-
-                
+          
+    ::
+        
+              
         import EoN
         
         import networkx as nx
@@ -1885,7 +1944,6 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                                 initial_infecteds = range(initial_inf_count))
         
         # note the comma after `rate` and `D`.  This is needed for python
-        
         # to recognize these are tuples
 
         # initial condition has first 100 nodes in G infected.
@@ -1931,16 +1989,17 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     #else it is assumed to be a list of nodes.
         
     times, S, I, R= ([tmin], [G.order()], [0], [0])  
-
+    transmissions = []
+    
     for u in initial_infecteds:
         pred_inf_time[u] = tmin
-        Q.add(tmin, _process_trans_SIR_, args=(G, u, times, S, I, R, Q, 
+        Q.add(tmin, _process_trans_SIR_, args=(G, None, u, times, S, I, R, Q, 
                                                     status, rec_time, 
-                                                    pred_inf_time, 
+                                                    pred_inf_time, transmissions, 
                                                     trans_and_rec_time_fxn,
                                                     trans_and_rec_time_args
                                                 )
-                        )        
+                        )
     
     #Note that when finally infected, pred_inf_time is correct
     #and rec_time is correct.  
@@ -1971,8 +2030,9 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                                 rec_time.items() if status[node] =='R'}
                                 
                 
-        node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
-        return EoN.Simulation_Investigation(G, node_history)
+        node_history = _transform_to_node_history_(infection_times, recovery_times, 
+                                                    tmin, SIR = True)
+        return EoN.Simulation_Investigation(G, node_history, transmissions)
 
 
 def _find_trans_and_rec_delays_SIS_(node, neighbors, trans_time_fxn, 
@@ -1982,17 +2042,20 @@ def _find_trans_and_rec_delays_SIS_(node, neighbors, trans_time_fxn,
     rec_delay = rec_time_fxn(node, *rec_time_args)
     trans_delays={}
     for target in neighbors:
-        trans_delays[target] = trans_time_fxn(node, target, rec_delay, *trans_time_args)
+        trans_delays[target] = trans_time_fxn(node, target, rec_delay, 
+                                                *trans_time_args)
     return trans_delays, rec_delay
 
 def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
-                        status, rec_time, infection_times, recovery_times, trans_rate_fxn, rec_rate_fxn):
+                        status, rec_time, infection_times, recovery_times, 
+                        transmissions, trans_rate_fxn, rec_rate_fxn):
     r'''From figure A.6 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Does the Markovian version.  So it doesn't take in a list of transmission times
+    Does the Markovian version.  So it doesn't take in a 
+    list of transmission times
     
-    Arguments : 
+    :Arguments: 
 
         time : number
             current time
@@ -2015,15 +2078,16 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
         
         recovery_times : 
             
-        pred_inf_time : dict
-            dictionary giving predicted infection time of nodes 
+        transmissions (list)
+            list of tuples (t, source, target) for each transmission event.
+            
         trans_rate_fxn : function
             transmission rate trans_rate_fxn(u,v) gives transmission rate 
             from u to v
         rec_rate_fxn : function
             recovery rate rec_rate_fxn(u) is recovery rate of u.
 
-    Returns : 
+    :Returns: 
         :
         nothing returned
 
@@ -2041,6 +2105,7 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
 
     if status[target] == 'S':
         status[target] = 'I'
+        transmissions.append((time, source, target))
         I.append(I[-1]+1) #one more infected
         S.append(S[-1]-1) #one less susceptible
         times.append(time)
@@ -2056,37 +2121,37 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
             Q.add(rec_time[target], _process_rec_SIS_, 
                     args = (target, times, recovery_times, S, I, status))
         for v in G.neighbors(target): #target plays role of source here
-            _find_next_trans_SIS_Markov(Q, time, trans_rate_fxn(target, v), target, v, 
-                                    status, rec_time,
-                                    trans_event_args = (G, target, v, times, 
-                                            S, I, Q, status, 
-                                            rec_time, infection_times, recovery_times,
-                                            trans_rate_fxn,
-                                            rec_rate_fxn
+            _find_next_trans_SIS_Markov(Q, time, trans_rate_fxn(target, v), 
+                                        target, v, status, rec_time,
+                                        trans_event_args = 
+                                            (G, target, v, times, S, I, Q, 
+                                            status, rec_time, infection_times, 
+                                            recovery_times, transmissions, 
+                                            trans_rate_fxn, rec_rate_fxn
                                             )
                                   )
         infection_times[target].append(time)
-    if source != 'initial_condition':
+    if source is not None:
         _find_next_trans_SIS_Markov(Q, time, trans_rate_fxn(source, target), 
                                 source, target, status, rec_time, 
                                 trans_event_args = (G, source, target, times, 
                                             S, I, Q, status, 
-                                            rec_time, infection_times, recovery_times,
-                                            trans_rate_fxn, 
-                                            rec_rate_fxn
+                                            rec_time, infection_times, 
+                                            recovery_times, transmissions, 
+                                            trans_rate_fxn, rec_rate_fxn
                                             )
                              )
 
-def _process_trans_SIS_nonMarkov_(time, G, target, future_transmissions,
+def _process_trans_SIS_nonMarkov_(time, G, source, target, future_transmissions,
                         times, S, I, Q, status, rec_time, 
-                        infection_times, recovery_times,
+                        infection_times, recovery_times, transmissions,
                         trans_and_rec_time_fxn, trans_and_rec_time_args=()):
     r'''From figure A.6 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     Does the nonMarkovian version.
     
-    Arguments : 
+    :Arguments: 
 
         time : number
             current time
@@ -2113,12 +2178,12 @@ def _process_trans_SIS_nonMarkov_(time, G, target, future_transmissions,
 
         trans_and_rec_time_args : 
 
-    Returns : 
-        :
-        nothing returned
+    :Returns: 
+    
+    nothing returned
 
-    MODIFIES
-    --------
+    :MODIFIES:
+
     status : updates status of target
     rec_time : adds recovery time for target
     times : appends time of event
@@ -2131,13 +2196,15 @@ def _process_trans_SIS_nonMarkov_(time, G, target, future_transmissions,
 
     if status[target] == 'S':
         status[target] = 'I'
+        transmissions.append((time, source, target))
         infection_times[target].append(time)
 
         times.append(time)
         I.append(I[-1]+1) #one more infected
         S.append(S[-1]-1) #one less susceptible
 
-        trans_delays, rec_delay = trans_and_rec_time_fxn(target, G.neighbors(target), *trans_and_rec_time_args)
+        trans_delays, rec_delay = trans_and_rec_time_fxn(target, G.neighbors(target), 
+                                                        *trans_and_rec_time_args)
         rec_time[target] = time + rec_delay
         
         if rec_time[target]<Q.tmax:
@@ -2150,8 +2217,8 @@ def _process_trans_SIS_nonMarkov_(time, G, target, future_transmissions,
                     trans_times = [time for time in trans_times if time>rec_time[v]]
                 following_transmissions = trans_times[1:]
                 if trans_times: #no point adding any if there are none
-                    Q.add(trans_times[0], _process_trans_SIS_nonMarkov_, args = (G, v, following_transmissions, times, S, I, Q, status, 
-                                                                                    rec_time, infection_times, recovery_times,
+                    Q.add(trans_times[0], _process_trans_SIS_nonMarkov_, args = (G, target, v, following_transmissions, times, S, I, Q, status, 
+                                                                                    rec_time, infection_times, recovery_times, transmissions,
                                                                                     trans_and_rec_time_fxn, trans_and_rec_time_args))
     
     #target is definitely infected now.  It has some future_transmissions stored.  
@@ -2159,8 +2226,8 @@ def _process_trans_SIS_nonMarkov_(time, G, target, future_transmissions,
     trans_times = [time for time in future_transmissions if time> rec_time[target]]
     following_transmissions = trans_times[1:]
     if trans_times:
-        Q.add(trans_times[0], _process_trans_SIS_nonMarkov_, args = (G, target, following_transmissions, times, S, I, Q, status, 
-                                                                                    rec_time, infection_times, recovery_times,
+        Q.add(trans_times[0], _process_trans_SIS_nonMarkov_, args = (G, source, target, following_transmissions, times, S, I, Q, status, 
+                                                                                    rec_time, infection_times, recovery_times, transmissions,
                                                                                     trans_and_rec_time_fxn, trans_and_rec_time_args))
                                                                                     
 
@@ -2174,7 +2241,7 @@ def _find_next_trans_SIS_Markov(Q, time, tau, source, target, status, rec_time,
     determines if a transmission from source to target will occur and if 
     so puts into Q
 
-    Arguments : 
+    :Arguments: 
 
         Q : myQueue
             A priority queue of events
@@ -2187,7 +2254,7 @@ def _find_next_trans_SIS_Markov(Q, time, tau, source, target, status, rec_time,
         rec_time : a dict giving the recovery time of every node that has 
                been infected.
 
-    Returns : 
+    :Returns: 
         :
         nothing returned
 
@@ -2248,57 +2315,58 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     From figure A.5 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    Arguments : 
+    :Arguments: 
     
-        G (networkx Graph)
-            The underlying network
+    **G** networkx Graph
+        The underlying network
 
-        tau (positive float)
-            transmission rate per edge
+    **tau** positive float
+        transmission rate per edge
 
-        gamma : number
-            recovery rate per node
+    **gamma** number
+        recovery rate per node
 
-        initial_infecteds: node or iterable of nodes
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
+        if an iterable, then whole set is initially infected
+        if None, then choose randomly based on rho.  If rho is also
+        None, a random single node is chosen.
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
        
-        rho : number
-            initial fraction infected. number infected is int(round(G.order()*rho))
+    **rho** number
+        initial fraction infected. number infected is int(round(G.order()*rho))
        
-        tmin : number (default 0)
-            starting time
+    **tmin** number (default 0)
+        starting time
             
-        tmax : number
-            stop time
+    **tmax** number (default 100)
+        stop time
 
-        transmission_weight : string       (default None)
-            the label for a weight given to the edges.
-            transmission rate is
-            G.adj[i][j][transmission_weight]*tau
+    **transmission_weight** string       (default None)
+        the label for a weight given to the edges.
+        transmission rate is
+        G.adj[i][j][transmission_weight]*tau
 
-        recovery_weight : string       (default None)
-            a label for a weight given to the nodes to scale their 
-            recovery rates
-            `gamma_i = G.node[i][recovery_weight]*gamma`
+    **recovery_weight** string       (default None)
+        a label for a weight given to the nodes to scale their 
+        recovery rates
+        `gamma_i = G.node[i][recovery_weight]*gamma`
     
-        return_full_data: boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
 
-    Returns : 
-        :
-        times, S, I : each a scipy array
-            giving times and number in each status for corresponding time
+    :Returns: 
         
-        or if return_full_data=True:
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+    **times, S, I** each a scipy array
+        times and number in each status for corresponding time
+        
+    or if return_full_data=True:
+    
+    **full_data**  Simulation_Investigation object
+        from this we can extract the status history of all nodes.
+        We can also plot the network at given times
+        and even create animations using class methods.
     
     :SAMPLE USE:
 
@@ -2341,15 +2409,15 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     Q = myQueue(tmax)
     status = defaultdict(lambda: 'S') #node status defaults to 'S'
     rec_time = defaultdict(lambda: tmin-1) #node recovery time defaults to -1
-    rec_time['initial_condition'] = tmin
 
     infection_times = defaultdict(lambda: []) #defaults to empty list
     recovery_times = defaultdict(lambda: [])
+    transmissions = []
     for u in initial_infecteds:
         Q.add(tmin, _process_trans_SIS_Markov, 
-                            args = (G, 'initial_condition', u, times, 
+                            args = (G, None, u, times, 
                                     S, I, Q, status, rec_time, infection_times, recovery_times, 
-                                    trans_rate_fxn, rec_rate_fxn)
+                                    transmissions, trans_rate_fxn, rec_rate_fxn)
                         )
     while Q:
         Q.pop_and_run()
@@ -2366,7 +2434,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return EoN.Simulation_Investigation(G, node_history, SIR=False)
+        return EoN.Simulation_Investigation(G, node_history, transmissions, SIR=False)
 
 
 def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None, 
@@ -2377,93 +2445,114 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
                         
     r'''Similar to fast_nonMarkov_SIR. 
     
-    WARNING: trans_time_fxn (or trans_and_rec_time_fxn) need to return lists of
-    times.  Not just the next time. So this is different from the SIR version.
-
-    Arguments : 
-    
-        G (networkx Graph)
-            The underlying network
-
-        trans_time_fxn : **RETURNS A LIST**
-                         **has slightly different arguments than the SIR version**
-
-                        a user-defined function that returns list of delays until 
-                        transmission for an edge.  All delays are before recovery.
-                        May depend on various 
-                        arguments and need not be Markovian.                          
-            Called using the form
-            trans_delay = trans_time_fxn(source_node, target_node, rec_delay, *trans_time_args)
-            the source_node is the infected node
-            the target_node is the node that may receive transmission
-            rec_delay is the duration of source_node's infection, calculated by rec_time_fxn.
-
-
-        rec_time_fxn : Returns a float
+    WARNING: 
         
-                       a user-defined function that returns the delay until 
-                       recovery for a node.  May depend on various arguments 
-                       and need not be Markovian.  Returns float
-            Called using the form
-            rec_delay = rec_time_fxn(node, *rec_time_args)
+        trans_time_fxn (or trans_and_rec_time_fxn) need to return lists of
+        times.  Not just the next time. So this is different from the SIR 
+        version.
+
+    :Arguments: 
+    
+    **G** networkx Graph
+        The underlying network
+
+    **trans_time_fxn** User-defined function returning a list
+    
+        **RETURNS A LIST**
+        
+        **has slightly different arguments than the SIR version**
+
+        a user-defined function that returns list of delays until 
+        transmission for an edge.  All delays are before recovery.
+        
+        Each entry is the delay from time of infection of node to time of the
+        given transmission (i.e., it's not looking at delays from one transmission
+        to the next)
+        
+        May depend on various arguments and need not be Markovian.                          
+        
+        Called using the form
+        
+        trans_delays = trans_time_fxn(source_node, target_node, rec_delay, *trans_time_args)
+        
+        the source_node is the infected node
+        
+        the target_node is the node that may receive transmission
+
+
+    **rec_time_fxn** user-designed function returning a float
+    
+        Returns the duration of infection of a node.  May depend on various arguments 
+        and need not be Markovian.  
+        
+        Called using the form
+        
+        duration = rec_time_fxn(node, *rec_time_args)
 
     
-        trans_and_rec_time_fxn : a user-defined function that returns both 
-                                 a dict whose values are lists of delays until 
-                                 transmissions for all edges from source to  
-                                 neighbors and a float giving delay until 
-                                 recovery of the source.  
+    **trans_and_rec_time_fxn** user-defined function returning a dict and a float
+    
+        returns both a dict whose values are lists of delays until 
+        transmissions for all edges from source to neighbors and a float 
+        giving duration of infection of the source.  
                                  
-                                 CAN ONLY BE USED INSTEAD OF trans_time_fxn
-                                 AND rec_time_fxn.  ERROR IF THESE ARE ALSO
-                                 DEFINED.
-            Called using the form 
-            trans_delay_dict, rec_delay = trans_and_rec_time_fxn(
-                                               node, susceptible_neighbors,
-                                               *trans_and_rec_time_args)
-            here trans_delay_dict is a dict whose keys are those neighbors
-            who receive a transmission and rec_delay is a float.
-        trans_time_args : tuple
-            see trans_time_fxn
+        can only be **used instead of** 
+        `trans_time_fxn` and `rec_time_fxn`.  
+        there is an **error** if these are also defined.
         
-        rec_time_args : tuple
-            see rec_time_fxn
-
-        trans_and_rec_time_args : tuple
-            see trans_and_rec_tim_fxn
+        Called using the form 
         
-        initial_infecteds: node or iterable of nodes
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
-       
-        rho : number
-            initial fraction infected. number is int(round(G.order()*rho))
-       
-        tmin : number (default 0)
-            starting time
-            
-        tmax : number (default 100)
-            stop time
-
-        return_full_data: boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
-
-    Returns : 
-        :
-        times, S, I : each a scipy array
-            giving times and number in each status for corresponding time
+        trans_delay_dict, duration = trans_and_rec_time_fxn(node, 
+        susceptible_neighbors, *trans_and_rec_time_args)
         
-        or if return_full_data=True:
-            
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+        here 
+        
+        trans_delay_dict is a dict whose keys are those neighbors
+        who receive a transmission and whose values are lists of delays
+        
+        duration is a float.
+        
+    **trans_time_args** tuple
+        see trans_time_fxn
+        
+    **rec_time_args** tuple
+        see rec_time_fxn
+        
+    **trans_and_rec_time_args** tuple
+        see trans_and_rec_time_fxn
     
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
+        if an iterable, then whole set is initially infected
+        if None, then choose randomly based on rho.  If rho is also
+        None, a random single node is chosen.
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
+       
+    **rho** number
+        initial fraction infected. number is int(round(G.order()*rho))
+       
+    **tmin** number (default 0)
+        starting time
+        
+    **tmax** number (default 100)
+        stop time
+
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
+
+    :Returns: 
+        
+    **times, S, I** each a scipy array
+        giving times and number in each status for corresponding time
+    
+    or if return_full_data=True:
+        
+    **full_data** a Simulation_Investigation object
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
+
     :SAMPLE USE:
 
     ::
@@ -2502,12 +2591,14 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 
     infection_times = defaultdict(lambda: []) #defaults to empty list
     recovery_times = defaultdict(lambda: [])
-
+    transmissions = []
+    
     for u in initial_infecteds:
         Q.add(tmin, _process_trans_SIS_nonMarkov_, args=(G, 
-                                                        u, [], times, S, I, Q, 
+                                                        None, u, [], times, S, I, Q, 
                                                         status, rec_time, 
                                                         infection_times, recovery_times,
+                                                        transmissions,
                                                         trans_and_rec_time_fxn,
                                                         trans_and_rec_time_args
                                                     )
@@ -2528,7 +2619,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return EoN.Simulation_Investigation(G, node_history, SIR=False)
+        return EoN.Simulation_Investigation(G, node_history, transmissions, SIR=False)
 
 
 
@@ -2566,14 +2657,14 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     algorithm will be O(N^2).  For this, it will be much better to use fast_SIR
     which I believe is O(N log N)
     
-    :SEE ALSO:
+    See Also:
 
-    fast_SIR which has the same inputs but uses a different method to 
-    run faster, particularly in the weighted case.
+        **fast_SIR** which has the same inputs but uses a different method to 
+        run faster, particularly in the weighted case.
     
     
     
-    Arguments : 
+    :Arguments: 
         G (networkx Graph)
             The underlying network
         tau (positive float)
@@ -2619,7 +2710,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             tau*G.adj[u][v][transmission_weight]
             If None, then just uses tau without scaling.
 
-    Returns : 
+    :Returns: 
         :
         times, S, I, R : each a scipy array
             giving times and number in each status for corresponding time
@@ -2703,6 +2794,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     S = [G.order()-I[0]-R[0]]
     times = [tmin]
     
+    transmissions = []
     t = tmin
     
     status = defaultdict(lambda : 'S')
@@ -2710,6 +2802,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         status[node] = 'I'
         if return_full_data:
             infection_times[node].append(t)
+            transmissions.append((t, None, node))
     for node in initial_recovereds:
         status[node] = 'R'
         if return_full_data:
@@ -2764,6 +2857,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             #assert(status[recipient] == 'S')
             status[recipient]='I'
             if return_full_data:
+                transmissions.append((t, transmitter, recipient))
                 infection_times[node].append(t)
             infecteds.add(recipient)
             I_weight_sum += nodeweight(recipient)
@@ -2802,7 +2896,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         #print(type(infection_times), type(recovery_times), type(tmin))
 
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
-        return EoN.Simulation_Investigation(G, node_history)
+        return EoN.Simulation_Investigation(G, node_history, transmisions)
 
 
 def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
@@ -2819,13 +2913,13 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     repeated rejection samples until a successful selection.
     
 
-    :SEE ALSO:
+    See Also:
 
-    fast_SIS which has the same inputs but uses a faster method (esp for weighted
-    graphs).
+        **fast_SIS** which has the same inputs but uses a faster method (esp 
+        for weighted graphs).
     
     
-    Arguments : 
+    :Arguments: 
         
         G (NetworkX Graph)
             The underlying network
@@ -2864,7 +2958,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             Assumes that the transmission rate from u to v is 
             tau*G.adj[u][v][transmission_weight]
             
-    Returns : 
+    :Returns: 
 
         : times, S, I; 
             each a scipy array giving times and number in each status for corresponding time
@@ -2941,12 +3035,14 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     times = [tmin]
     
     t = tmin
+    transmissions = []
     
     status = defaultdict(lambda : 'S')
     for node in initial_infecteds:
         status[node] = 'I'
         if  return_full_data:
             infection_times[node].append(t)
+            transmissions.append((t, None, node))
 
             
     infecteds = _ListDict_()
@@ -2958,7 +3054,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         infecteds.add(node)
         I_weight_sum += nodeweight(node)
         for nbr in G.neighbors(node):  #must have this in a separate loop 
-                                       #from assigning status
+                                       #after assigning status of node
             if status[nbr] == 'S':
                 IS_links.add((node, nbr))
                 IS_weight_sum += edgeweight(node, nbr)
@@ -3006,7 +3102,9 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             status[recipient]='I'
             I_weight_sum += nodeweight(recipient)
             if  return_full_data:
-                infection_times[node].append(t)
+                infection_times[recipient].append(t)
+                transmissions.append((t, transmitter, recipient))
+
             infecteds.add(recipient)
             for nbr in G.neighbors(recipient):
                 if status[nbr] == 'S':
@@ -3037,4 +3135,312 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         return EoN.Simulation_Investigation(G, node_history, SIR=False)
+
+def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_graph,
+  IC, return_statuses, tmin = 0,  tmax=100, return_full_data = False):
+    r'''
+    Performs simulations for epidemics, allowing more flexibility than SIR/SIS.
+    
+    The example below demonstrates an SEIR epidemic.
+    
+    We allow for nodes to undergo two types of transitions.  They can be:
+    
+    - spontaneous - so a node of status A becomes B without any neighbor's 
+    influence
+    
+    - neighbor-induced - so an edge between status A and status B nodes suddenly
+    becomes an edge between a status A and a status C node because the status
+    B node changes status due to the existence of the edge.  (in principle, 
+    both could change status, but the code currently only allows the second
+    node to change status).
+    
+    Both types of transitions can be represented by graphs.  These must be input
+    into the algorithm.
+    
+    It is possible to weight edges so that some edges
+            
+    Based on an algorithm by Petter Holme.  It requires a weighted choice of edges
+    and this will be done by tracking the maximum edge weight and then using 
+    repeated rejection samples until a successful selection.
+    
+    
+    
+    :Arguments: 
+        
+        G (NetworkX Graph)
+            The underlying contact network
+            
+        spontaneous_transition_graph (Directed networkx graph) 
+            The nodes of this graph are the possible statuses of a node in G.
+            An edge in this graph is a possible transition in G that occurs
+            without any influence from neighbors.
+            
+            An edge is labelled with an attribute `'rate'`, and possibly 
+            `'weight_label'`.  If no `'weight_label'` is given, then any node 
+            whose status is the base of an edge will change status at rate 
+            `'rate'` to the new status that is the target of the edge.  If 
+            `weight_label` is given, then this rate will scaled to
+            `rate*G.node[node][node]['weight_label']`
+            
+            So for example in the case of an SIR disease, this would be a graph
+            with an isolated node `'S'` and an edge from node `'I'` to `'R'` with 
+            `rate` equal to `gamma`.  (It would not be necessary to have the
+            node `'S'`)
+            
+        nbr_induced_transition_graph (Directed networkx graph)
+        
+            The nodes of this graph are tuples with possible statuses of nodes 
+            at the end of an edge. The first node in the tuple is the node that
+            could be affecting the second.  So for example for the SIR model
+            we would expect a node `('I', 'S')` with an edge to `('I', 'I')`.
+            
+            The edge is labeled with an attribute `'rate'` and possibly 
+            `'weight_label'`.
+            The transition occurs with rate `rate` or, if `weight_label` is 
+            defined then the contact graph G must have the attribute `weight_label`
+            defined for its edges. Then it occurs with rate
+            `rate*G.edge[u,v][weight_label]`
+            
+        IC (dict)
+            states the initial status of each node in the network.
+            
+        return_statuses (list or other iterable - not a generator)
+            The statuses that we will return information for, in the order
+            we will return them.
+
+        tmin number (default 0)
+            starting time
+            
+        tmax (number)
+            stop time
+            
+        return_full_data (boolean)
+            currently needs to be False.  True raises an error.
+            
+        
+    :Returns: 
+
+        times (scipy array)
+            the times at which events happen
+        D (dict of scipy arrays)
+            Depending on 
+
+    
+    :SAMPLE USE:
+
+    ::
+
+        #Perform SEIR simulation 
+        #with transmission rate tau = 0.4
+        #recovery rate gamma = 1
+        #exposed to infected transition rate 0.6
+        
+        
+        import networkx as nx
+        import EoN
+        from collections import defaultdict
+        
+        N = 100000
+        G = nx.fast_gnp_random_graph(N, 5./(N-1))
+        
+        H = nx.DiGraph()
+        H.add_node('S')
+        H.add_edge('I', 'R', rate = 1)
+        H.add_edge('E', 'I', rate = 0.6)
+        
+        J = nx.DiGraph()
+        J.add_edge(('I', 'S'), ('I', 'E'), rate = 0.4)
+        
+        IC = defaultdict(lambda: 'S')
+        for node in range(200):
+            IC[node] = 'I'
+        
+        return_statuses = ('S', 'E', 'I', 'R')
+        
+        t, S, E, I, R = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses, 
+                                                tmax = float('Inf'))    
+        
+        import matplotlib.pyplot as plt
+        plt.semilogy(t, S, label = 'Susceptible') 
+        plt.semilogy(t, E, label = 'Exposed') 
+        plt.semilogy(t, I, label = 'Infected')  
+        plt.semilogy(t, R, label = 'Recovered') 
+        plt.legend()
+        plt.show()
+        
+    More examples in `online documentation <../Examples.html#non-sis-sir-processes>`_
+'''
+
+    if return_full_data:
+        raise EoN.EoNError("Gillespie_Arbitrary does not currently support return_full_data=True")
+
+    status = {node: IC[node] for node in G.nodes()}
+
+    times = [tmin]
+    data = {}
+    C = Counter(status.values())
+    for return_status in return_statuses:
+        data[return_status] = [C[return_status]]                
+
+    spontaneous_transitions = list(spontaneous_transition_graph.edges())
+    induced_transitions = list(nbr_induced_transition_graph.edges())
+    potential_transitions = {}
+    rate = {}# intrensic rate of a transition
+    weight_sum = defaultdict(lambda: 0)
+    weights = defaultdict(lambda: None)
+    max_weight = defaultdict(lambda: 0)
+    get_weight = defaultdict(lambda: defaultdict(lambda:1))
+
+
+    for transition in spontaneous_transitions:
+        potential_transitions[transition] = _ListDict_()
+        #weights[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label'] 
+        rate[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['rate']
+        if 'weight_label' in spontaneous_transition_graph.edges[transition[0],transition[1]]:
+            weights[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label']
+            for node in G.nodes():
+                get_weight[transition][node] = G.node[node][weights[transition]] #need a better way to initialize.
+                max_weight[transition] = max(max_weight[transition], get_weight[transition][node])
+        else:
+            max_weight[transition]=1
+            
+    for transition in induced_transitions:
+        if transition[0][0] != transition[1][0]:
+            raise EoN.EoNError("transition {} -> {} not allowed: first node must keep same status".format(transition[0],transition[1]))
+        potential_transitions[transition] = _ListDict_()
+        #weights[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label'] 
+        rate[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['rate']
+        if 'weight_label' in nbr_induced_transition_graph.edges[transition[0],transition[1]]:
+            weights[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label']
+            for edge in G.edges():
+                get_weight[transition][edge] = G.edge[edge[0],edge[1]][weights[transition]]
+                get_weight[transition][(edge[1],edge[0])] = G.edge[edge[0],edge[1]][weights[transition]]
+                max_weight[transition] = max(max_weight[transition], get_weight[transition][edge])
+        else:
+            max_weight[transition]=1
+                
+    #initialize all potential events to start.                
+    for node in G.nodes():        
+        if spontaneous_transition_graph.has_node(status[node]) and spontaneous_transition_graph.degree(status[node])>0:
+            for transition in spontaneous_transition_graph.edges(status[node]):
+                potential_transitions[transition].add(node)
+                weight_sum[transition] += get_weight[transition][node]
+                    
+                    
+                    
+        for nbr in G.neighbors(node):
+            #print(status[node],status[nbr])
+            if nbr_induced_transition_graph.has_node((status[node],status[nbr])) and nbr_induced_transition_graph.degree((status[node],status[nbr])) >0:
+                for transition in nbr_induced_transition_graph.edges((status[node],status[nbr])):
+                    potential_transitions[transition].add((node, nbr))
+                    weight_sum[transition] += get_weight[transition][(node, nbr)]
+    
+    
+    t = tmin
+    #for transition in spontaneous_transitions+induced_transitions:
+        #print(transition,rate[transition]*weight_sum[transition])
+     
+    #commenting out transmissions until return_full_data included   
+    #transmissions = []  #not going to assign this for initial conditions.    
+    
+    total_rate = sum(rate[transition]*weight_sum[transition] for transition in spontaneous_transitions+induced_transitions)
+    if total_rate>0:
+        delay = random.expovariate(total_rate)
+    else:
+        delay = float('Inf')
+    t = t+delay
+    while total_rate>0 and t<tmax:
+        times.append(t)
+        r = random.random()
+        for transition in spontaneous_transitions+induced_transitions:
+            r -= rate[transition]*weight_sum[transition]/total_rate
+            if r<0:
+                break
+        #either node doing spontaneous or edge doing an induced event
+        if transition in spontaneous_transitions:
+            spontaneous = True
+        else:
+            spontaneous = False
+            
+        while True:
+            actor = potential_transitions[transition].choose_random()
+
+            w = get_weight[transition][actor]
+            if random.random()<  w / max_weight[transition]:
+                break
+                
+        if spontaneous:
+            node = actor
+            old_status = transition[0]
+            status[node] = transition[1]
+            #node changes status
+        else:
+            #source = actor[0]
+            node = actor[1]
+            old_status = transition[0][1]
+            status[node] = transition[1][1]
+            #transmissions.add((t, source, node))
+            #node changes status
+
+        #it might look like there is a cleaner way to do this, but what if it
+        #happens that old_status == status[node]???  This way still works.
+        for x in data.keys():         
+            data[x].append(data[x][-1])
+        if old_status in return_statuses:
+            data[old_status][-1] -= 1
+        if status[node] in return_statuses:
+            data[status[node]][-1] += 1
+        
+        for transition in spontaneous_transitions: #can probably make more efficient
+            #remove node from any spontaneous lists
+            #add node to any spontaneous lists
+            if transition[0] == old_status:
+                potential_transitions[transition].remove(node)
+                weight_sum[transition] -= get_weight[transition][node]
+            if transition[0] == status[node]:
+                potential_transitions[transition].add(node)
+                weight_sum[transition] += get_weight[transition][node]
+        for transition in induced_transitions:
+            #remove edge from any induced lists
+            #add edge to any induced lists
+            for nbr in G.neighbors(node):
+                nbr_status = status[nbr]
+                if transition[0] == (nbr_status, old_status):
+                    #print(transition)
+                    #print(nbr_status, old_status)
+                    #print(potential_transitions[transition].items)
+                    potential_transitions[transition].remove((nbr, node))
+                    weight_sum[transition] -= get_weight[transition][(nbr,node)]
+                if transition[0] == (old_status, nbr_status):
+                    potential_transitions[transition].remove((node, nbr))
+                    weight_sum[transition] -= get_weight[transition][(node, nbr)]
+                if transition[0] == (nbr_status, status[node]):
+                    potential_transitions[transition].add((nbr, node))
+                    weight_sum[transition] += get_weight[transition][(nbr,node)]
+                if transition[0] == (status[node], nbr_status):
+                    potential_transitions[transition].add((node, nbr))
+                    weight_sum[transition] += get_weight[transition][(node, nbr)]
+
+        total_rate = sum(rate[transition]*weight_sum[transition] for transition in spontaneous_transitions+induced_transitions)
+        if total_rate>0:
+            delay = random.expovariate(total_rate)
+        else:
+            delay = float('Inf')
+        t += delay
+
+        
+    returnval = []
+    times = scipy.array(times)
+    returnval.append(times)
+    for return_status in return_statuses:
+        data[return_status] = scipy.array(data[return_status])
+        returnval.append(data[return_status])
+    return returnval
+
+    # return_full_data=False
+    # if not return_full_data:
+    #     return scipy.array(times), scipy.array(S), scipy.array(I)
+    # else:
+    #     node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
+    #     return EoN.Simulation_Investigation(G, node_history, SIR=False)
 

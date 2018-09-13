@@ -19,24 +19,33 @@ graphs; see https://networkx.github.io/
 
 **EoN** consists of several sets of algorithms.  
 
-- The first deals with **stochastic simulation of epidemics on networks**.  The most significant of these are `fast_SIS` and `fast_SIR` which significantly outperform Gillespie algorithms (also included).  These algorithms are discussed in more detail in the appendix of the book.
+- The first deals with **stochastic simulation of epidemics on networks**.  
+  The most significant of these are `fast_SIS` and `fast_SIR` which 
+  usually outperform Gillespie algorithms (also included).  These algorithms 
+  are discussed in more detail in the appendix of the book.
 
 - A significant extension of these simulations is a set of tools
   designed to **visualize and animate simulated epidemics**, and
   generally help investigate a given stochastic simulation.
   
-- Another set deals with **numerical solution of systems of analytic equations** derived in the book.  For these it is possible to either provide the degree distribution, or simply use a network and let the code determine the degree distribution.
+- Another set deals with **numerical solution of systems of analytic equations** 
+  derived in the book.  For these it is possible to either provide the degree 
+  distribution, or simply use a network and let the code determine the degree 
+  distribution.
 
 - There are a few additional algorithms which are not described in the
   book, but which we believe will be useful. Most notably, related to 
   visualization and generation of animations.
 
-Distributed under MIT license.  See :download:`license.txt<../license.txt>` for full details.
+Distributed under MIT license.  See :download:`license.txt<../license.txt>` 
+for full details.
 
 
 Simulation Toolkit
 ------------------
-This submodule deals with epidemic simulation.  We start with a quick list of the functions with links to the individual functions.  A brief description is below.
+This submodule deals with epidemic simulation.  We start with a quick list of 
+the functions with links to the individual functions.  A brief description is 
+below.
 
 
 Quick list
@@ -53,6 +62,7 @@ Quick list
    fast_nonMarkov_SIS
    Gillespie_SIR
    Gillespie_SIS
+   Gillespie_Arbitrary
    basic_discrete_SIR
    basic_discrete_SIS
    discrete_SIR
@@ -70,25 +80,32 @@ Quick list
 
 Short descriptions
 ^^^^^^^^^^^^^^^^^^
-- Event-based algorithms: 
+- Event-based algorithms:
 
   These algorithms use an efficient approach to simulate epidemics.  `fast_SIR` 
   and `fast_SIS` assume constant transmission and recovery rates, while
-  `fast_nonMarkov_SIR` allows the user to specify the rules for transmission.
+  `fast_nonMarkov_SIR` and `fast_nonMarkov_SIS` allow the user to specify  
+  more detailed rules for transmission.
   
   - **fast_SIR**
   - **fast_nonMarkov_SIR** 
   - **fast_SIS**
+  - **fast_nonMarkov_SIS**
 
 - Gillespie Algorithms
 
   These algorithms simulate epidemics assuming constant transmission and 
-  recovery rates.  They are commonly used, but are slower than event-based 
-  algorithms.  They are also less flexible and it is more difficult to avoid
-  the constant rate assumptions.
+  recovery rates.  They are commonly used, but in many cases are slower than
+  the event driven methods.  I do not see evidence that they are ever 
+  significantly faster.  It is not very practical to get away from the 
+  constant rate assumptions so I prefer to avoid them.  However, the
+  `Gillespie_Arbitrary` allows the user to do SEIR, SIRS, or any of a number
+  of other more exotic scenarios that are not currently in the event-driven
+  code.
   
   - **Gillespie_SIR**
   - **Gillespie_SIS**
+  - **Gillespie_Arbitrary**
 
 - Discrete-time algorithms
 
@@ -102,6 +119,7 @@ Short descriptions
   - **basic_discrete_SIS**
   - **discrete_SIR**
 
+
 - Percolation-based approaches 
     
   There is a close relation between percolation and SIR disease which is
@@ -110,10 +128,14 @@ Short descriptions
   the most efficient way to simulate an epidemic.  However, these algorithms
   will be useful for estimating probability and size of epidemics. 
     
-  - **percolate_network** (undirected percolation corresponding to fixed transmission probability)
-  - **directed_percolate_network** (directed percolation corresponding to constant transmission and recovery rates)
-  - **nonMarkov_directed_percolate_network_with_timing** (uses user-generated duration and transmission time distributions)
-  - **nonMarkov_directed_percolate_network** (uses user-generated transmission rules)
+  - **percolate_network** (undirected percolation corresponding to fixed 
+    transmission probability)
+  - **directed_percolate_network** (directed percolation corresponding to 
+    constant transmission and recovery rates)
+  - **nonMarkov_directed_percolate_network_with_timing** (uses user-generated 
+    duration and transmission time distributions)
+  - **nonMarkov_directed_percolate_network** (uses user-generated transmission 
+    rules)
   - **estimate_SIR_prob_size** (estimates prob/size from an undirected percolated network - only appropriate if constant p)
   - **estimate_SIR_prob_size_from_dir_perc** (estimates epi prob and size from a given percolated network)
   - **estimate_directed_SIR_prob_size** (estimates based on constant transmission and recovery rates)
@@ -150,6 +172,8 @@ Quick List
    S
    I
    R
+   transmissions
+   transmission_tree
    add_timeseries
    update_ts_kwargs
    update_ts_label
@@ -192,6 +216,11 @@ Short description
   - **S** 
   - **I**
   - **R**
+  - **transmissions** returns a list of 3-tuples of the form (t, u, v) stating
+    that u transmitted to v at time t.
+  - **transmission_tree** returns a MultiDiGraph where an edge from u to v with
+    attribute time = t means that u transmitted to v at time t.  (For SIR this
+    is a tree or a forest)
   
 - Details for plotting
 

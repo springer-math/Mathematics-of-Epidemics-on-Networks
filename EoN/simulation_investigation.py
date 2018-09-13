@@ -56,10 +56,11 @@ class Simulation_Investigation():
             self.plt_kwargs.update(kwargs)
                             
  
-    def __init__(self, G, node_history, SIR = True, pos = None, 
+    def __init__(self, G, node_history, transmissions, SIR = True, pos = None, 
                     colordict={'S':'#009a80','I':'#ff2020', 'R':'gray'}):
         self.G = G
         self._node_history_ = node_history
+        self._transmissions_ = transmissions
         self.SIR = SIR
         self.sim_colordict = colordict
         self.pos = pos
@@ -234,6 +235,30 @@ class Simulation_Investigation():
         Generally better to get these all through summary()'''
         return self._R_
                 
+    def transmissions(self):
+        r'''Returns a list of tuples (t,u,v) stating that node u infected node
+        v at time t.  If v was infected at time tmin, then u is None'''
+        
+        return self._transmissions_
+        
+    def transmission_tree(self):
+        r'''returns a directed Multi graph that has all the information in trasnmissions.
+        An edge from u to v with time t means u trasmitted to v at time t.
+        
+        Cycles or multiple transmissions can occur if SIS.
+        
+        If it's an SIR, then this is a tree (or forest).
+        
+        The graph consists only of those nodes that are infected at some point.
+        '''
+        
+        T = nx.MultiDiGraph()
+        
+        for t, u, v in self._transmissions_:
+            if u is not None:
+                T.add_edge(u, v, time=t)
+        return T
+        
     def add_timeseries(self, t, S, I, R=None, colordict = None, label = None, **kwargs):
         r'''This allows us to include some additional timeseries for comparision
         with the simulation.  The most likely source of these would be an analytic

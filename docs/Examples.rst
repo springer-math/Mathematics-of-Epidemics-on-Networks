@@ -168,6 +168,25 @@ for networkx 2.x and 1.x).
 
    SIS weighted edges <examples/SIS_weighted.rst>
 
+Non-SIS/SIR processes with  `Gillespie_Arbitrary <functions/EoN.Gillespie_Arbitrary.html>`_ 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default Gillespie and Event-driven algorithms assume SIS or SIR dynamics.
+However, you may want something else, such as SEIR or SIRS or maybe more exotic
+things.  If you are willing to assume that events all happen as Poisson processes
+(that is, an event happens at a rate), then it's possible to do this with a
+Gillespie approach.
+
+.. toctree::
+   :maxdepth: 1
+   
+   SEIR <examples/SEIR.rst>
+   SIRS <examples/SIRS.rst>
+   Competing SIR Diseases <examples/Compete.rst>
+   Cooperative SIR Diseases <examples/Cooperate.rst>
+   
+
+
 Other
 ^^^^^
 
