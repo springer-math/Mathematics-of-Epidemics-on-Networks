@@ -10,7 +10,7 @@ You can install **EoN** version 1.0 with pip
 
     pip install EoN
 
-The documentation provided here is for version 1.0.1rc1.  There is no 
+The documentation provided here is for version 1.0.1rc2.  There is no 
 significant difference except that any newer functions (see
 `Changes from v1.0 <Changes.html>`_) will not exist if you install version 1.0.
 
@@ -24,7 +24,7 @@ a more recent version.  Then just move into the main directory and run
 
     python setup.py install
 
-This will currently install version 1.0.1rc1.  
+This will currently install version 1.0.1rc2.  
 
 If you have installed a previous version and want to reinstall.  The easiest
 way is 

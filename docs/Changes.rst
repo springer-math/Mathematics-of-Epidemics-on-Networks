@@ -21,7 +21,8 @@ Non-SIS/SIR processes
 ^^^^^^^^^^^^^^^^^^^^^
 
 It is now possible to run a wide range of non-SIS/SIR processes spreading in
-a network.  This is done using:
+a network.  These processes include competing diseases, SIRS disease, SEIR 
+disease, and quite a few other options.  This is done using:
 
 `Gillespie_Arbitrary <functions/EoN.Gillespie_Arbitrary.html>`_.  Currently this
 does not accept `return_full_data=True`.
