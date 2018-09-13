@@ -1905,37 +1905,27 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         
               
         import EoN
-        
         import networkx as nx
-        
         import matplotlib.pyplot as plt
-        
         import random
         
         N=1000000
-        
         G = nx.fast_gnp_random_graph(N, 5/(N-1.))
         
 
         
         #set up the code to handle constant transmission rate 
-        
         #with fixed recovery time.
-        
         def trans_time_fxn(source, target, rate):
-        
             return random.expovariate(rate)
 
         def rec_time_fxn(node,D):
-        
             return D
         
         D = 5
-        
         tau = 0.3
-        
         initial_inf_count = 100
-        
+
         t, S, I, R = EoN.fast_nonMarkov_SIR(G, 
                                 trans_time_fxn=trans_time_fxn, 
                                 rec_time_fxn=rec_time_fxn,
@@ -2057,42 +2047,42 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
     
     :Arguments: 
 
-        time : number
-            current time
-        G (networkx Graph)
-        source : node
-            node causing transmission
-        target : node
-            node receiving transmission.
-        times : list
-            list of times at which events have happened
-        S, I: lists
-            lists of numbers of nodes of each status at each time
-        Q : myQueue
-            the queue of events
-        status : dict
-            dictionary giving status of each node
-        rec_time : dict
-            dictionary giving recovery time of each node
-        infection_times : 
+    **time** number
+        current time
+    **G** networkx Graph
+    source : node
+        node causing transmission
+    target : node
+        node receiving transmission.
+    times : list
+        list of times at which events have happened
+    S, I: lists
+        lists of numbers of nodes of each status at each time
+    Q : myQueue
+        the queue of events
+    status : dict
+        dictionary giving status of each node
+    rec_time : dict
+        dictionary giving recovery time of each node
+    infection_times : 
+    
+    recovery_times : 
         
-        recovery_times : 
-            
-        transmissions (list)
-            list of tuples (t, source, target) for each transmission event.
-            
-        trans_rate_fxn : function
-            transmission rate trans_rate_fxn(u,v) gives transmission rate 
-            from u to v
-        rec_rate_fxn : function
-            recovery rate rec_rate_fxn(u) is recovery rate of u.
+    transmissions (list)
+        list of tuples (t, source, target) for each transmission event.
+        
+    trans_rate_fxn : function
+        transmission rate trans_rate_fxn(u,v) gives transmission rate 
+        from u to v
+    rec_rate_fxn : function
+        recovery rate rec_rate_fxn(u) is recovery rate of u.
 
     :Returns: 
-        :
-        nothing returned
+        
+    nothing returned
 
-    MODIFIES
-    --------
+    :MODIFIES:
+    
     status : updates status of target
     rec_time : adds recovery time for target
     times : appends time of event
@@ -2635,12 +2625,14 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     
     Performs SIR simulations for epidemics.
     
-    For unweighted networks, the run time is slower than fast_SIR, but they are 
-    close.  If we add weights, then this version slows down much more.  I think
-    there are better ways to implement the algorithm to remove this.  This
-    would need a new data type that allows us to quickly sample a random event
-    with appropriate weight.  I think this is doable through a binary tree and
-    it is in development.
+    For unweighted networks, the run time is usually slower than fast_SIR, but 
+    they are close.  If we add weights, then this Gillespie implementation 
+    slows down much more.  
+    
+    I think there are better ways to implement the algorithm to remove this.  
+    This will need a new data type that allows us to quickly sample a random 
+    event with appropriate weight.  I think this is doable through a binary 
+    tree and it is in development.
     
     Rather than using figure A.1 of Kiss, Miller, & Simon, this uses a method 
     from Petter Holme 
@@ -2652,9 +2644,9 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     This approach will not work for nonMarkovian transmission.  Boguna et al
         "Simulating non-Markovian stochastic processes"
     have looked at how to handle nonMarkovian transmission in a Gillespie 
-    Algorithm.  At present I don't see a way to adapt their approach at all
-    efficiently - I think each substep will take O(N) time.  So the full
-    algorithm will be O(N^2).  For this, it will be much better to use fast_SIR
+    Algorithm.  At present I don't see a way to efficientl adapt their 
+    approach - I think each substep will take O(N) time.  So the full algorithm 
+    will be O(N^2).  For this, it will be much better to use fast_SIR
     which I believe is O(N log N)
     
     See Also:
@@ -2664,63 +2656,65 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     
     
     
-    :Arguments: 
-        G (networkx Graph)
-            The underlying network
-        tau (positive float)
-            transmission rate per edge
+    :Arguments:
+         
+    **G** networkx Graph
+        The underlying network
+    **tau** positive float
+        transmission rate per edge
        
-        gamma : number
-            recovery rate per node
-       
-        initial_infecteds: node or iterable of nodes
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
-       
-        initial_recovereds: iterable of nodes (default None)
-            this whole collection is made recovered.
-            Currently there is no test for consistency with initial_infecteds.
-            Understood that everyone who isn't infected or recovered initially
-            is initially susceptible.
-
-        rho : number
-            initial fraction infected. number is int(round(G.order()*rho))
-
-        tmin : number (default 0)
-            starting time
-            
-        tmax : number
-            stop time
-
-        return_full_data: boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
-
-        recovery_weight : string (default None)
-            the string used to define the node attribute for the weight.
-            Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
-            If None, then just uses gamma without scaling.
+    **gamma** number
+        recovery rate per node
+    
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
+        if an iterable, then whole set is initially infected
+        if None, then choose randomly based on rho.  If rho is also
+        None, a random single node is chosen.
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
+    
+    **initial_recovereds** iterable of nodes (default None)
+        this whole collection is made recovered.
+        Currently there is no test for consistency with initial_infecteds.
+        Understood that everyone who isn't infected or recovered initially
+        is initially susceptible.
         
-        transmission_weight : string (default None)
-            the string used to define the edge attribute for the weight.
-            Assumes that the transmission rate from u to v is 
-            tau*G.adj[u][v][transmission_weight]
-            If None, then just uses tau without scaling.
+    **rho** number
+        initial fraction infected. number is int(round(G.order()*rho))
+        
+    **tmin** number (default 0)
+        starting time
+            
+    **tmax** number (default Infinity)
+        stop time
+        
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
+
+    **recovery_weight** string (default None)
+        the string used to define the node attribute for the weight.
+        Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
+        If None, then just uses gamma without scaling.
+    
+    **transmission_weight** string (default None)
+        the string used to define the edge attribute for the weight.
+        Assumes that the transmission rate from u to v is 
+        tau*G.adj[u][v][transmission_weight]
+        If None, then just uses tau without scaling.
 
     :Returns: 
-        :
-        times, S, I, R : each a scipy array
-            giving times and number in each status for corresponding time
+        
+    **times, S, I, R** each a scipy array
+        giving times and number in each status for corresponding time
 
-        OR if return_full_data=True:
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
-
+    OR if return_full_data=True:
+    
+    **full_data**  Simulation_Investigation object
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
+        
     :SAMPLE USE:
 
 
@@ -2739,7 +2733,6 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
                                     
         plt.plot(t, I)
     
-    #SIR
     '''
 
     if rho is not None and initial_infecteds is not None:
@@ -2921,53 +2914,54 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     
     :Arguments: 
         
-        G (NetworkX Graph)
-            The underlying network
-        tau (positive float) 
-            transmission rate per edge
-        gamma : number
-            recovery rate per node
-
-        initial_infecteds: node or iterable of nodes
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
-       
-        rho : number
-            initial fraction infected. number is int(round(G.order()*rho))
-
-        tmin : number (default 0)
-            starting time
-            
-        tmax : number
-            stop time
-
-        return_full_data: boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
-            
-        recovery_weight : string (default None)
-            the string used to define the node attribute for the weight.
-            Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
-            If None, then just uses gamma without scaling.
+    **G** (NetworkX Graph)
+        The underlying network
+    **tau** (positive float) 
+        transmission rate per edge
+    **gamma** number
+        recovery rate per node
+    
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
+        if an iterable, then whole set is initially infected
+        if None, then choose randomly based on rho.  If rho is also
+        None, a random single node is chosen.
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
+    
+    **rho** number
+        initial fraction infected. number is int(round(G.order()*rho))
+    
+    **tmin** number (default 0)
+        starting time
         
-        transmission_weight : string (default None)
-            the string used to define the edge attribute for the weight.
-            Assumes that the transmission rate from u to v is 
-            tau*G.adj[u][v][transmission_weight]
-            
+    **tmax** number
+        stop time
+        
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
+        
+    **recovery_weight** string (default None)
+        the string used to define the node attribute for the weight.
+        Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
+        If None, then just uses gamma without scaling.
+        
+    **transmission_weight** string (default None)
+        the string used to define the edge attribute for the weight.
+        Assumes that the transmission rate from u to v is 
+        tau*G.adj[u][v][transmission_weight]
+        
     :Returns: 
 
-        : times, S, I; 
-            each a scipy array giving times and number in each status for corresponding time
+    **times, S, I** scipy arrays
+        giving times and number in each status for corresponding time
 
-        or if `return_full_data==True`
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+    or if `return_full_data==True`
+
+    **full_data**  Simulation_Investigation object
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
 
     :SAMPLE USE:
 
@@ -3146,87 +3140,122 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
     We allow for nodes to undergo two types of transitions.  They can be:
     
     - spontaneous - so a node of status A becomes B without any neighbor's 
-    influence
+      influence
     
     - neighbor-induced - so an edge between status A and status B nodes suddenly
-    becomes an edge between a status A and a status C node because the status
-    B node changes status due to the existence of the edge.  (in principle, 
-    both could change status, but the code currently only allows the second
-    node to change status).
+      becomes an edge between a status A and a status C node because the status
+      B node changes status due to the existence of the edge.  (in principle, 
+      both could change status, but the code currently only allows the second
+      node to change status).
     
-    Both types of transitions can be represented by graphs.  These must be input
-    into the algorithm.
+    Both types of transitions can be represented by weighted directed graphs.
+      
+    - The spontaneous transitions can be represented by a graph whose nodes are 
+      the possible statuses and whose edges represent a transition from A to B
+      with rate given by the weight of the edge.
     
-    It is possible to weight edges so that some edges
-            
-    Based on an algorithm by Petter Holme.  It requires a weighted choice of edges
-    and this will be done by tracking the maximum edge weight and then using 
-    repeated rejection samples until a successful selection.
+    - The neighbor-induced transitions can be represented by a graph whose
+      nodes are length-2 tuples, and an edge from the node ('A', 'B') to the
+      node ('A', 'C') represents that an 'AB' edge in the contact network can 
+      cause the second node to transition to status 'C'.  The weight of the 
+      edge represents the transmission rate.  
+      
+    [for reference, if you look at Fig 4.3 on pg 122 of Kiss, Miller & Simon
+    the graphs for SIS would be:
+        **graph 1**: 'I'->'S' with the edge weighted by gamma and
+        
+        **graph 2** ('I', 'S') -> ('I', 'I') with the edge weighted by tau.
+        
+    For SIR they would be:
+        **graph 1** 'I'->'R' with weight gamma and
+        **graph 2** ('I', 'S') -> ('I', 'I') with rate tau.
+        ]
+        
+    These graphs must be defined and then input into the algorithm.
     
+    It is possible to weight edges or nodes in the contact network `G` (that is, 
+    not the 2 directed networks defined above, but the original contact 
+    network) so that some of these transitions have differen rates for 
+    different individuals/partnerships.  These are included as weights in the
+    contact network.  
+    
+    So for the SIR case, if some people have higher recovery rate, we might 
+    define a node attribute 'recovery_weight' for each node in `G`, and the 
+    recovery would occur with rate G.node[node]['recovery_weight'].  Since I
+    don't know what name you might choose for the weight label as I write this 
+    algorithm, in defining the spontaneous transition graph (H), the 'I'->'R' 
+    edge would be given an attribute 'weight_label' so that 
+    H.edge['I','R']['weight_label'] = 'recovery_weight'.
+    If you define the attribute 'weight_label' for an edge in H, then it will be
+    assumed that every node in G has a corresponding weight.  If no attribute
+    is given, then it is assumed that all transitions happen with the original
+    rate.
+    
+    We similarly define the weight_labels as edge attributes in the 
+    neighbor-induced transition graph.  The edges of the graph 'G' have a 
+    corresponding G[u,v]['transmission_weight']
     
     
     :Arguments: 
         
-        G (NetworkX Graph)
-            The underlying contact network
+    **G** NetworkX Graph
+        The underlying contact network
             
-        spontaneous_transition_graph (Directed networkx graph) 
-            The nodes of this graph are the possible statuses of a node in G.
-            An edge in this graph is a possible transition in G that occurs
-            without any influence from neighbors.
+    **spontaneous_transition_graph** Directed networkx graph
+        The nodes of this graph are the possible statuses of a node in G.
+        An edge in this graph is a possible transition in G that occurs
+        without any influence from neighbors.
             
-            An edge is labelled with an attribute `'rate'`, and possibly 
-            `'weight_label'`.  If no `'weight_label'` is given, then any node 
-            whose status is the base of an edge will change status at rate 
-            `'rate'` to the new status that is the target of the edge.  If 
-            `weight_label` is given, then this rate will scaled to
-            `rate*G.node[node][node]['weight_label']`
-            
-            So for example in the case of an SIR disease, this would be a graph
-            with an isolated node `'S'` and an edge from node `'I'` to `'R'` with 
-            `rate` equal to `gamma`.  (It would not be necessary to have the
-            node `'S'`)
-            
-        nbr_induced_transition_graph (Directed networkx graph)
+        An edge is labelled with an attribute `'rate'`, and possibly 
+        `'weight_label'`.  If no `'weight_label'` is given, then any node 
+        whose status is the base of an edge will change status at rate 
+        `'rate'` to the new status that is the target of the edge.  If 
+        `weight_label` is given, then this rate will scaled to
+        `rate*G.node[node][node]['weight_label']`
         
-            The nodes of this graph are tuples with possible statuses of nodes 
-            at the end of an edge. The first node in the tuple is the node that
-            could be affecting the second.  So for example for the SIR model
-            we would expect a node `('I', 'S')` with an edge to `('I', 'I')`.
+        So for example in the case of an SIR disease, this would be a graph
+        with an isolated node `'S'` and an edge from node `'I'` to `'R'` with 
+        `rate` equal to `gamma`.  (It would not be necessary to have the
+        node `'S'`)
             
-            The edge is labeled with an attribute `'rate'` and possibly 
-            `'weight_label'`.
-            The transition occurs with rate `rate` or, if `weight_label` is 
-            defined then the contact graph G must have the attribute `weight_label`
-            defined for its edges. Then it occurs with rate
-            `rate*G.edge[u,v][weight_label]`
+    **nbr_induced_transition_graph** Directed networkx graph
+    
+        The nodes of this graph are tuples with possible statuses of nodes 
+        at the end of an edge. The first node in the tuple is the node that
+        could be affecting the second.  So for example for the SIR model
+        we would expect a node `('I', 'S')` with an edge to `('I', 'I')`.
+        
+        The edge is labeled with an attribute `'rate'` and possibly 
+        `'weight_label'`.
+        The transition occurs with rate `rate` or, if `weight_label` is 
+        defined then the contact graph G must have the attribute `weight_label`
+        defined for its edges. Then it occurs with rate
+        `rate*G.edge[u,v][weight_label]`
+        
+    **IC** dict
+        states the initial status of each node in the network.
             
-        IC (dict)
-            states the initial status of each node in the network.
+    **return_statuses** list or other iterable (but not a generator)
+        The statuses that we will return information for, in the order
+        we will return them.
+        
+    **tmin** number (default 0)
+        starting time
             
-        return_statuses (list or other iterable - not a generator)
-            The statuses that we will return information for, in the order
-            we will return them.
-
-        tmin number (default 0)
-            starting time
+    **tmax** number (default 100)
+        stop time
             
-        tmax (number)
-            stop time
-            
-        return_full_data (boolean)
-            currently needs to be False.  True raises an error.
-            
+    **return_full_data** boolean
+        currently needs to be False.  True raises an error.
+        
         
     :Returns: 
 
-        (times, status1, status2, ...)  (list of scipy arrays)
-            first entry is the times at which events happen.
-            second (etc) entry is number at given time of status in corresponding
-                position of `return_statuses`
+    **(times, status1, status2, ...)**  tuple of scipy arrays
+        first entry is the times at which events happen.
+        second (etc) entry is number at given time of status in corresponding
+        position of `return_statuses`
         
-            
-
     
     :SAMPLE USE:
 
@@ -3234,44 +3263,44 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
 
     ::
 
-        #Perform SEIR simulation 
-        #with transmission rate tau = 0.4
-        #recovery rate gamma = 1
-        #exposed to infected transition rate 0.6
-        
-        
-        import networkx as nx
         import EoN
+        import networkx as nx
         from collections import defaultdict
+        import matplotlib.pyplot as plt
+        import random
         
         N = 100000
         G = nx.fast_gnp_random_graph(N, 5./(N-1))
         
+        #they will vary in the rate of leaving exposed class.
+        #and edges will vary in transition rate.
+        #there is no variation in recovery rate.
+        
+        node_attribute_dict = {node: 0.5+random.random() for node in G.nodes()}
+        edge_attribute_dict = {edge: 0.5+random.random() for edge in G.edges()}
+        
+        nx.set_node_attributes(G, values=node_attribute_dict, name='expose2infect_weight')
+        nx.set_edge_attributes(G, values=edge_attribute_dict, name='transmission_weight')
+        
+        
         H = nx.DiGraph()
         H.add_node('S')
-        H.add_edge('I', 'R', rate = 1)
-        H.add_edge('E', 'I', rate = 0.6)
+        H.add_edge('E', 'I', rate = 0.6, weight_label='expose2infect_weight')
+        H.add_edge('I', 'R', rate = 0.1)
         
         J = nx.DiGraph()
-        J.add_edge(('I', 'S'), ('I', 'E'), rate = 0.4)
-        
+        J.add_edge(('I', 'S'), ('I', 'E'), rate = 0.1, weight_label='transmission_weight')
         IC = defaultdict(lambda: 'S')
         for node in range(200):
             IC[node] = 'I'
         
         return_statuses = ('S', 'E', 'I', 'R')
         
-        t, S, E, I, R = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses, 
-                                                tmax = float('Inf'))    
+        t, S, E, I, R = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
+                                                tmax = float('Inf'))
         
-        import matplotlib.pyplot as plt
-        plt.semilogy(t, S, label = 'Susceptible') 
-        plt.semilogy(t, E, label = 'Exposed') 
-        plt.semilogy(t, I, label = 'Infected')  
-        plt.semilogy(t, R, label = 'Recovered') 
-        plt.legend()
-        plt.show()
-        
+        plt.semilogy(t, S, label = 'Susceptible')
+        plt.semilogy(t, E, label = 'Exposed')        
 '''
 
     if return_full_data:
@@ -3300,10 +3329,9 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         #weights[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label'] 
         rate[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['rate']
         if 'weight_label' in spontaneous_transition_graph.edges[transition[0],transition[1]]:
-            weights[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label']
-            for node in G.nodes():
-                get_weight[transition][node] = G.node[node][weights[transition]] #need a better way to initialize.
-                max_weight[transition] = max(max_weight[transition], get_weight[transition][node])
+            wl = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label']
+            get_weight[transition] = nx.get_node_attributes(G, wl)
+            max_weight[transition] = max(get_weight[transition].values())
         else:
             max_weight[transition]=1
             
@@ -3312,13 +3340,13 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             raise EoN.EoNError("transition {} -> {} not allowed: first node must keep same status".format(transition[0],transition[1]))
         potential_transitions[transition] = _ListDict_()
         #weights[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label'] 
+        #print(nbr_induced_transition_graph
         rate[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['rate']
+
         if 'weight_label' in nbr_induced_transition_graph.edges[transition[0],transition[1]]:
-            weights[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label']
-            for edge in G.edges():
-                get_weight[transition][edge] = G.edge[edge[0],edge[1]][weights[transition]]
-                get_weight[transition][(edge[1],edge[0])] = G.edge[edge[0],edge[1]][weights[transition]]
-                max_weight[transition] = max(max_weight[transition], get_weight[transition][edge])
+            wl = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label']
+            get_weight[transition] = nx.get_edge_attributes(G, wl)
+            max_weight[transition] = max(get_weight[transition].values())
         else:
             max_weight[transition]=1
                 
@@ -3336,15 +3364,11 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             if nbr_induced_transition_graph.has_node((status[node],status[nbr])) and nbr_induced_transition_graph.degree((status[node],status[nbr])) >0:
                 for transition in nbr_induced_transition_graph.edges((status[node],status[nbr])):
                     potential_transitions[transition].add((node, nbr))
+                    if (node, nbr) not in get_weight[transition]: #since edge may be in opposite order to earlier
+                        get_weight[transition][(node, nbr)] = get_weight[transition][(nbr, node)]
                     weight_sum[transition] += get_weight[transition][(node, nbr)]
-    
-    
+
     t = tmin
-    #for transition in spontaneous_transitions+induced_transitions:
-        #print(transition,rate[transition]*weight_sum[transition])
-     
-    #commenting out transmissions until return_full_data included   
-    #transmissions = []  #not going to assign this for initial conditions.    
     
     total_rate = sum(rate[transition]*weight_sum[transition] for transition in spontaneous_transitions+induced_transitions)
     if total_rate>0:
@@ -3367,7 +3391,6 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             
         while True:
             actor = potential_transitions[transition].choose_random()
-
             w = get_weight[transition][actor]
             if random.random()<  w / max_weight[transition]:
                 break
@@ -3403,15 +3426,20 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             if transition[0] == status[node]:
                 potential_transitions[transition].add(node)
                 weight_sum[transition] += get_weight[transition][node]
+            #roundoff error can kill the calculation, but it's slow to do this right.
+            #so we'll only deal with it if the value is small enough that roundoff
+            #error might matter.
+            if weight_sum[transition] < 10**(-7) and numpy.abs(weight_sum[transition])!=0:
+                weight_sum[transition] = sum([get_weight[transition][key] for key in potential_transitions[transition].items])
+
         for transition in induced_transitions:
             #remove edge from any induced lists
             #add edge to any induced lists
             for nbr in G.neighbors(node):
                 nbr_status = status[nbr]
+                if (node, nbr) not in get_weight[transition]:
+                    get_weight[transition][(node,nbr)] = get_weight[transition][(nbr,node)]
                 if transition[0] == (nbr_status, old_status):
-                    #print(transition)
-                    #print(nbr_status, old_status)
-                    #print(potential_transitions[transition].items)
                     potential_transitions[transition].remove((nbr, node))
                     weight_sum[transition] -= get_weight[transition][(nbr,node)]
                 if transition[0] == (old_status, nbr_status):
@@ -3423,12 +3451,18 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
                 if transition[0] == (status[node], nbr_status):
                     potential_transitions[transition].add((node, nbr))
                     weight_sum[transition] += get_weight[transition][(node, nbr)]
-
+                
+                #roundoff error can kill the calculation, but it's slow to do this right.
+                #so we'll only deal with it if the value is small enough that roundoff
+                #error might matter.
+                if weight_sum[transition] < 10**(-7) and numpy.abs(weight_sum[transition])!=0:
+                    weight_sum[transition] = sum([get_weight[transition][key] for key in potential_transitions[transition].items])
         total_rate = sum(rate[transition]*weight_sum[transition] for transition in spontaneous_transitions+induced_transitions)
         if total_rate>0:
             delay = random.expovariate(total_rate)
         else:
             delay = float('Inf')
+            
         t += delay
 
         
