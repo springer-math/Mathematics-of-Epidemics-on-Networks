@@ -781,6 +781,7 @@ def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = No
     :Arguments: 
 
     **G** networkx Graph
+        The contact network
     **tau** positive float
         transmission rate of disease
     **gamma** number      (default None)
@@ -815,9 +816,9 @@ def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = No
 
     :Returns: 
     if return_full_data is True,
-        returns times, Ss, Is
+        returns **times, Ss, Is**
     if return_full_data is False,
-        returns times, S, I
+        returns **times, S, I**
 
     :SAMPLE USE:
 
@@ -869,7 +870,7 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
     :Arguments: 
 
     **G** networkx Graph
-        
+        The contact network
     **tau** positive float
         transmission rate of disease
 

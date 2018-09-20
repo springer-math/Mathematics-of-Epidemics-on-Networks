@@ -263,7 +263,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     :Returns: 
         
         
-    *t, S, I, R* scipy arrays
+    **t, S, I, R** scipy arrays
             
     Or `if return_full_data is True` returns
     
@@ -387,13 +387,13 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
 
     :Arguments: 
 
-        G (networkx Graph)
+    **G**    networkx Graph
             The network the disease will transmit through.
             
-        p : number
+    **p** number
             transmission probability
             
-        initial_infecteds: node or iterable of nodes (default None)
+    **initial_infecteds**  node or iterable of nodes (default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
@@ -401,33 +401,34 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
             If both initial_infecteds and rho are assigned, then there
             is an error.
        
-        initial_recovereds : as for initial_infecteds, but initially 
+    **initial_recovereds**  as for initial_infecteds, but initially 
             recovered nodes.
             
-        rho : number
+    **rho**  number
             initial fraction infected. number is int(round(G.order()*rho))
         
-        tmin : start time
+    **tmin**  start time
         
-        tmax : stop time (if not extinct first).  Default step is 1.
+    **tmax**  stop time (if not extinct first).  Default step is 1.
 
-        return_full_data: boolean (default False)
+    **return_full_data**  boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
     :Returns: 
-        :
-        if return_full_data is False returns 
         
-            t, S, I, R:
-                scipy arrays
-                these scipy arrays give all the times observed and the number 
-                in each state at each time.
+    if return_full_data is False returns 
+        
+        **t, S, I, R**    scipy arrays
+        
+        these scipy arrays give all the times observed and the number 
+        in each state at each time.
             
-        Or `if return_full_data is True` returns
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+    Or `if return_full_data is True` returns
+        **full_data**  Simulation_Investigation object
+            
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
 
     
     :SAMPLE USE:
@@ -465,13 +466,13 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     
     :Arguments: 
 
-        G (networkx Graph)
+    **G** networkx Graph
             The network the disease will transmit through.
             
-        p : number
+    **p** number
             transmission probability
             
-        initial_infecteds: node or iterable of nodes (default None)
+    **initial_infecteds**  node or iterable of nodes (default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
@@ -479,22 +480,25 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
             If both initial_infecteds and rho are assigned, then there
             is an error.
        
-        rho : number
+    **rho**  number
             initial fraction infected. number is int(round(G.order()*rho))
 
-        return_full_data: boolean (default False)
+    **return_full_data**  boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
     :Returns: 
-        :
-            t, S, I, : 
-                All scipy arrays (if return_full_data is False)
 
-        if return_full_data is True)
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+    if return_full_data is False
+        **t, S, I, **
+            
+        All scipy arrays 
+
+    if return_full_data is True
+        **full_data**    Simulation_Investigation object
+
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
 
     :SAMPLE USE:
 
@@ -589,15 +593,16 @@ def percolate_network(G, p):
 
     :Arguments: 
 
-        G (networkx Graph)
-        p : number between 0 and 1
-            the probability of keeping edge
+    **G**    networkx Graph
+        The contact network
+    **p** number between 0 and 1
+        the probability of keeping edge
 
     :Returns: 
-        :
-        H : NetworkX Graph
-            A network with same nodes as G, but with each edge retained 
-            independently with probability p.
+        
+    **H**   NetworkX Graph
+        A network with same nodes as G, but with each edge retained 
+        independently with probability p.
         
     :SAMPLE USE:
 
@@ -631,14 +636,14 @@ def _edge_exists_(u, v, H):
 
     :Arguments: 
 
-        u : node
-        v : node
-        H : graph
+    **u** node
+    **v** node
+    **H** networkx graph
 
     :Returns: 
-        :
-        True : if H has the edge
-        False : if H does not have the edge
+        
+    **True**  if H has the edge
+    **False**  if H does not have the edge
     '''
     return H.has_edge(u,v)
 
@@ -661,28 +666,29 @@ def percolation_based_discrete_SIR(G, p,
     independently to each neighbor and then recovering, but using a 
     percolation-based approach.  
     
-    Warning:
+    :Warning:
         
-        You probably **shouldn't use this algorithm**.
+    You probably **shouldn't use this algorithm**.
         
-        See basic_discrete_SIR which should produce equivalent outputs.  
+    See `basic_discrete_SIR` which produces equivalent outputs.  
     
-        That algorithm will be faster than this one.  
+    That algorithm will be faster than this one.  
     
     The value of this function is that by performing many simulations we 
     can see that the outputs of the two are equivalent.  
     
-    This algorithm leads to a better understanding of the theory.
+    This algorithm leads to a better understanding of the theory, even
+    if it's not computationally efficient.
 
 
     :Arguments: 
 
-        G (networkx Graph)
+    **G**    networkx Graph
             The network the disease will transmit through.
-        p : number
+    **p** number
             transmission probability
 
-        initial_infecteds: node or iterable of nodes (default None)
+    **initial_infecteds**  node or iterable of nodes (default None)
             if a single node, then this node is initially infected
             if an iterable, then whole set is initially infected
             if None, then choose randomly based on rho.  If rho is also
@@ -691,29 +697,29 @@ def percolation_based_discrete_SIR(G, p,
             is an error.
        
        
-        initial_recovereds : as for initial_infecteds, but initially 
+    **initial_recovereds**  as for initial_infecteds, but initially 
             recovered nodes.
             
-        rho : number
+    **rho**  number
             initial fraction infected. number is int(round(G.order()*rho))
         
-        tmin : start time
+    **tmin**  start time
         
-        tmax : stop time (if not extinct first).  Default step is 1.
+    **tmax**  stop time (if not extinct first).  Default step is 1.
 
-        return_full_data: boolean (default False)
+    **return_full_data**  boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
     :Returns: 
-        :
-        t, S, I, R : Scipy arrays
         
-        OR if `return_full_data is True`:
+    **t, S, I, R** Scipy arrays
+        
+    OR if `return_full_data is True`:
             
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+    **full_data**    Simulation_Investigation object
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
     
     :SAMPLE USE:
 
@@ -762,18 +768,18 @@ def estimate_SIR_prob_size(G, p):
 
     :Arguments: 
 
-        G (networkx Graph)
+    **G**    networkx Graph
             The network the disease will transmit through.
-        p : number
+    **p** number
             transmission probability
 
     :Returns: 
-        :
-        PE, AR : 
-            (numbers) estimates of the probability and proportion 
-            infected (attack rate) in epidemics
-            (the two are equal, but each given for consistency with 
-            `estimate_directed_SIR_prob_size`)
+        
+    **PE, AR**   both floats between 0 and 1 
+        estimates of the probability and proportion 
+        infected (attack rate) in epidemics
+        (the two are equal, but each given for consistency with 
+        `estimate_directed_SIR_prob_size`)
           
             
     :SAMPLE USE:
@@ -807,29 +813,29 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     assuming that transmission is at rate tau and recovery at rate 
     gamma
 
-    See Also:
+    :See Also:
 
-        -nonMarkov_directed_percolate_network which allows for duration and 
-            time to infect to come from other distributions.
+    `nonMarkov_directed_percolate_network` which allows for duration and 
+        time to infect to come from other distributions.
     
-        -nonMarkov_directed_percolate_network which allows for more complex 
-            rules
+    `nonMarkov_directed_percolate_network` which allows for more complex 
+        rules
     
     :Arguments: 
 
-        G (networkx Graph)
+    **G**    networkx Graph
             The network the disease will transmit through.
-        tau (positive float)
+    **tau**   positive float 
             transmission rate
-        gamma : number
+    **gamma**   positive float 
             recovery rate
-        weights : boolean
+    **weights**   boolean    (default True)
             if True, then includes information on time to recovery
             and delay to transmission.  If False, just the directed graph.
 
     :Returns: 
         :
-        H : networkx DiGraph  (directed graph)
+    **H**   networkx DiGraph  (directed graph)
             a u->v edge exists in H if u would transmit to v if ever 
             infected.
         
@@ -885,22 +891,23 @@ def _out_component_(G, source):
 
     :Arguments: 
 
-        G (networkx Graph)
-            The network the disease will transmit through.
-        source : either a node or an iterable of nodes (set, list, tuple)
-            The nodes from which the infections start.  We assume no node
-            will ever have a name that is an iterable of other node names.
-            It will run, but may not use source user expects.
+    **G**  networkx Graph
+        The network the disease will transmit through.
+    **source** either a node or an iterable of nodes (set, list, tuple)
+        The nodes from which the infections start.  We assume no node
+        will ever have a name that is an iterable of other node names.
+        It will run, but may not use source user expects.
 
-    :Warning: 
-        if the graph G has nodes like 1, 2, 3, and (1,2,3), then a
-        source of (1,2,3) is potentially ambiguous.  It will interpret
-        the source as the single node (1,2,3)
 
     :Returns: 
-        :            
-        reachable_nodes : set
-            the set of nodes reachable from source (including source).
+                  
+    **reachable_nodes** set
+        the set of nodes reachable from source (including source).
+
+    :Warning: 
+    if the graph G has nodes like 1, 2, 3, and (1,2,3), then a
+    source of (1,2,3) is potentially ambiguous.  This algorithm will interpret
+    the source as the single node (1,2,3)
 
 
     '''
@@ -924,26 +931,27 @@ def _in_component_(G, target):
 
     :Arguments: 
 
-        G (networkx Graph)
-            The network the disease will transmit through.
-        target : a target node (or iterable of target nodes)
-            The node whose infection we are interested in.
+    **G**  networkx Graph
+        The network the disease will transmit through.
+            
+    **target** a target node (or iterable of target nodes)
+        The node whose infection we are interested in.
 
-            In principle target could be an iterable, but in this case we 
-            would be finding those possible sources whose infection leads to 
-            infection of at least one target, not all.
+        In principle target could be an iterable, but in this case we 
+        would be finding those possible sources whose infection leads to 
+        infection of at least one target, not all.
 
     :Warning: 
         
-        if the graph G has nodes like 1, 2, 3, and (1,2,3), then a
-        target of (1,2,3) is potentially ambiguous.  It will interpret
-        the target as the single node (1,2,3)
+    if the graph G has nodes like 1, 2, 3, and (1,2,3), then a
+    target of (1,2,3) is potentially ambiguous.  It will interpret
+    the target as the single node (1,2,3)
 
     :Returns: 
 
-        source_nodes : (set)
-            the set of nodes (including target) from which target is 
-            reachable
+    **source_nodes** (set)
+        the set of nodes (including target) from which target is 
+        reachable
 
 
     '''
@@ -981,7 +989,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     There are much faster ways to implement an algorithm giving the same 
     output, for example by actually running an epidemic.
     
-    :WARNING:
+    :Warning:
     
     why are you using this command? If it's to better understand some
     concept, that's fine.  But this command IS NOT an efficient way to
@@ -990,37 +998,38 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     
     :Arguments: 
 
-        G (networkx Graph)
-            The network the disease will transmit through.
-        tau (positive float)
-            transmission rate
-        gamma : number
-            recovery rate
-        initial_infecteds: node or iterable of nodes
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then a randomly chosen node is initially infected.
-        initial_recovereds: node or iterable of nodes
-            if a single node, then this node is initially recovered
-            if an iterable, then whole set is initially recovered
+    **G**    networkx Graph
+        The network the disease will transmit through.
+    **tau**   positive float 
+        transmission rate
+    **gamma**   positive float 
+        recovery rate
+    **initial_infecteds**  node or iterable of nodes
+        if a single node, then this node is initially infected
+        if an iterable, then whole set is initially infected
+        if None, then a randomly chosen node is initially infected.
+    **initial_recovereds** node or iterable of nodes
+        if a single node, then this node is initially recovered
+        if an iterable, then whole set is initially recovered
 
     :Returns: 
-        :
             
-        infected_nodes : set
-            the set of nodes infected eventually in a simulation.
+    **infected_nodes** set
+        the set of nodes infected eventually in a simulation.
         
     :SAMPLE USE:
+        
+    ::
 
         import networkx as nx
         import EoN
     
         G = nx.fast_gnp_random_graph(1000,0.002)
+        
         finalR = EoN.get_infected_nodes(G, 2, 1, initial_infecteds=[0, 5])
     
-    
-    finds the nodes infected if 0 and 5 are the initial nodes infected
-    and tau=2, gamma=1
+        #finds the nodes infected if 0 and 5 are the initial nodes infected
+        #and tau=2, gamma=1
     '''    
     if initial_recovereds is None:
         initial_recovereds = set()
@@ -1057,25 +1066,25 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
     
     
     
-    See Also:
+    :See Also:
 
-        **estimate_nonMarkov_SIR_prob_size** which handles nonMarkovian versions
+    `estimate_nonMarkov_SIR_prob_size` which handles nonMarkovian versions
 
     :Arguments: 
 
-        G (networkx Graph)
-            The network the disease will transmit through.
-        tau (positive float)
-            transmission rate
-        gamma : number
-            recovery rate
+    **G**    networkx Graph
+        The network the disease will transmit through.
+    **tau**   positive float 
+        transmission rate
+    **gamma**   positive float 
+        recovery rate
 
     :Returns: 
-        :
-        PE, AR  :  numbers (between 0 and 1)
-            Estimates of epidemic probability and attack rate found by 
-            performing directed percolation, finding largest strongly 
-            connected component and finding its in/out components.
+        
+    **PE, AR**  numbers (between 0 and 1)
+        Estimates of epidemic probability and attack rate found by 
+        performing directed percolation, finding largest strongly 
+        connected component and finding its in/out components.
         
     :SAMPLE USE:
 
@@ -1103,15 +1112,15 @@ def estimate_SIR_prob_size_from_dir_perc(H):
 
     :Arguments: 
 
-        H:  directed graph (assumed to be from directed percolation on 
-            previous graph G)
+    **H**  directed graph 
+        The outcome of directed percolation on the contact network G
 
     :Returns: 
-        :
-        PE, AR  :  numbers
-            Estimates of epidemic probability and attack rate found by 
-            finding largest strongly connected component and finding in/out 
-            components.
+        
+    **PE, AR**  numbers
+        Estimates of epidemic probability and attack rate found by 
+        finding largest strongly connected component and finding in/out 
+        components.
         
     :SAMPLE USE:
 
@@ -1219,9 +1228,9 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
     
     This is not directly described in Kiss, Miller, & Simon, but is based on (fig 6.18).
     
-    Warning:
-        You probably DON'T REALLY WANT TO USE THIS.
-        Check if estimate_nonMarkov_prob_size_with_timing fits your needs better.
+    :Warning:
+    You probably DON'T REALLY WANT TO USE THIS.
+    Check if estimate_nonMarkov_prob_size_with_timing fits your needs better.
     
     :Arguments: 
 
@@ -1298,18 +1307,21 @@ def nonMarkov_directed_percolate_network_with_timing(G,
     A generalization of figure 6.13 of Kiss, Miller & Simon
     
           
+
+    
     See Also:
         
-        **directed_percolate_network**
-        if it's just a constant transmission and recovery rate.
+    **directed_percolate_network**
+    if it's just a constant transmission and recovery rate.
 
-        **nonMarkov_directed_percolate_network**
-        if your rule for creating the percolated network cannot be expressed
-        as simply calculating durations and delays until transmission.
+    **nonMarkov_directed_percolate_network**
+    if your rule for creating the percolated network cannot be expressed
+    as simply calculating durations and delays until transmission.
     
-    The arguments are very much like in fast_nonMarkov_SIR
     
     :Arguments: 
+
+    The arguments are very much like in fast_nonMarkov_SIR
         
     **G**  Networkx Graph
         the input graph
@@ -1324,8 +1336,8 @@ def nonMarkov_directed_percolate_network_with_timing(G,
         duration = rec_time_fxn(u, *rec_time_args)
         
 
-    Note:
-        if delay == duration, we assume infection happens.
+        Note:
+            if delay == duration, we assume infection happens.
             
     **trans_time_args** tuple
         any additional arguments required by trans_time_fxn.  For example
@@ -1374,23 +1386,25 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
     From figure 6.18 of Kiss, Miller, & Simon.  
     Please cite the book if using this algorithm.
     
+    This algorithm is particularly intended for a case where the duration and
+    delays from infection to transmission are somehow related to one another.
 
-    Warning:
-        You probably **shouldn't use this**.
-        Check if nonMarkov_directed_percolate_with_timing fits your needs better.
+    :Warning:
+    You probably **shouldn't use this**.
+    Check if nonMarkov_directed_percolate_with_timing fits your needs better.
 
-    See Also:
+    :See Also:
         
-        **nonMarkov_directed_percolate_network_with_timing**
+    `nonMarkov_directed_percolate_network_with_timing`
+        
         if your rule for creating the percolated network is based on calculating
         a recovery time for each node and then calculating a separate
         transmission time for the edges this will be better.
     
-        **directed_percolate_network**
+    `directed_percolate_network`
+        
         if it's just a constant transmission and recovery rate.
 
-    This algorithm is particularly intended for a case where the duration and
-    delays from infection to transmission are somehow related to one another.
     
     
     :Arguments: 
@@ -1457,7 +1471,7 @@ def _process_trans_SIR_(time, G, source, target, times, S, I, R, Q, status,
 
     time : number
         time of transmission
-    G (networkx Graph)
+**G**  networkx Graph
     node : node
         node receiving transmission.
     times : list
@@ -1630,8 +1644,6 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
     
 
     :Arguments: 
-        
-    
 
     **G** networkx Graph
         The underlying network
@@ -1846,7 +1858,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     **rec_time_args** tuple
         see rec_time_fxn
 
-    **trans_and_rec_time_args** tuple)
+    **trans_and_rec_time_args** tuple
         see trans_and_rec_tim_fxn
         
     **initial_infecteds** node or iterable of nodes
@@ -2140,10 +2152,10 @@ def _process_trans_SIS_nonMarkov_(time, G, source, target, future_transmissions,
 
         time : number
             current time
-        G (networkx Graph)
-        source : node
+    **G**  networkx Graph
+    **source** node
             node causing transmission
-        target : node
+    **target** node
             node receiving transmission.
         times : list
             list of times at which events have happened
@@ -2232,8 +2244,8 @@ def _find_next_trans_SIS_Markov(Q, time, tau, source, target, status, rec_time,
             A priority queue of events
         t : current time
         tau : transmission rate
-        source : infected node that may transmit
-        target : the possibly susceptible node that may receive a 
+    **source** infected node that may transmit
+    **target** the possibly susceptible node that may receive a 
              transmission
         status : a dict giving the current status of every node
         rec_time : a dict giving the recovery time of every node that has 
@@ -2346,7 +2358,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     **times, S, I** each a scipy array
         times and number in each status for corresponding time
         
-    or if return_full_data=True:
+    or if return_full_data=True
     
     **full_data**  Simulation_Investigation object
         from this we can extract the status history of all nodes.
@@ -2430,11 +2442,11 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
                         
     r'''Similar to fast_nonMarkov_SIR. 
     
-    WARNING: 
+    :Warning: 
         
-        trans_time_fxn (or trans_and_rec_time_fxn) need to return lists of
-        times.  Not just the next time. So this is different from the SIR 
-        version.
+    trans_time_fxn (or trans_and_rec_time_fxn) need to return lists of
+    times.  Not just the next time. So this is different from the SIR 
+    version.
 
     :Arguments: 
     
@@ -2644,12 +2656,10 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     will be O(N^2).  For this, it will be much better to use fast_SIR
     which I believe is O(N log N)
     
-    See Also:
+    :See Also:
 
-        **fast_SIR** which has the same inputs but uses a different method to 
-        run faster, particularly in the weighted case.
-    
-    
+    **fast_SIR** which has the same inputs but uses a different method to 
+    run faster, particularly in the weighted case.
     
     :Arguments:
          
@@ -2901,10 +2911,10 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     repeated rejection samples until a successful selection.
     
 
-    See Also:
+    :See Also:
 
-        **fast_SIS** which has the same inputs but uses a faster method (esp 
-        for weighted graphs).
+    **fast_SIS** which has the same inputs but uses a faster method (esp 
+    for weighted graphs).
     
     
     :Arguments: 
@@ -3170,7 +3180,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
     
     It is possible to weight edges or nodes in the contact network `G` (that is, 
     not the 2 directed networks defined above, but the original contact 
-    network) so that some of these transitions have differen rates for 
+    network) so that some of these transitions have different rates for 
     different individuals/partnerships.  These are included as weights in the
     contact network.  
     
@@ -3254,7 +3264,13 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
     
     :SAMPLE USE:
 
-    More examples in `online documentation <../Examples.html#non-sis-sir-processes-with-gillespie-arbitrary>`_
+    This does an SEIR epidemic.  It treats the nodes and edges as weighted.
+    So some individuals have a higher E->I transition rate than others, and some
+    edges have a higher transmission rate than others.  The recovery rate
+    is taken to be the same for all nodes.
+    
+    There are more examples in the
+    `online documentation <../Examples.html#non-sis-sir-processes-with-gillespie-arbitrary>`_
 
     ::
 
