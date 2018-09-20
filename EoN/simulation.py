@@ -677,8 +677,8 @@ def percolation_based_discrete_SIR(G, p,
     The value of this function is that by performing many simulations we 
     can see that the outputs of the two are equivalent.  
     
-    This algorithm leads to a better understanding of the theory, even
-    if it's not computationally efficient.
+    This algorithm leads to a better understanding of the theory, but
+    it's not computationally efficient.
 
 
     :Arguments: 
@@ -973,7 +973,8 @@ def _in_component_(G, target):
 def get_infected_nodes(G, tau, gamma, initial_infecteds=None, 
                 initial_recovereds = None):
     r'''
-    Finds all eventually infected nodes in a simulation, through a percolation approach 
+    Finds all eventually infected nodes in an SIR simulation, through a 
+    percolation approach 
     
     From figure 6.15 of Kiss, Miller, & Simon.  Please cite the book if 
     using this algorithm
@@ -987,14 +988,15 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     
     This code has similar run-time whether an epidemic occurs or not.
     There are much faster ways to implement an algorithm giving the same 
-    output, for example by actually running an epidemic.
+    output, for example by actually running one of the epidemic simulation tools.
     
     :Warning:
     
-    why are you using this command? If it's to better understand some
-    concept, that's fine.  But this command IS NOT an efficient way to
-    calculate anything.  Don't do it like this.  Use one of the other
-    algorithms.  Try fast_SIR, for example.
+    why are you using this command? If it's to better understand the
+    relationship between percolation and SIR epidemics, that's fine.  
+    But this command IS NOT an efficient way to calculate anything.  Don't do 
+    it like this.  Use one of the other algorithms.  Try `fast_SIR`, 
+    for example.
     
     :Arguments: 
 
@@ -3445,7 +3447,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             #roundoff error can kill the calculation, but it's slow to do this right.
             #so we'll only deal with it if the value is small enough that roundoff
             #error might matter.
-            if weight_sum[transition] < 10**(-7) and numpy.abs(weight_sum[transition])!=0:
+            if weight_sum[transition] < 10**(-7) and weight_sum[transition]!=0:
                 weight_sum[transition] = sum([get_weight[transition][key] for key in potential_transitions[transition].items])
 
         for transition in induced_transitions:
@@ -3471,7 +3473,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
                 #roundoff error can kill the calculation, but it's slow to do this right.
                 #so we'll only deal with it if the value is small enough that roundoff
                 #error might matter.
-                if weight_sum[transition] < 10**(-7) and numpy.abs(weight_sum[transition])!=0:
+                if weight_sum[transition] < 10**(-7) and weight_sum[transition]!=0:
                     weight_sum[transition] = sum([get_weight[transition][key] for key in potential_transitions[transition].items])
         total_rate = sum(rate[transition]*weight_sum[transition] for transition in spontaneous_transitions+induced_transitions)
         if total_rate>0:
