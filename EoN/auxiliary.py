@@ -14,29 +14,42 @@ def subsample(report_times, times, status1, status2=None,
       subsampled at specific report_times.
     
 
-    Arguments : 
+    :Arguments: 
 
-        report_times : iterable (ordered)
-            times at which we want to know state of system
+    **report_times** iterable (ordered)
+        times at which we want to know state of system
                    
-        times : iterable (ordered)
-            times at which we have the system state (assumed no change 
-            between these times)
+    **times** : iterable (ordered)
+        times at which we have the system state (assumed no change 
+        between these times)
             
-        statusX (X one of 1, 2 or 3) : iterable (order corresponds to times)
-                          generally S, I, or R
-                          number of nodes in given status.
-    Returns : 
+    **status1**  iterable 
+        generally S, I, or R
+        
+        number of nodes in given status at corresponding time in times.
+        
 
-        :
-        If only status1 is defined
-            report_status1 : scipy array gives status1 subsampled just at 
-                 report_times.
+    **status2**  iterable  (optional, default None)
+        generally S, I, or R
+        
+        number of nodes in given status at corresponding time in times.
+
+    **status3**  iterable (optional, default None)
+        generally S, I, or R
+        
+        number of nodes in given status at corresponding time in times.
+                                
+    :Returns:
+
+    If only status1 is defined
+        **report_status1** scipy array 
+        gives status1 subsampled just at report_times.
                      
-        If more are defined then it returns a list, either
-            [report_status1, report_status2]
-        or
-            [report_status1, report_status2, report_status3]
+    If more are defined then it returns a list, either
+        **[report_status1, report_status2]**
+    or
+        **[report_status1, report_status2, report_status3]**
+    In each case, these are subsampled just at report_times.
 
     :SAMPLE USE:
 
@@ -121,21 +134,21 @@ def subsample(report_times, times, status1, status2=None,
 
 def get_time_shift(times, L, threshold):
     r'''
-    Identifies the first time at which L crosses a threshold.  
+    Identifies the first time at which list/array L crosses a threshold.  
     Useful for shifting times.
     
-    Arguments : 
-        times : list or scipy array (ordered)
-            the times we have observations
-        L : a list or scipy array
-            order of L corresponds to times
-        threshold : number
-            a threshold value
+    :Arguments: 
+    **times** list or scipy array (ordered)
+        the times we have observations
+    **L** a list or scipy array
+        order of L corresponds to times
+    **threshold** number
+        the threshold value
 
-    Returns : 
-        :
-            t  (number)
-                the first time at which L reaches or exceeds a threshold.
+    :Returns:
+        
+    **t**  number
+        the first time at which L reaches or exceeds threshold.
 
     :SAMPLE USE:
 

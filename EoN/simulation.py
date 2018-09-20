@@ -20,12 +20,6 @@ def _truncated_exponential_(rate, T):
     t = random.expovariate(rate)
     L = int(t/T)
     return t - L*T
-# def _truncated_exponential_(rate, T):
-#     r'''returns a number between 0 and T from an
-#     exponential distribution conditional on the outcome being between 0 and T'''
-#     t = random.expovariate(rate)
-#     #L = int(t/T)
-#     return t%T          #t - L*T
    
 class myQueue(object):
     r'''
@@ -217,67 +211,66 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
 
     :Arguments: 
 
-        G: NetworkX Graph (or some other structure which quacks like a 
+    **G** NetworkX Graph (or some other structure which quacks like a 
                            NetworkX Graph)
-            The network on which the epidemic will be simulated.
+        The network on which the epidemic will be simulated.
         
-        test_transmission: function(u,v,*args)
-            (see below for args definition)
-            A function that determines whether u transmits to v.
-            It returns True if transmission happens and False otherwise.
-            The default will return True with probability p, where args=(p,)
+    **test_transmission** function(u,v,*args)
+        (see below for args definition)
+        A function that determines whether u transmits to v.
+        It returns True if transmission happens and False otherwise.
+        The default will return True with probability p, where args=(p,)
 
-            This function can be user-defined.
-            It is called like:
-            test_transmission(u,v,*args)
-            Note that if args is not entered, then args=(), and this call is 
-            equivalent to
-            test_transmission(u,v)
+        This function can be user-defined.
+        It is called like:
+        test_transmission(u,v,*args)
+        Note that if args is not entered, then args=(), and this call is 
+        equivalent to
+        test_transmission(u,v)
 
-        args: a list or tuple
-            The arguments of test_transmission coming after the nodes.  If 
-            simply having transmission with probability p it should be 
-            entered as 
-            args=(p,)
+    **args** a list or tuple
+        The arguments of test_transmission coming after the nodes.  If 
+        simply having transmission with probability p it should be 
+        entered as 
+        args=(p,)
             
-            [note the comma is needed to tell Python that this is really a 
-            tuple]
+        [note the comma is needed to tell Python that this is really a 
+        tuple]
 
-        initial_infecteds: node or iterable of nodes (default None)
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
+    **initial_infecteds** node or iterable of nodes (default None)
+        if a single node, then this node is initially infected
+        if an iterable, then whole set is initially infected
+        if None, then choose randomly based on rho.  If rho is also
+        None, a random single node is chosen.
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
        
-        initial_recovereds : as for initial_infecteds, but initially 
+    **initial_recovereds** as for initial_infecteds, but initially 
             recovered nodes.
             
-        rho : number
-            initial fraction infected. number is int(round(G.order()*rho))
+    **rho** number
+        initial fraction infected. number is int(round(G.order()*rho))
 
-        tmin : start time
+    **tmin** start time
         
-        tmax : stop time (if not extinct first).  Default step is 1.
+    **tmax** stop time (default Infinity). 
 
-        return_full_data: boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
 
             
 
     :Returns: 
-        :
-        if return_full_data is False returns 
         
-        t, S, I, R:
-                scipy arrays
+        
+    *t, S, I, R* scipy arrays
             
-        Or `if return_full_data is True` returns
-        full_data  (Simulation_Investigation object)
-            from this we can extract the status history of all nodes
-            We can also plot the network at given times
-            and even create animations using class methods.
+    Or `if return_full_data is True` returns
+    
+    **full_data**  Simulation_Investigation object
+        from this we can extract the status history of all nodes
+        We can also plot the network at given times
+        and even create animations using class methods.
     
     :SAMPLE USE:
 
@@ -1151,27 +1144,28 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
     '''
     estimates probability and size for user-input transmission and recovery time functions.
     
-       :Arguments: 
-        G : Networkx Graph
-            the input graph
-        trans_time_fxn : function
-            trans_time_fxn(u, v, *trans_time_args) 
-            returns the delay from u's infection to transmission to v.
-        rec_time_fxn : function
-            rec_time_fxn(u, *rec_time_args)
-            returns the delay from u's infection to its recovery.
-        trans_time_args : tuple
-            any additional arguments required by trans_time_fxn.  For example
-            weights of nodes.
-        rec_time_args : tuple
-            any additional arguments required by rec_time_fxn
+    :Arguments: 
+    
+    **G** Networkx Graph
+        the input graph
+    **trans_time_fxn** function
+        trans_time_fxn(u, v, *trans_time_args) 
+        returns the delay from u's infection to transmission to v.
+    **rec_time_fxn** function
+        rec_time_fxn(u, *rec_time_args)
+        returns the delay from u's infection to its recovery.
+    **trans_time_args** tuple
+        any additional arguments required by trans_time_fxn.  For example
+        weights of nodes.
+    **rec_time_args** tuple
+        any additional arguments required by rec_time_fxn
 
     :Returns: 
-        :
-        PE, AR  :  numbers (between 0 and 1)
-            Estimates of epidemic probability and attack rate found by 
-            finding largest strongly connected component and finding in/out 
-            components.
+        
+    **PE, AR**  numbers (between 0 and 1)
+        Estimates of epidemic probability and attack rate found by 
+        finding largest strongly connected component and finding in/out 
+        components.
         
     :SAMPLE USE:
 
@@ -1231,25 +1225,26 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
     
     :Arguments: 
 
-        G (networkx Graph)
+    **G** (networkx Graph)
             The input graph
 
-        xi : dict
-            xi[u] gives all necessary information to determine what u's 
-            infectiousness is.
-        zeta : dict
-            zeta[v] gives everything needed about v's susceptibility
+    **xi** dict
+        xi[u] gives all necessary information to determine what u's 
+        infectiousness is.
+    **zeta** dict
+        zeta[v] gives everything needed about v's susceptibility
 
-        transmission : user-defined function
-            transmission(xi[u], zeta[v]) determines whether u transmits to 
-            v.
+    **transmission** user-defined function
+        transmission(xi[u], zeta[v]) determines whether u transmits to 
+        v.  Returns True or False depending on whether the transmission would
+        happen
 
     :Returns: 
-        :
-        PE, AR  :  numbers (between 0 and 1)
-            Estimates of epidemic probability and attack rate found by 
-            finding largest strongly connected component and finding in/out 
-            components.
+        
+    **PE, AR**  numbers (between 0 and 1)
+        Estimates of epidemic probability and attack rate found by 
+        finding largest strongly connected component and finding in/out 
+        components.
         
     :SAMPLE USE:
 
@@ -1638,16 +1633,16 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         
     
 
-    G (networkx Graph)
+    **G** networkx Graph
         The underlying network
 
-    tau (positive float)
+    **tau** number
         transmission rate per edge
 
-    gamma (number)
+    **gamma** number
         recovery rate per node
         
-    initial_infecteds (node or iterable of nodes)
+    **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
         
         if an iterable, then whole set is initially infected
@@ -1659,44 +1654,44 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         If both initial_infecteds and rho are assigned, then there
         is an error.
        
-    initial_recovereds (iterable of nodes (default None))
+    **initial_recovereds** iterable of nodes (default None)
         this whole collection is made recovered.
         Currently there is no test for consistency with initial_infecteds.
         Understood that everyone who isn't infected or recovered initially
         is initially susceptible.
 
-    rho (number)
+    **rho** number
         initial fraction infected. number is int(round(G.order()*rho))
 
-    tmin (number (default 0))
+    **tmin** number (default 0)
         starting time
             
-    tmax (number   (default float('Inf')))
+    **tmax** number  (default Infinity)
         maximum time after which simulation will stop.
         the default of running to infinity is okay for SIR, 
         but not for SIS.
 
-    transmission_weight (string       (default None))
+    **transmission_weight**    string  (default None)
         the label for a weight given to the edges.
         transmission rate is
         G.adj[i][j][transmission_weight]*tau
 
-    recovery_weight (string       (default None))
+    **recovery_weight**   string (default None))
         a label for a weight given to the nodes to scale their 
         recovery rates
         gamma_i = G.node[i][recovery_weight]*gamma
 
-    return_full_data (boolean (default False))
+    **return_full_data**   boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
     
     :Returns:
         
-    times, S, I, R (Scipy arrays)
+    **times, S, I, R** Scipy arrays
         
     Or if `return_full_data is True`
             
-    full_data  (Simulation_Investigation object)
+    **full_data**  Simulation_Investigation object
             from this we can extract the status history of all nodes.
             We can also plot the network at given times
             and create animations using class methods.
@@ -2050,31 +2045,31 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
     **time** number
         current time
     **G** networkx Graph
-    source : node
+    **source**  node
         node causing transmission
-    target : node
+    **target**  node
         node receiving transmission.
-    times : list
+    **times** list
         list of times at which events have happened
-    S, I: lists
+    **S, I** lists
         lists of numbers of nodes of each status at each time
-    Q : myQueue
+    **Q**  myQueue
         the queue of events
-    status : dict
+    **status** dict
         dictionary giving status of each node
-    rec_time : dict
+    **rec_time** dict
         dictionary giving recovery time of each node
-    infection_times : 
+    **infection_times** 
     
-    recovery_times : 
+    **recovery_times** 
         
-    transmissions (list)
+    **transmissions** list)
         list of tuples (t, source, target) for each transmission event.
         
-    trans_rate_fxn : function
+    **trans_rate_fxn**   User-defined function
         transmission rate trans_rate_fxn(u,v) gives transmission rate 
         from u to v
-    rec_rate_fxn : function
+    **rec_rate_fxn**    User-defined function
         recovery rate rec_rate_fxn(u) is recovery rate of u.
 
     :Returns: 
@@ -3300,7 +3295,12 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
                                                 tmax = float('Inf'))
         
         plt.semilogy(t, S, label = 'Susceptible')
-        plt.semilogy(t, E, label = 'Exposed')        
+        plt.semilogy(t, E, label = 'Exposed') 
+        plt.semilogy(t, I, label = 'Infected')
+        plt.semilogy(t, R, label = 'Recovered')
+        plt.legend()
+
+        plt.savefig('SEIR.png')       
 '''
 
     if return_full_data:
