@@ -174,7 +174,7 @@ def _simple_test_transmission_(u, v, p):
 
     :Returns:
         
-        :
+    
             
             True if u will infect v (given opportunity)
             False otherwise
@@ -248,8 +248,11 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     **initial_recovereds** as for initial_infecteds, but initially 
             recovered nodes.
             
-    **rho** number
-        initial fraction infected. number is int(round(G.order()*rho))
+    **rho** number  (default is None)
+        initial fraction infected. initial number infected 
+        is int(round(G.order()*rho)).
+        
+        The default results in a single randomly chosen initial infection.
 
     **tmin** start time
         
@@ -401,18 +404,23 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
             If both initial_infecteds and rho are assigned, then there
             is an error.
        
-    **initial_recovereds**  as for initial_infecteds, but initially 
+    **initial_recovereds**  as for initial_infecteds, but for initially 
             recovered nodes.
             
-    **rho**  number
-            initial fraction infected. number is int(round(G.order()*rho))
+    **rho**  number  (default None)
+            initial fraction infected. number initially infected
+            is int(round(G.order()*rho))
+            
+            The default results in a single randomly chosen initial infection.
         
-    **tmin**  start time
+    **tmin**  float  (default 0)
+        start time
         
-    **tmax**  stop time (if not extinct first).  Default step is 1.
+    **tmax**  float  (default infinity)
+        stop time (if not extinct first).  
 
     **return_full_data**  boolean (default False)
-            Tells whether a Simulation_Investigation object should be returned.  
+        Tells whether a Simulation_Investigation object should be returned.  
 
     :Returns: 
         
@@ -489,7 +497,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     :Returns: 
 
     if return_full_data is False
-        **t, S, I, **
+        **t, S, I**
             
         All scipy arrays 
 
@@ -824,26 +832,26 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     :Arguments: 
 
     **G**    networkx Graph
-            The network the disease will transmit through.
+        The network the disease will transmit through.
     **tau**   positive float 
-            transmission rate
+        transmission rate
     **gamma**   positive float 
-            recovery rate
+        recovery rate
     **weights**   boolean    (default True)
-            if True, then includes information on time to recovery
-            and delay to transmission.  If False, just the directed graph.
+        if True, then includes information on time to recovery
+        and delay to transmission.  If False, just the directed graph.
 
     :Returns: 
         :
     **H**   networkx DiGraph  (directed graph)
-            a u->v edge exists in H if u would transmit to v if ever 
-            infected.
+        a u->v edge exists in H if u would transmit to v if ever 
+        infected.
         
-            The edge has a time attribute (time_to_infect) which gives the 
-            delay from infection of u until transmission occurs.
+        The edge has a time attribute (time_to_infect) which gives the 
+        delay from infection of u until transmission occurs.
         
-            Each node u has a time attribute (duration) which gives the 
-            duration of its infectious period.
+        Each node u has a time attribute (duration) which gives the 
+        duration of its infectious period.
         
     :SAMPLE USE:
 
@@ -1311,7 +1319,7 @@ def nonMarkov_directed_percolate_network_with_timing(G,
           
 
     
-    See Also:
+    :See Also:
         
     **directed_percolate_network**
     if it's just a constant transmission and recovery rate.

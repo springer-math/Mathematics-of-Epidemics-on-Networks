@@ -74,15 +74,15 @@ class Simulation_Investigation():
         r'''
         returns the history of a node.
         
-        Arguments :
-            node 
-                the node
+        :Arguments:
+        **node**
+            the node
         
-         Returns :
+        :Returns:
              
-               timelist, statuslist (lists)
+        **timelist, statuslist** lists
                
-                   the times at which the node changes status and what the new status is at each time.          
+            the times at which the node changes status and what the new status is at each time.          
                 
             '''
             
@@ -92,17 +92,17 @@ class Simulation_Investigation():
         r'''
         returns the status of a given node at a given time.
     
-        Arguments :
+        :Arguments:
     
-            node 
-                the node
-            time (float)
-                the time of interest.
+        **node**
+            the node
+        **time** float
+            the time of interest.
     
-        Returns :
+        :Returns:
     
-            status ('S', 'I', or 'R')
-                status of node at time.
+        **status** string ('S', 'I', or 'R')
+            status of node at time.
         '''
     
         changetimes = self._node_history_[node][0]
@@ -114,18 +114,18 @@ class Simulation_Investigation():
         r'''
         returns the status of nodes at a given time.  
     
-        Arguments :
+        :Arguments:
     
-            nodelist (iterable, default None):
-                Some sort of iterable of nodes.
-                If default value, then returns statuses of all nodes.
-            time (float, default None)
+        **nodelist** iterable (default None):
+            Some sort of iterable of nodes.
+            If default value, then returns statuses of all nodes.
+        **time** float (default None)
                 the time of interest.
                 if default value, then returns initial time
     
-        returns : 
-            status (dict)
-                A dict whose keys are the nodes in nodelist giving their status at time.
+        :Returns: 
+        **status** dict
+            A dict whose keys are the nodes in nodelist giving their status at time.
 
         '''
         if nodelist is None:
@@ -144,18 +144,18 @@ class Simulation_Investigation():
         r'''
         Provides the population-scale summary of the dynamics: t, S, I, and R
         
-        Arguments :
-            nodelist (default None)
+        :Arguments:
+        **nodelist** (default None)
                 The nodes that we want to focus on.  By default this is all nodes.
                 If you want all nodes, the most efficient thing to do is to
                 not include 'nodelist'.  Otherwise it will recalculate everything.
                     
-        Returns :
+        :Returns:
             
-            if self.SIR is True then returns
-                t, S, I, R --- scipy arrays 
-            if self.SIR is False then returns
-                t, S, I --- scipy arrays.
+        if self.SIR is True then returns
+            **t, S, I, R** --- scipy arrays 
+        if self.SIR is False then returns
+            **t, S, I** --- scipy arrays.
                 
         Assumes that all entries in node_history start with same tmin'''
         if nodelist is None:  #calculate everything.
@@ -237,19 +237,32 @@ class Simulation_Investigation():
                 
     def transmissions(self):
         r'''Returns a list of tuples (t,u,v) stating that node u infected node
-        v at time t.  If v was infected at time tmin, then u is None'''
+        v at time t.  If v was infected at time tmin, then u is None
+        
+        Note - this only includes successful transmissions.  So if u tries
+        to infect v, but fails because v is already infected this is not
+        recorded.'''
         
         return self._transmissions_
         
     def transmission_tree(self):
-        r'''returns a directed Multi graph that has all the information in trasnmissions.
-        An edge from u to v with time t means u trasmitted to v at time t.
+        r'''
         
-        Cycles or multiple transmissions can occur if SIS.
+        :Returns: 
+        
+        **T** a directed Multi graph 
+            T has all the information in `transmissions`.
+            An edge from u to v with time t means u transmitted to v at time t.
+        
+        :Warning:
+            
+        Although we refer to this as a "tree", if the disease is SIS, there
+        are likely to be cycles and/or repeated edges.  If the disease is SIR
+        but there are multiple initial infections, then this will be a "forest".
         
         If it's an SIR, then this is a tree (or forest).
         
-        The graph consists only of those nodes that are infected at some point.
+        The graph contains only those nodes that are infected at some point.
         '''
         
         T = nx.MultiDiGraph()
@@ -261,28 +274,33 @@ class Simulation_Investigation():
         
     def add_timeseries(self, t, S, I, R=None, colordict = None, label = None, **kwargs):
         r'''This allows us to include some additional timeseries for comparision
-        with the simulation.  The most likely source of these would be an analytic
-        calculation.
+        with the simulation.  So for example, if we perform a simulation and 
+        want to plot the simulation but also a prediction, this is what we 
+        would use.
         
-        Arguments : 
-            t (list)
-                the times
-            S (list)
-                the number susceptible at each time
-            I (list)
-                the number infected at each time
-            R (list default None)
-                the number recovered at each time
-            colordict (dict)
-                a dictionary mapping 'S', 'I', and (if SIR) 'R' to the color
-                desired for their plots.  Defaults to the same as the simulation
-            label (string)
-                The label to be used for these plots in the legend.
-            **kwargs 
-                any matplotlib key word args to affect how the curve is shown.
+        :Arguments: 
+        **t** list
+            the times
+        **S** list
+            the number susceptible at each time
+        **I** list
+            the number infected at each time
+        **R** list (default None)
+            the number recovered at each time
+        **colordict** dict  (default None)
+            a dictionary mapping 'S', 'I', and (if SIR) 'R' to the color
+            desired for their plots.  Defaults to the same as the simulation
+        **label** (string)
+            The label to be used for these plots in the legend.
+        ****kwargs**
+            any matplotlib key word args to affect how the curve is shown.
                 
-        Returns :
-            ts timeseries object
+        :Returns:
+        **ts** timeseries object
+            
+        :Modifies:
+        This adds the timeseries object `ts` to the internal _time_series_list_
+        
         '''
         if (R is not None and not self.SIR):
             raise EoN.EoNError("cannot define R if SIR isn't True")
@@ -298,10 +316,10 @@ class Simulation_Investigation():
         r'''Allows us to change some of the matplotlib key word arguments
         for a timeseries object
         
-        Arguments :
-            ts (timeseries object)
+        :Arguments:
+        **ts** (timeseries object)
                 the timeseries object whose key word args we are updating.
-            **kwargs 
+        ****kwargs**
                 the new matplotlib key word arguments
         '''
         ts.update_kwargs(**kwargs)
@@ -309,11 +327,11 @@ class Simulation_Investigation():
     def update_ts_label(self, ts, label):
         r'''updates the label for time series plots
         
-        Arguments :
-            ts (timeseries object)
-                the timeseries object whose key word args we are updating.
-            label (string) 
-                the new label
+        :Arguments:
+        **ts** timeseries object
+            the timeseries object whose key word args we are updating.
+        **label** string
+            the new label
         '''
         
         ts.label=label
@@ -321,11 +339,11 @@ class Simulation_Investigation():
     def update_ts_colordict(self, ts, colordict):
         r'''updates the colordict for time series plots
         
-        Arguments :
-            ts (timeseries object)
-                the timeseries object whose key word args we are updating.
-            colordict (dict) 
-                the new colordict
+        :Arguments:
+        **ts** timeseries object
+            the timeseries object whose key word args we are updating.
+        **colordict** dict
+            the new colordict
         '''
         if not (colordict.has_key('S') and colordict.has_key('I')):
             raise EoN.EoNError("colordict must have keys 'S' and 'I'")
@@ -338,27 +356,27 @@ class Simulation_Investigation():
         for the simulation.  This is identical to update_ts_kwargs except
         we don't need to tell it which time series to use.
         
-        Arguments :
-            **kwargs 
-                the new matplotlib key word arguments
+        :Arguments:
+        ****kwargs**
+            the new matplotlib key word arguments
         '''
         self._simulation_time_series_.update_kwargs(**kwargs)
 
     def sim_update_label(self, label):
         r'''updates the label for the simulation in the time series plots
         
-        Arguments :
-            label (string) 
-                the new label
+        :Arguments:
+        **label** string
+            the new label
         '''
         self.label=label
 
     def sim_update_colordict(self, colordict):
         r'''updates the colordict for the simulation 
         
-        Arguments :
-            colordict (dict) 
-                the new colordict
+        :Arguments:
+        **colordict** dict
+            the new colordict
         '''
         if not (colordict.has_key('S') and colordict.has_key('I')):
             raise EoN.EoNError("colordict must have keys 'S' and 'I'")
@@ -416,9 +434,9 @@ class Simulation_Investigation():
     def set_pos(self, pos):
         r'''Set the position of the nodes.
         
-        Arguments : 
-            pos (dict)
-                as in nx.draw_networkx
+        :Arguments: 
+        **pos** (dict)
+            as in nx.draw_networkx
         '''
         self.pos = pos
         
@@ -503,11 +521,11 @@ class Simulation_Investigation():
         and which time series objects are plotted in it.
         
         
-        Arguments :
-            time (float)
+        :Arguments:
+        **time** float
                 the time for the snapshot of the network.
                 
-            ts_plots (list of strings, default ['S', 'I', 'R'])
+        **ts_plots** (list of strings, default ['S', 'I', 'R'])
                 denotes what should appear in the timeseries plots.  The
                 length of the list determines how many plots there are.  If
                 entry i is 'AB' then plot i has both A and B plotted.
@@ -515,45 +533,45 @@ class Simulation_Investigation():
                 So the default has a plot with 'S', a plot with 'I' and another
                 with 'R'.
             
-            ts_list (list of timeseries objects - default None)
+        **ts_list** (list of timeseries objects - default None)
                 If multiple time series have been added, we might want to plot
                 only some of them.  This says which ones to plot.
                 The simulation is always included.
             
-            nodelist (list, default None)
+        **nodelist** (list, default None)
                 which nodes should be included in the network plot.  By default
                 this is the entire network.  
                 This also determines which nodes are on top of each other 
                 (particularly if IonTop is False).
             
-            IonTop (boolean, default True)
+        **IonTop** (boolean, default True)
                 In the network plot we put infected nodes on top.
             
-            timelabel (string, default '$t$')
+        **timelabel** (string, default '$t$')
                 the horizontal label to be used on the time series plots
                 
-            pos 
+        **pos**
                 overrides self.pos for this display (but does not overwrite 
                 self.pos.  Use set_pos if you want to do this)
                 
-            nx_kwargs 
+        ****nx_kwargs**
                 any networkx keyword arguments to go into the network plot.
             
-        Returns :
+        :Returns:
             
-            network_ax, ts_ax_list (axis, list of axises)
+        **network_ax, ts_ax_list** (axis, list of axises)
             The axes for the network plot and a list of all the axes for the
             timeseries plots
 
         
         Notes : 
             
-            If you only want to plot the graph, set ts_plots equal to [].  
+        If you only want to plot the graph, set ts_plots equal to [].  
          
-            If you want S, I, and R on a single plot, set ts_plots equal to ['SIR']
+        If you want S, I, and R on a single plot, set ts_plots equal to ['SIR']
         
-            If you only want some of the timeseries objects, set ts_list to be those
-            (the simulation time series will always be plotted).
+        If you only want some of the timeseries objects, set ts_list to be those
+        (the simulation time series will always be plotted).
         
         Examples :
             
@@ -645,51 +663,51 @@ class Simulation_Investigation():
         See https://matplotlib.org/api/_as_gen/matplotlib.animation.Animation.save.html
         for more about the save command for matplotlib animations.
         
-        Arguments :
-            The same as in display, except that time is replaced by frame_times
+        :Arguments:
+        The same as in display, except that time is replaced by frame_times
             
-            frame_times (list/scipy array)
-                The times for animation frames.  If nothing is given, then it
-                uses 101 times between 0 and t[-1]
+        **frame_times** (list/scipy array)
+            The times for animation frames.  If nothing is given, then it
+            uses 101 times between 0 and t[-1]
                 
-            ts_plots (list of strings, default 'S', 'I', 'R')
-                The default means that there will be 3 plots showing time series
-                with the first showing S, the second I, and the third R.
+        **ts_plots** (list of strings, default 'S', 'I', 'R')
+            The default means that there will be 3 plots showing time series
+            with the first showing S, the second I, and the third R.
+            
+            If one of these is not wanted, it can simply not be included in
+            the list. 
                 
-                If one of these is not wanted, it can simply not be included in
-                the list. 
+            Alternately if we want more than one to appear on the same plot
+            the entry should be something like 'SI' or 'IR' or 'SIR' and the
+            time series plot will show all of the plots.
                 
-                Alternately if we want more than one to appear on the same plot
-                the entry should be something like 'SI' or 'IR' or 'SIR' and the
-                time series plot will show all of the plots.
-                
-                If this is an empty list, then only the network is shown, but 
-                with a larger figure.
+            If this is an empty list, then only the network is shown, but 
+            with a larger figure.
 
             
-            ts_list (list of timeseries objects - default None)
-                If multiple time series have been added, we might want to plot
-                only some of them.  This says which ones to plot.
-                The simulation is always included.
+        **ts_list** list of timeseries objects  (default None)
+            If multiple time series have been added, we might want to plot
+            only some of them.  This says which ones to plot.
+            The simulation is always included.
             
-            nodelist (list, default None)
-                which nodes should be included in the network plot.  By default
-                this is the entire network.  
-                This also determines which nodes are on top of each other 
-                (particularly if IonTop is False).
+        **nodelist** list (default None)
+            which nodes should be included in the network plot.  By default
+            this is the entire network.  
+            This also determines which nodes are on top of each other 
+            (particularly if IonTop is False).
             
-            IonTop (boolean, default True)
-                In the network plot we put infected nodes on top.
+        **IonTop** boolean (default True)
+            In the network plot we put infected nodes on top.
             
-            timelabel (string, default '$t$')
-                the horizontal label to be used on the time series plots
+        **timelabel** string (default '$t$')
+            the horizontal label to be used on the time series plots
+            
+        **pos** dict   (default None)
+            overrides self.pos for this display (but does not overwrite 
+            self.pos.  Use set_pos if you want to do this)
                 
-            pos 
-                overrides self.pos for this display (but does not overwrite 
-                self.pos.  Use set_pos if you want to do this)
-                
-            nx_kwargs 
-                any networkx keyword arguments to go into the network plot.
+        ****nx_kwargs**
+            any networkx keyword arguments to go into the network plot.
                 
             
         '''
