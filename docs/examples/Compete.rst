@@ -3,17 +3,29 @@ Competing Diseases
 
 :download:`Downloadable Source Code <arbitrary_dynamics/Compete.py>` 
 
-.. image:: arbitrary_dynamics/Compete.png
-    :width: 80 %
+.. image:: arbitrary_dynamics/Compete_both.png
+    :width: 45 %
+.. image:: arbitrary_dynamics/Compete_just1disease.png
+    :width: 45 %
 
 
 We consider two diseases that compete in the sense that if an individual has
 recovered from one disease, then if it is infected with the other disease it
 transmits with lower rate and it recovers faster.
 
+Because our initial condition is quite small, the final outcome is somewhat 
+stochastic, even though the curves look quite smooth.  The stochasticity is 
+manifested when the populations are still small.
+
+Our first plot shows the two diseases competing.  The second plot shows
+what happens if there is just one disease present.
+
 ::
 
 
+    r'''We consider two diseases that compete in the sense that if an individual has
+    recovered from one disease, then if it is infected with the other disease it
+    transmits with lower rate and it recovers faster.'''
     import EoN
     import networkx as nx
     from collections import defaultdict
@@ -57,25 +69,27 @@ transmits with lower rate and it recovers faster.
     
     return_statuses = ('SS', 'SI', 'SR', 'IS', 'II', 'IR', 'RS', 'RI', 'RR')
     
-    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses, 
-                                            tmax = float('Inf'))    
+    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
+                                            tmax = float('Inf'))
     
-    plt.plot(t, SS, '-.', label = 'Susceptible') 
+    plt.plot(t, SS, '-.', label = 'Susceptible')
     plt.plot(t, IS+II+IR, '-.', label = 'Infected with disease 1')
-    plt.plot(t, SI+II+RI, '-.', label = 'Infected with disease 2') 
+    plt.plot(t, SI+II+RI, '-.', label = 'Infected with disease 2')
     plt.plot(t, RS+IR+RR, '-.', label = 'Recovered from disease 1')
     plt.plot(t, SR+RI+RR, '-.', label = 'Recovered from disease 2')
+    plt.legend(loc = 'center left')
+    plt.savefig('Compete_both.png')
     
     IC = defaultdict(lambda: 'SS')
     for node in range(5):
         IC[node] = 'IS'
-    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses, 
-                                            tmax = float('Inf'))    
+    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
+                                            tmax = float('Inf'))
     
-    plt.plot(t, SS, '-', label = 'Susceptible (only disease 1)') 
+    plt.clf()
+    plt.plot(t, SS, '-', label = 'Susceptible (only disease 1)')
     plt.plot(t, IS+II+IR, '-', label = 'Infected (only disease 1)')
     plt.plot(t, RS+IR+RR, '-', label = 'Recovered (only disease 1)')
-        
-    
     plt.legend(loc = 'center left')
-    plt.savefig('Compete.png')
+    plt.savefig('Compete_just1disease.png')
+    

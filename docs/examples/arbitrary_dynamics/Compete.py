@@ -52,6 +52,8 @@ plt.plot(t, IS+II+IR, '-.', label = 'Infected with disease 1')
 plt.plot(t, SI+II+RI, '-.', label = 'Infected with disease 2')
 plt.plot(t, RS+IR+RR, '-.', label = 'Recovered from disease 1')
 plt.plot(t, SR+RI+RR, '-.', label = 'Recovered from disease 2')
+plt.legend(loc = 'center left')
+plt.savefig('Compete_both.png')
 
 IC = defaultdict(lambda: 'SS')
 for node in range(5):
@@ -59,10 +61,10 @@ for node in range(5):
 t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
                                         tmax = float('Inf'))
 
+plt.clf()
 plt.plot(t, SS, '-', label = 'Susceptible (only disease 1)')
 plt.plot(t, IS+II+IR, '-', label = 'Infected (only disease 1)')
 plt.plot(t, RS+IR+RR, '-', label = 'Recovered (only disease 1)')
-
-
 plt.legend(loc = 'center left')
-plt.savefig('Compete.png')
+plt.savefig('Compete_just1disease.png')
+

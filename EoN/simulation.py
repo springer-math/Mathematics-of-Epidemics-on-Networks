@@ -74,36 +74,114 @@ class _ListDict_(object):
     tba (http://stackoverflow.com/users/46521/tba) 
     found at
     http://stackoverflow.com/a/15993515/2966723
-
-    Based on some limited tests (in some perhaps-atypical networks),
-    the benefit appears to be pretty small.  It may be worth creating 
-    this data structure in C, but I doubt it.
     '''
-    
-    def __init__(self):
+    def __init__(self, weighted = False):
         self.item_to_position = {}
         self.items = []
+
+        self.weighted = weighted
+        if self.weighted:
+            self.weight = defaultdict(int) #presume all weights positive
+            self.max_weight = 0
+            self._total_weight = 0
+            self.max_weight_count = 0
+            
 
     def __len__(self):
         return len(self.items)
 
-    def add(self, item):
-        if item in self.item_to_position:
+    def __contains__(self, item):
+        return item in self.item_to_position
+
+    def _update_max_weight(self):
+        C = Counter(self.weight.values())  #may be a faster way to do this, we only need to count the max.
+        self.max_weight = max(C.keys())
+        self.max_weight_count = C[self.max_weight]
+
+        
+    def add(self, item, weight_increment = None):
+        r'''
+        If not present, then adds the thing (with weight if appropriate)
+        if already there, increments weight
+        
+        WARNING:
+            increments weight if already present, cannot overwrite weight.
+        '''
+        if weight_increment is not None: #will break if passing a weight to unweighted case
+            if weight_increment >0 or self.weight[item] != self.max_weight:
+                self.weight[item] = self.weight[item] + weight_increment
+                self._total_weight += weight_increment
+                if self.weight[item] > self.max_weight:
+                    self.max_weight_count = 1
+                    self.max_weight = self.weight[item]
+                elif self.weight[item] == self.max_weight:
+                    self.max_weight_count += 1
+            else: #it's a negative increment and was at max
+                self.max_weight_count -= 1
+                self.weight[item] = self.weight[item] + weight_increment
+                self._total_weight += weight_increment
+                self.max_weight_count -= 1 
+                if self.max_weight_count == 0:
+                    self._update_max_weight               
+        elif self.weighted:
+            raise Exception('if weighted, must assign weight_increment')
+
+        if item in self: #we've already got it, do nothing else
             return
         self.items.append(item)
         self.item_to_position[item] = len(self.items)-1
 
-    def remove(self, item):
-        position = self.item_to_position.pop(item)
+    def remove(self, choice):
+        position = self.item_to_position.pop(choice)
         last_item = self.items.pop()
         if position != len(self.items):
             self.items[position] = last_item
             self.item_to_position[last_item] = position
+            
+        if self.weighted:
+            weight = self.weight.pop(choice)
+            self._total_weight -= weight
+            if weight == self.max_weight:  
+                #if we find ourselves in this case often
+                #it may be better just to let max_weight be the
+                #largest weight *ever* encountered, even if all remaining weights are less
+                #
+                self.max_weight_count -= 1
+                if self.max_weight_count == 0 and len(self)>0:
+                    self._update_max_weight()
 
     def choose_random(self):
-        return random.choice(self.items)
+        # r'''chooses a random node.  If there is a weight, it will use rejection
+        # sampling to choose a random node until it succeeds'''
+        if self.weighted:
+            while True:
+                choice = random.choice(self.items)
+                if random.random() < self.weight[choice]/self.max_weight:
+                    break
+            # r = random.random()*self.total_weight
+            # for item in self.items:
+            #     r-= self.weight[item]
+            #     if r<0:
+            #         break
+            return choice
 
+        else:
+            return random.choice(self.items)
+        
 
+    def random_removal(self):
+        r'''uses other class methods to choose and then remove a random node'''
+        choice = self.choose_random()
+        self.remove(choice)
+        return choice
+
+    def total_weight(self):
+        if self.weighted:
+            return self._total_weight
+        else:
+            return len(self)
+    def update_total_weight(self):
+        self._total_weight = sum(self.weight[item] for item in self.items)
 
 def _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True):
     r'''The original (v0.96 and earlier) returned infection_times and recovery_times.
@@ -2743,7 +2821,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         initial_size = 10000
         gamma = 1.
         tau = 0.3
-        t, S, I, R = EoN.fast_SIR(G, tau, gamma, 
+        t, S, I, R = EoN.Gillespie_SIR(G, tau, gamma, 
                                     initial_infecteds = range(initial_size))
                                     
         plt.plot(t, I)
@@ -2761,26 +2839,16 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     if transmission_weight is not None:
         def edgeweight(u,v):
             return G.adj[u][v][transmission_weight]
-        max_edgeweight = 0.
-        for u, v in G.edges():
-            max_edgeweight = max(max_edgeweight, edgeweight(u,v))
-	    #check if this is the fastest way.
     else:
-        max_edgeweight=1.
         def edgeweight(u,v):
-            return 1.
+            return None
     
     if recovery_weight is not None:
         def nodeweight(u):
             return G.node[u][recovery_weight]
-        max_nodeweight = 0
-        for u in G.nodes():
-            max_nodeweight = max(max_nodeweight, nodeweight(u))
-            #check if this is the fastest way.
     else:
-        max_nodeweight=1.
         def nodeweight(u):
-            return 1.
+            return None
 
     tau = float(tau)  #just to avoid integer division problems in python 2.
     gamma = float(gamma)
@@ -2816,22 +2884,25 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         if return_full_data:
             recovery_times[node].append(t)
 
-    infecteds = _ListDict_()
-    IS_links = _ListDict_()
-    IS_weight_sum = 0 #sum of weights for IS edges
-    I_weight_sum = 0 #sum of weights for I nodes
+    if recovery_weight is not None:
+        infecteds = _ListDict_(weighted=True)
+    else:
+        infecteds = _ListDict_() #unweighted - code is faster for this case
+    if transmission_weight is not None:
+        IS_links = _ListDict_(weighted=True)
+    else:
+        IS_links = _ListDict_()
+
     for node in initial_infecteds:
-        infecteds.add(node)
-        I_weight_sum += nodeweight(node)
+        infecteds.add(node, weight_increment = nodeweight(node)) #weight is none if unweighted
         for nbr in G.neighbors(node):  #must have this in a separate loop 
                                        #from assigning status
             if status[nbr] == 'S':
-                IS_links.add((node, nbr))
-                IS_weight_sum += edgeweight(node, nbr)
+                IS_links.add((node, nbr), weight_increment = edgeweight(node,nbr))
     
-    total_recovery_rate = gamma*I_weight_sum
+    total_recovery_rate = gamma*infecteds.total_weight() #gamma*I_weight_sum
     
-    total_transmission_rate = tau*IS_weight_sum
+    total_transmission_rate = tau*IS_links.total_weight()#IS_weight_sum
         
     total_rate = total_recovery_rate + total_transmission_rate
     delay = random.expovariate(total_rate)
@@ -2839,51 +2910,40 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     
     while infecteds and t<tmax:
         if random.random()<total_recovery_rate/total_rate: #recover
-            while True:
-                recovering_node = infecteds.choose_random()
-                if random.random()<nodeweight(recovering_node)/float(max_nodeweight):
-                    break
+            recovering_node = infecteds.random_removal() #does weighted choice and removes it
             status[recovering_node]='R'
             if return_full_data:
                 recovery_times[node].append(t)
-            infecteds.remove(recovering_node)
-            I_weight_sum -= nodeweight(recovering_node)
 
             for nbr in G.neighbors(recovering_node):
                 if status[nbr] == 'S':
                     IS_links.remove((recovering_node, nbr))
-                    IS_weight_sum -= edgeweight(recovering_node, nbr)
             times.append(t)
             S.append(S[-1])
             I.append(I[-1]-1)
             R.append(R[-1]+1)
         else: #transmit
-            while True:
-                transmitter, recipient = IS_links.choose_random()
-                if random.random()<edgeweight(transmitter, recipient)/float(max_edgeweight):
-                    break
-            #assert(status[recipient] == 'S')
+            transmitter, recipient = IS_links.choose_random() #we don't use remove since that complicates the later removal of edges.
             status[recipient]='I'
+
             if return_full_data:
                 transmissions.append((t, transmitter, recipient))
                 infection_times[node].append(t)
-            infecteds.add(recipient)
-            I_weight_sum += nodeweight(recipient)
+            infecteds.add(recipient, weight_increment = nodeweight(recipient))
+
             for nbr in G.neighbors(recipient):
                 if status[nbr] == 'S':
-                    IS_links.add((recipient, nbr))
-                    IS_weight_sum += edgeweight(recipient, nbr)
+                    IS_links.add((recipient, nbr), weight_increment=edgeweight(recipient, nbr))
                 elif status[nbr]=='I' and nbr != recipient: #self edge would break this without last test.elif
                     IS_links.remove((nbr, recipient))
-                    IS_weight_sum -= edgeweight(nbr, recipient)
                      
             times.append(t)
             S.append(S[-1]-1)
             I.append(I[-1]+1)
             R.append(R[-1])
             
-        total_recovery_rate = gamma*I_weight_sum
-        total_transmission_rate = tau*IS_weight_sum
+        total_recovery_rate = gamma*infecteds.total_weight()#I_weight_sum
+        total_transmission_rate = tau*IS_links.total_weight()#IS_weight_sum
         
                 
         total_rate = total_recovery_rate + total_transmission_rate
@@ -2897,14 +2957,12 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         return scipy.array(times), scipy.array(S), scipy.array(I), \
                 scipy.array(R)
     else:
-        #need to change data type of infection_times and recovery_times
         infection_times = {node: L[0] for node, L in infection_times.items()}
         recovery_times = {node: L[0] for node, L in recovery_times.items()}
         
-        #print(type(infection_times), type(recovery_times), type(tmin))
 
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
-        return EoN.Simulation_Investigation(G, node_history, transmisions)
+        return EoN.Simulation_Investigation(G, node_history, transmissions)
 
 
 def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
@@ -3003,29 +3061,19 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         infection_times = defaultdict(lambda: []) #defaults to an empty list 
         recovery_times = defaultdict(lambda: [])  #for each node
 
-    if transmission_weight is None:
-        max_edgeweight=1.
-        def edgeweight(u,v):
-            return 1.
-    else:
+    if transmission_weight is not None:
         def edgeweight(u,v):
             return G.adj[u][v][transmission_weight]
-        max_edgeweight = 0.
-        for u, v in G.edges():
-            max_edgeweight = max(max_edgeweight, edgeweight(u,v))
-	    #check if this is the fastest way.
-    
-    if recovery_weight is None:
-        max_nodeweight=1.
-        def nodeweight(u):
-            return 1.
     else:
+        def edgeweight(u,v):
+            return None
+    
+    if recovery_weight is not None:
         def nodeweight(u):
             return G.node[u][recovery_weight]
-        max_nodeweight = 0.
-        for u in G.nodes():
-            max_nodeweight = max(max_nodeweight, nodeweight(u))
-            #check if this is the fastest way.
+    else:
+        def nodeweight(u):
+            return None
             
     tau = float(tau)  #just to avoid integer division problems.
     gamma = float(gamma)
@@ -3053,25 +3101,26 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             infection_times[node].append(t)
             transmissions.append((t, None, node))
 
-            
-    infecteds = _ListDict_()
-    IS_links = _ListDict_()
-    
-    IS_weight_sum = 0 #sum of weights for IS edges
-    I_weight_sum = 0 #sum of weights for I nodes
+    if recovery_weight is None:
+        infecteds = _ListDict_()
+    else:
+        infecteds = _ListDict_(weighted=True)
+
+    if transmission_weight is None:
+        IS_links = _ListDict_()
+    else:
+        IS_links = _ListDict_(weighted=True)
+        
+        
     for node in initial_infecteds:
-        infecteds.add(node)
-        I_weight_sum += nodeweight(node)
+        infecteds.add(node, weight_increment = nodeweight(node))
         for nbr in G.neighbors(node):  #must have this in a separate loop 
                                        #after assigning status of node
             if status[nbr] == 'S':
-                IS_links.add((node, nbr))
-                IS_weight_sum += edgeweight(node, nbr)
+                IS_links.add((node, nbr), weight_increment=edgeweight(node, nbr))
     
-    total_recovery_rate = gamma*I_weight_sum
-    print(total_recovery_rate)
-    
-    total_transmission_rate = tau*IS_weight_sum
+    total_recovery_rate = gamma*infecteds.total_weight()#I_weight_sum
+    total_transmission_rate = tau*IS_links.total_weight()#IS_weight_sum
             
     total_rate = total_recovery_rate + total_transmission_rate
     delay = random.expovariate(total_rate)
@@ -3079,57 +3128,44 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     
     while infecteds and t<tmax:
         if random.random()<total_recovery_rate/total_rate: #recover
-#            print(total_recovery_rate/total_rate)
-            while True:
-                recovering_node = infecteds.choose_random()                    
-                if random.random()<nodeweight(recovering_node)/max_nodeweight:
-                    break
-            #print(recovering_node)
+            recovering_node = infecteds.random_removal()
             status[recovering_node]='S'
             if return_full_data:
                 recovery_times[recovering_node].append(t)
-            infecteds.remove(recovering_node)
-            I_weight_sum -= nodeweight(recovering_node)
 
                                 
             for nbr in G.neighbors(recovering_node):
-                if status[nbr] == 'S':
+                if nbr == recovering_node:  #move past self edges
+                    continue
+                elif status[nbr] == 'S':
                     IS_links.remove((recovering_node, nbr))
-                    IS_weight_sum -= edgeweight(recovering_node, nbr)
                 else:
-                    IS_links.add((nbr, recovering_node))
-                    IS_weight_sum += edgeweight(recovering_node, nbr)
+                    IS_links.add((nbr, recovering_node), weight_increment = edgeweight(recovering_node, nbr))
                         
             times.append(t)
             S.append(S[-1])
             I.append(I[-1]-1)
         else:
-            while True:
-                transmitter, recipient = IS_links.choose_random()
-                if random.random()< edgeweight(transmitter, recipient)/max_edgeweight:
-                    break
+            transmitter, recipient = IS_links.choose_random()
             status[recipient]='I'
-            I_weight_sum += nodeweight(recipient)
             if  return_full_data:
                 infection_times[recipient].append(t)
                 transmissions.append((t, transmitter, recipient))
 
-            infecteds.add(recipient)
+            infecteds.add(recipient, weight_increment = nodeweight(recipient))
             for nbr in G.neighbors(recipient):
                 if status[nbr] == 'S':
-                    IS_links.add((recipient, nbr))
-                    IS_weight_sum += edgeweight(recipient, nbr)
+                    IS_links.add((recipient, nbr), weight_increment = edgeweight(recipient, nbr))
                 elif nbr != recipient: #otherwise a self-loop breaks the code
                     IS_links.remove((nbr, recipient))
-                    IS_weight_sum -= edgeweight(nbr, recipient)
                     
             times.append(t)
             S.append(S[-1]-1)
             I.append(I[-1]+1)
 
-        total_recovery_rate = gamma*I_weight_sum
+        total_recovery_rate = gamma*infecteds.total_weight()#I_weight_sum
         
-        total_transmission_rate = tau*IS_weight_sum
+        total_transmission_rate = tau*IS_links.total_weight()#IS_weight_sum
         
 
         total_rate = total_recovery_rate + total_transmission_rate
@@ -3344,59 +3380,52 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
     induced_transitions = list(nbr_induced_transition_graph.edges())
     potential_transitions = {}
     rate = {}# intrensic rate of a transition
-    weight_sum = defaultdict(lambda: 0)
-    weights = defaultdict(lambda: None)
-    max_weight = defaultdict(lambda: 0)
-    get_weight = defaultdict(lambda: defaultdict(lambda:1))
+    #weight_sum = defaultdict(lambda: 0)
+    #weights = defaultdict(lambda: None)
+    #max_weight = defaultdict(lambda: 0)
+    get_weight = defaultdict(lambda: defaultdict(lambda:None))
 
 
     for transition in spontaneous_transitions:
-        potential_transitions[transition] = _ListDict_()
-        #weights[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label'] 
         rate[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['rate']
         if 'weight_label' in spontaneous_transition_graph.edges[transition[0],transition[1]]:
             wl = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label']
             get_weight[transition] = nx.get_node_attributes(G, wl)
-            max_weight[transition] = max(get_weight[transition].values())
+            potential_transitions[transition] = _ListDict_(weighted=True)#max_weight[transition] = max(get_weight[transition].values())
         else:
-            max_weight[transition]=1
+            potential_transitions[transition] = _ListDict_()#max_weight[transition]=1
             
     for transition in induced_transitions:
         if transition[0][0] != transition[1][0]:
             raise EoN.EoNError("transition {} -> {} not allowed: first node must keep same status".format(transition[0],transition[1]))
-        potential_transitions[transition] = _ListDict_()
-        #weights[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label'] 
-        #print(nbr_induced_transition_graph
         rate[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['rate']
 
         if 'weight_label' in nbr_induced_transition_graph.edges[transition[0],transition[1]]:
             wl = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label']
             get_weight[transition] = nx.get_edge_attributes(G, wl)
-            max_weight[transition] = max(get_weight[transition].values())
+            potential_transitions[transition] = _ListDict_(weighted=True)
         else:
-            max_weight[transition]=1
+            potential_transitions[transition] = _ListDict_()
                 
     #initialize all potential events to start.                
     for node in G.nodes():        
         if spontaneous_transition_graph.has_node(status[node]) and spontaneous_transition_graph.degree(status[node])>0:
             for transition in spontaneous_transition_graph.edges(status[node]):
-                potential_transitions[transition].add(node)
-                weight_sum[transition] += get_weight[transition][node]
-                    
+                potential_transitions[transition].add(node, weight_increment = get_weight[transition][node])
+                #weight increment defaults to None if not present                    
                     
                     
         for nbr in G.neighbors(node):
             #print(status[node],status[nbr])
             if nbr_induced_transition_graph.has_node((status[node],status[nbr])) and nbr_induced_transition_graph.degree((status[node],status[nbr])) >0:
                 for transition in nbr_induced_transition_graph.edges((status[node],status[nbr])):
-                    potential_transitions[transition].add((node, nbr))
                     if (node, nbr) not in get_weight[transition]: #since edge may be in opposite order to earlier
                         get_weight[transition][(node, nbr)] = get_weight[transition][(nbr, node)]
-                    weight_sum[transition] += get_weight[transition][(node, nbr)]
+                    potential_transitions[transition].add((node, nbr), weight_increment = get_weight[transition][(node, nbr)])
 
     t = tmin
     
-    total_rate = sum(rate[transition]*weight_sum[transition] for transition in spontaneous_transitions+induced_transitions)
+    total_rate = sum(rate[transition]*potential_transitions[transition].total_weight() for transition in spontaneous_transitions+induced_transitions)
     if total_rate>0:
         delay = random.expovariate(total_rate)
     else:
@@ -3406,7 +3435,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         times.append(t)
         r = random.random()
         for transition in spontaneous_transitions+induced_transitions:
-            r -= rate[transition]*weight_sum[transition]/total_rate
+            r -= rate[transition]*potential_transitions[transition].total_weight()/total_rate
             if r<0:
                 break
         #either node doing spontaneous or edge doing an induced event
@@ -3415,11 +3444,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         else:
             spontaneous = False
             
-        while True:
-            actor = potential_transitions[transition].choose_random()
-            w = get_weight[transition][actor]
-            if random.random()<  w / max_weight[transition]:
-                break
+        actor = potential_transitions[transition].choose_random()
                 
         if spontaneous:
             node = actor
@@ -3448,16 +3473,14 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             #add node to any spontaneous lists
             if transition[0] == old_status:
                 potential_transitions[transition].remove(node)
-                weight_sum[transition] -= get_weight[transition][node]
             if transition[0] == status[node]:
-                potential_transitions[transition].add(node)
-                weight_sum[transition] += get_weight[transition][node]
+                potential_transitions[transition].add(node, weight_increment = get_weight[transition][node])
             #roundoff error can kill the calculation, but it's slow to do this right.
             #so we'll only deal with it if the value is small enough that roundoff
             #error might matter.
-            if weight_sum[transition] < 10**(-7) and weight_sum[transition]!=0:
-                weight_sum[transition] = sum([get_weight[transition][key] for key in potential_transitions[transition].items])
-
+            if potential_transitions[transition].total_weight() < 10**(-7) and potential_transitions[transition].total_weight()!=0:
+                potential_transitions[transition].update_total_weight()
+                
         for transition in induced_transitions:
             #remove edge from any induced lists
             #add edge to any induced lists
@@ -3467,23 +3490,19 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
                     get_weight[transition][(node,nbr)] = get_weight[transition][(nbr,node)]
                 if transition[0] == (nbr_status, old_status):
                     potential_transitions[transition].remove((nbr, node))
-                    weight_sum[transition] -= get_weight[transition][(nbr,node)]
                 if transition[0] == (old_status, nbr_status):
                     potential_transitions[transition].remove((node, nbr))
-                    weight_sum[transition] -= get_weight[transition][(node, nbr)]
                 if transition[0] == (nbr_status, status[node]):
-                    potential_transitions[transition].add((nbr, node))
-                    weight_sum[transition] += get_weight[transition][(nbr,node)]
+                    potential_transitions[transition].add((nbr, node), weight_increment = get_weight[transition][nbr, node])
                 if transition[0] == (status[node], nbr_status):
-                    potential_transitions[transition].add((node, nbr))
-                    weight_sum[transition] += get_weight[transition][(node, nbr)]
+                    potential_transitions[transition].add((node, nbr), weight_increment = get_weight[transition][node, nbr])
                 
                 #roundoff error can kill the calculation, but it's slow to do this right.
                 #so we'll only deal with it if the value is small enough that roundoff
                 #error might matter.
-                if weight_sum[transition] < 10**(-7) and weight_sum[transition]!=0:
-                    weight_sum[transition] = sum([get_weight[transition][key] for key in potential_transitions[transition].items])
-        total_rate = sum(rate[transition]*weight_sum[transition] for transition in spontaneous_transitions+induced_transitions)
+                if potential_transitions[transition].total_weight() < 10**(-7) and potential_transitions[transition].total_weight()!=0:
+                    potential_transitions[transition].update_total_weight()
+        total_rate = sum(rate[transition]*potential_transitions[transition].total_weight() for transition in spontaneous_transitions+induced_transitions)
         if total_rate>0:
             delay = random.expovariate(total_rate)
         else:
