@@ -4,7 +4,7 @@ Getting Started
 
 Installation
 ------------
-You can install **EoN** version 1.0.1 with pip
+You can install **EoN** version 1.0.2 with pip
 
 ::
 
