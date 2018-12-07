@@ -44,18 +44,16 @@ but nothing else).
 & `17 <https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/17>`_)
 
 
-.. 
-  New in v 1.0.2
-.. 
-  --------------
+
+New in v 1.0.2
+--------------
   
   No changes (I accidentally made a typo just before uploading v1.0.1 to pypi
   and I can't reupload with the same name).
   
-  
-..
-  New in v 1.0.3
-..
-  --------------
+
+New in v 1.0.3
+--------------
   No changes to package, but a small change attempting to get readthedocs to
   correctly build.
+  
