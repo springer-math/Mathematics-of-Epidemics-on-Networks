@@ -24,7 +24,7 @@ setup(name='EoN',
       author = 'Joel C. Miller, Istvan Z. Kiss, and Peter Simon',
       author_email = 'joel.c.miller.research@gmail.com',
       url = 'https://springer-math.github.io/Mathematics-of-Epidemics-on-Networks/',
-      download_url = 'https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/archive/1.03.tar.gz',
+      download_url = 'https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/archive/1.0.3.tar.gz',
       keywords = ['Epidemics on Networks', 'Epidemic Sonnet Works'],
       install_requires = [
           'networkx',
