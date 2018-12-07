@@ -248,6 +248,9 @@ class Simulation_Investigation():
     def transmission_tree(self):
         r'''
         
+        Produces a MultiDigraph whose edges correspond to transmission events.  
+        If SIR, then this is a tree (or a forest).
+        
         :Returns: 
         
         **T** a directed Multi graph 
