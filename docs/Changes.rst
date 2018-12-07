@@ -49,4 +49,6 @@ but nothing else).
 .. 
   --------------
   
+  No changes (I accidentally made a typo just before uploading v1.0.1 to pypi
+  and I can't reupload with the same name).
   
