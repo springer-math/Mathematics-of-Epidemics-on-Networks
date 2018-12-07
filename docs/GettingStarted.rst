@@ -4,13 +4,13 @@ Getting Started
 
 Installation
 ------------
-You can install **EoN** version 1.0.2 with pip
+You can install **EoN** version 1.0.3 with pip
 
 ::
 
     pip install EoN
 
-The documentation provided here is for version 1.0.2.  
+The documentation provided here is for version 1.0.3.  
 
 
 You can also clone or download
@@ -22,7 +22,7 @@ a more recent version.  Then just move into the main directory and run
 
     python setup.py install
 
-This will currently install version 1.0.2.  
+This will currently install version 1.0.3.  
 
 If you have installed a previous version and want to reinstall.  The easiest
 way is 
