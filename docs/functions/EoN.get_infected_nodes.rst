@@ -1,5 +1,5 @@
-EoN.get_infected_nodes
-======================
+EoN.get\_infected\_nodes
+========================
 
 .. currentmodule:: EoN
 

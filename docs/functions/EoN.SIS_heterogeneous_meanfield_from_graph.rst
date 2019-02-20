@@ -1,5 +1,5 @@
-EoN.SIS_heterogeneous_meanfield_from_graph
-==========================================
+EoN.SIS\_heterogeneous\_meanfield\_from\_graph
+==============================================
 
 .. currentmodule:: EoN
 

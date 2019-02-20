@@ -1,5 +1,5 @@
-EoN.Attack_rate_cts_time
-========================
+EoN.Attack\_rate\_cts\_time
+===========================
 
 .. currentmodule:: EoN
 

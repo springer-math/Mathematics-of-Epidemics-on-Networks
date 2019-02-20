@@ -1,5 +1,5 @@
-EoN.SIR_individual_based
-========================
+EoN.SIR\_individual\_based
+==========================
 
 .. currentmodule:: EoN
 

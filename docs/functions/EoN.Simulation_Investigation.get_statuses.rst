@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.get_statuses
-=========================================
+EoN.Simulation\_Investigation.get\_statuses
+===========================================
 
 .. currentmodule:: EoN
 

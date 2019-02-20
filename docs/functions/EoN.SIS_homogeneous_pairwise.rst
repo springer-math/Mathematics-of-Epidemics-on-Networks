@@ -1,5 +1,5 @@
-EoN.SIS_homogeneous_pairwise
-============================
+EoN.SIS\_homogeneous\_pairwise
+==============================
 
 .. currentmodule:: EoN
 

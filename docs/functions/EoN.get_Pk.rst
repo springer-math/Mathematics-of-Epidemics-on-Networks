@@ -1,5 +1,5 @@
-EoN.get_Pk
-==========
+EoN.get\_Pk
+===========
 
 .. currentmodule:: EoN
 

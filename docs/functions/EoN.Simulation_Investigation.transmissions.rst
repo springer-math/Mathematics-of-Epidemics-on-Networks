@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.transmissions
-==========================================
+EoN.Simulation\_Investigation.transmissions
+===========================================
 
 .. currentmodule:: EoN
 

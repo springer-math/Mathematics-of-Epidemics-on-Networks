@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.node_history
-=========================================
+EoN.Simulation\_Investigation.node\_history
+===========================================
 
 .. currentmodule:: EoN
 

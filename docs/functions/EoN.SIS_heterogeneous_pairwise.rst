@@ -1,5 +1,5 @@
-EoN.SIS_heterogeneous_pairwise
-==============================
+EoN.SIS\_heterogeneous\_pairwise
+================================
 
 .. currentmodule:: EoN
 

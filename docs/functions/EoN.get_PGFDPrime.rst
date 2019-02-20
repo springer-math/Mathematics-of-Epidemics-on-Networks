@@ -1,5 +1,5 @@
-EoN.get_PGFDPrime
-=================
+EoN.get\_PGFDPrime
+==================
 
 .. currentmodule:: EoN
 

@@ -1,5 +1,5 @@
-EoN.get_time_shift
-==================
+EoN.get\_time\_shift
+====================
 
 .. currentmodule:: EoN
 

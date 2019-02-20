@@ -1,5 +1,5 @@
-EoN.fast_SIS
-============
+EoN.fast\_SIS
+=============
 
 .. currentmodule:: EoN
 

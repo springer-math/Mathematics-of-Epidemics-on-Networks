@@ -1,5 +1,5 @@
-EoN.EBCM_uniform_introduction
-=============================
+EoN.EBCM\_uniform\_introduction
+===============================
 
 .. currentmodule:: EoN
 

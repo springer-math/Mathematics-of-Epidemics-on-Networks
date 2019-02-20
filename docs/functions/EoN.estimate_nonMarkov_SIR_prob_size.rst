@@ -1,5 +1,5 @@
-EoN.estimate_nonMarkov_SIR_prob_size
-====================================
+EoN.estimate\_nonMarkov\_SIR\_prob\_size
+========================================
 
 .. currentmodule:: EoN
 

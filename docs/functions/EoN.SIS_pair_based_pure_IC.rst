@@ -1,5 +1,5 @@
-EoN.SIS_pair_based_pure_IC
-==========================
+EoN.SIS\_pair\_based\_pure\_IC
+==============================
 
 .. currentmodule:: EoN
 

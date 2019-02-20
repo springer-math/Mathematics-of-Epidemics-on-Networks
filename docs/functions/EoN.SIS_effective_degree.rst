@@ -1,5 +1,5 @@
-EoN.SIS_effective_degree
-========================
+EoN.SIS\_effective\_degree
+==========================
 
 .. currentmodule:: EoN
 

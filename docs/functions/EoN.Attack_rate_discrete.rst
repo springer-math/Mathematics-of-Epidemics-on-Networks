@@ -1,5 +1,5 @@
-EoN.Attack_rate_discrete
-========================
+EoN.Attack\_rate\_discrete
+==========================
 
 .. currentmodule:: EoN
 

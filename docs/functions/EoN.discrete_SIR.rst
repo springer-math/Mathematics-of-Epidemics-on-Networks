@@ -1,5 +1,5 @@
-EoN.discrete_SIR
-================
+EoN.discrete\_SIR
+=================
 
 .. currentmodule:: EoN
 

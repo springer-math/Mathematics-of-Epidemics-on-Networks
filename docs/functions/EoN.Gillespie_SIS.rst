@@ -1,5 +1,5 @@
-EoN.Gillespie_SIS
-=================
+EoN.Gillespie\_SIS
+==================
 
 .. currentmodule:: EoN
 

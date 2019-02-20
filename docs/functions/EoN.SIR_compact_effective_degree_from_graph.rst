@@ -1,5 +1,5 @@
-EoN.SIR_compact_effective_degree_from_graph
-===========================================
+EoN.SIR\_compact\_effective\_degree\_from\_graph
+================================================
 
 .. currentmodule:: EoN
 

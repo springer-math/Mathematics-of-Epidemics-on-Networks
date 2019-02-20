@@ -1,5 +1,5 @@
-EoN.EBCM_from_graph
-===================
+EoN.EBCM\_from\_graph
+=====================
 
 .. currentmodule:: EoN
 

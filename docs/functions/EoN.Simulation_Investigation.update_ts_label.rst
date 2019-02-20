@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.update_ts_label
-============================================
+EoN.Simulation\_Investigation.update\_ts\_label
+===============================================
 
 .. currentmodule:: EoN
 

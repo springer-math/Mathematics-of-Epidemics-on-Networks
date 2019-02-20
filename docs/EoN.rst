@@ -54,8 +54,8 @@ Quick list
 .. currentmodule:: EoN
 
 .. autosummary::
-   :toctree: functions
-   
+   :toctree: functions/
+
    fast_SIR
    fast_nonMarkov_SIR
    fast_SIS
@@ -161,7 +161,7 @@ Quick List
 
 .. autosummary::
    :toctree: functions
-   
+
    display
    animate
    node_history
@@ -249,68 +249,68 @@ Quick list
 
 .. autosummary::
    :toctree: functions
-   
-    SIS_individual_based
-    SIS_individual_based_pure_IC
-    SIS_pair_based
-    SIS_pair_based_pure_IC
-    SIR_individual_based
-    SIR_individual_based_pure_IC
-    SIR_pair_based
-    SIR_pair_based_pure_IC
-    SIS_homogeneous_meanfield
-    SIR_homogeneous_meanfield
-    SIS_homogeneous_pairwise
-    SIS_homogeneous_pairwise_from_graph
-    SIR_homogeneous_pairwise
-    SIR_homogeneous_pairwise_from_graph
-    SIS_heterogeneous_meanfield
-    SIS_heterogeneous_meanfield_from_graph
-    SIR_heterogeneous_meanfield
-    SIR_heterogeneous_meanfield_from_graph
-    SIS_heterogeneous_pairwise
-    SIS_heterogeneous_pairwise_from_graph
-    SIR_heterogeneous_pairwise
-    SIR_heterogeneous_pairwise_from_graph
-    SIS_compact_pairwise
-    SIS_compact_pairwise_from_graph
-    SIR_compact_pairwise
-    SIR_compact_pairwise_from_graph
-    SIS_super_compact_pairwise
-    SIS_super_compact_pairwise_from_graph
-    SIR_super_compact_pairwise
-    SIR_super_compact_pairwise_from_graph
-    SIS_effective_degree
-    SIS_effective_degree_from_graph
-    SIR_effective_degree
-    SIR_effective_degree_from_graph
-    SIR_compact_effective_degree
-    SIR_compact_effective_degree_from_graph
-    SIS_compact_effective_degree
-    SIS_compact_effective_degree_from_graph
-    Epi_Prob_discrete
-    Epi_Prob_cts_time
-    Epi_Prob_non_Markovian
-    Attack_rate_discrete
-    Attack_rate_discrete_from_graph
-    Attack_rate_cts_time
-    Attack_rate_cts_time_from_graph
-    Attack_rate_non_Markovian
-    Attack_rate_discrete
-    EBCM_discrete
-    EBCM_discrete_from_graph
-    EBCM
-    EBCM_uniform_introduction
-    EBCM_from_graph
-    EBCM_pref_mix
-    EBCM_pref_mix_from_graph
-    EBCM_pref_mix_discrete
-    EBCM_pref_mix_discrete_from_graph
-    get_Pk
-    get_PGF
-    get_PGFPrime
-    get_PGFDPrime
-    estimate_R0
+
+   SIS_individual_based
+   SIS_individual_based_pure_IC
+   SIS_pair_based
+   SIS_pair_based_pure_IC
+   SIR_individual_based
+   SIR_individual_based_pure_IC
+   SIR_pair_based
+   SIR_pair_based_pure_IC
+   SIS_homogeneous_meanfield
+   SIR_homogeneous_meanfield
+   SIS_homogeneous_pairwise
+   SIS_homogeneous_pairwise_from_graph
+   SIR_homogeneous_pairwise
+   SIR_homogeneous_pairwise_from_graph
+   SIS_heterogeneous_meanfield
+   SIS_heterogeneous_meanfield_from_graph
+   SIR_heterogeneous_meanfield
+   SIR_heterogeneous_meanfield_from_graph
+   SIS_heterogeneous_pairwise
+   SIS_heterogeneous_pairwise_from_graph
+   SIR_heterogeneous_pairwise
+   SIR_heterogeneous_pairwise_from_graph
+   SIS_compact_pairwise
+   SIS_compact_pairwise_from_graph
+   SIR_compact_pairwise
+   SIR_compact_pairwise_from_graph
+   SIS_super_compact_pairwise
+   SIS_super_compact_pairwise_from_graph
+   SIR_super_compact_pairwise
+   SIR_super_compact_pairwise_from_graph
+   SIS_effective_degree
+   SIS_effective_degree_from_graph
+   SIR_effective_degree
+   SIR_effective_degree_from_graph
+   SIR_compact_effective_degree
+   SIR_compact_effective_degree_from_graph
+   SIS_compact_effective_degree
+   SIS_compact_effective_degree_from_graph
+   Epi_Prob_discrete
+   Epi_Prob_cts_time
+   Epi_Prob_non_Markovian
+   Attack_rate_discrete
+   Attack_rate_discrete_from_graph
+   Attack_rate_cts_time
+   Attack_rate_cts_time_from_graph
+   Attack_rate_non_Markovian
+   Attack_rate_discrete
+   EBCM_discrete
+   EBCM_discrete_from_graph
+   EBCM
+   EBCM_uniform_introduction
+   EBCM_from_graph
+   EBCM_pref_mix
+   EBCM_pref_mix_from_graph
+   EBCM_pref_mix_discrete
+   EBCM_pref_mix_discrete_from_graph
+   get_Pk
+   get_PGF
+   get_PGFPrime
+   get_PGFDPrime
+   estimate_R0
 
 Short description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

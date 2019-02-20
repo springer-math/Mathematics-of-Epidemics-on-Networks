@@ -1,5 +1,5 @@
-EoN.SIR_pair_based_pure_IC
-==========================
+EoN.SIR\_pair\_based\_pure\_IC
+==============================
 
 .. currentmodule:: EoN
 

@@ -1,5 +1,5 @@
-EoN.estimate_R0
-===============
+EoN.estimate\_R0
+================
 
 .. currentmodule:: EoN
 

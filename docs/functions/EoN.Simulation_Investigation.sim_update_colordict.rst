@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.sim_update_colordict
-=================================================
+EoN.Simulation\_Investigation.sim\_update\_colordict
+====================================================
 
 .. currentmodule:: EoN
 

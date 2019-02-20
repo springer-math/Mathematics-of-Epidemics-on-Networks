@@ -1,5 +1,5 @@
-EoN.SIS_pair_based
-==================
+EoN.SIS\_pair\_based
+====================
 
 .. currentmodule:: EoN
 

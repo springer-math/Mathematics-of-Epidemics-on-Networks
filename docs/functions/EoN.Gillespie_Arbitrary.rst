@@ -1,5 +1,5 @@
-EoN.Gillespie_Arbitrary
-=======================
+EoN.Gillespie\_Arbitrary
+========================
 
 .. currentmodule:: EoN
 

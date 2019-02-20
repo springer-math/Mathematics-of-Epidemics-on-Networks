@@ -1,5 +1,5 @@
-EoN.Attack_rate_discrete_from_graph
-===================================
+EoN.Attack\_rate\_discrete\_from\_graph
+=======================================
 
 .. currentmodule:: EoN
 

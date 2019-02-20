@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.animate
-====================================
+EoN.Simulation\_Investigation.animate
+=====================================
 
 .. currentmodule:: EoN
 

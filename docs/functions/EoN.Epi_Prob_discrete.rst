@@ -1,5 +1,5 @@
-EoN.Epi_Prob_discrete
-=====================
+EoN.Epi\_Prob\_discrete
+=======================
 
 .. currentmodule:: EoN
 

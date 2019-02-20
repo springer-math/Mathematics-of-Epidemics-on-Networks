@@ -1,5 +1,5 @@
-EoN.SIR_pair_based
-==================
+EoN.SIR\_pair\_based
+====================
 
 .. currentmodule:: EoN
 

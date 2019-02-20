@@ -1,5 +1,5 @@
-EoN.Attack_rate_cts_time_from_graph
-===================================
+EoN.Attack\_rate\_cts\_time\_from\_graph
+========================================
 
 .. currentmodule:: EoN
 

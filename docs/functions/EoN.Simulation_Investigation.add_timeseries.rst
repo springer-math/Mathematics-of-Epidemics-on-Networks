@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.add_timeseries
-===========================================
+EoN.Simulation\_Investigation.add\_timeseries
+=============================================
 
 .. currentmodule:: EoN
 

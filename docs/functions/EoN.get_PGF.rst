@@ -1,5 +1,5 @@
-EoN.get_PGF
-===========
+EoN.get\_PGF
+============
 
 .. currentmodule:: EoN
 

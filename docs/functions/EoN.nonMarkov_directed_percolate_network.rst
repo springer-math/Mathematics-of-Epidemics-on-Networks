@@ -1,5 +1,5 @@
-EoN.nonMarkov_directed_percolate_network
-========================================
+EoN.nonMarkov\_directed\_percolate\_network
+===========================================
 
 .. currentmodule:: EoN
 

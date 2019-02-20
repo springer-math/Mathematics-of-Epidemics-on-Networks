@@ -57,3 +57,8 @@ New in v 1.0.3
   No changes to package, but a small change attempting to get readthedocs to
   correctly build.
   
+New in v 1.0.4rc2
+-----------------
+  No changes to package, but fixing a problem I had missed with readthedocs
+  failing to provide documentation for each function.
+  

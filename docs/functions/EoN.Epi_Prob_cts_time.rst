@@ -1,5 +1,5 @@
-EoN.Epi_Prob_cts_time
-=====================
+EoN.Epi\_Prob\_cts\_time
+========================
 
 .. currentmodule:: EoN
 

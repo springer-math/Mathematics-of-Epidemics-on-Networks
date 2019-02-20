@@ -1,5 +1,5 @@
-EoN.percolation_based_discrete_SIR
-==================================
+EoN.percolation\_based\_discrete\_SIR
+=====================================
 
 .. currentmodule:: EoN
 

@@ -1,5 +1,5 @@
-EoN.EBCM_discrete
-=================
+EoN.EBCM\_discrete
+==================
 
 .. currentmodule:: EoN
 

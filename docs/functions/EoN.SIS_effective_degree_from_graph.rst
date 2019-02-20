@@ -1,5 +1,5 @@
-EoN.SIS_effective_degree_from_graph
-===================================
+EoN.SIS\_effective\_degree\_from\_graph
+=======================================
 
 .. currentmodule:: EoN
 

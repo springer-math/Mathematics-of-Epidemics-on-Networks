@@ -1,5 +1,5 @@
-EoN.basic_discrete_SIS
-======================
+EoN.basic\_discrete\_SIS
+========================
 
 .. currentmodule:: EoN
 

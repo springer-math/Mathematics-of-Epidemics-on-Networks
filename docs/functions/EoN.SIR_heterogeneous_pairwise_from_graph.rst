@@ -1,5 +1,5 @@
-EoN.SIR_heterogeneous_pairwise_from_graph
-=========================================
+EoN.SIR\_heterogeneous\_pairwise\_from\_graph
+=============================================
 
 .. currentmodule:: EoN
 

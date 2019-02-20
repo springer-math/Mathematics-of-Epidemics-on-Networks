@@ -1,5 +1,5 @@
-EoN.SIR_homogeneous_meanfield
-=============================
+EoN.SIR\_homogeneous\_meanfield
+===============================
 
 .. currentmodule:: EoN
 

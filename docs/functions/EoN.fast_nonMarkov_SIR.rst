@@ -1,5 +1,5 @@
-EoN.fast_nonMarkov_SIR
-======================
+EoN.fast\_nonMarkov\_SIR
+========================
 
 .. currentmodule:: EoN
 

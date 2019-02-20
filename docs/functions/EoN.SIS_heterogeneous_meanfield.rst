@@ -1,5 +1,5 @@
-EoN.SIS_heterogeneous_meanfield
-===============================
+EoN.SIS\_heterogeneous\_meanfield
+=================================
 
 .. currentmodule:: EoN
 

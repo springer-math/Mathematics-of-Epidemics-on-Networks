@@ -1,5 +1,5 @@
-EoN.SIR_super_compact_pairwise
-==============================
+EoN.SIR\_super\_compact\_pairwise
+=================================
 
 .. currentmodule:: EoN
 

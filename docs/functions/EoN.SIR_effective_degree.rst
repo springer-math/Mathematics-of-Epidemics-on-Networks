@@ -1,5 +1,5 @@
-EoN.SIR_effective_degree
-========================
+EoN.SIR\_effective\_degree
+==========================
 
 .. currentmodule:: EoN
 

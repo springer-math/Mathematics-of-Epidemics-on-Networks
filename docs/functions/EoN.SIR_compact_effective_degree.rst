@@ -1,5 +1,5 @@
-EoN.SIR_compact_effective_degree
-================================
+EoN.SIR\_compact\_effective\_degree
+===================================
 
 .. currentmodule:: EoN
 

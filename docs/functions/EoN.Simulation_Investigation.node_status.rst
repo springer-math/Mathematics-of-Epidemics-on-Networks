@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.node_status
-========================================
+EoN.Simulation\_Investigation.node\_status
+==========================================
 
 .. currentmodule:: EoN
 

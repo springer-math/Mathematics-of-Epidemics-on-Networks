@@ -1,5 +1,5 @@
-EoN.fast_SIR
-============
+EoN.fast\_SIR
+=============
 
 .. currentmodule:: EoN
 

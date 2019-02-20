@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.R
-==============================
+EoN.Simulation\_Investigation.R
+===============================
 
 .. currentmodule:: EoN
 

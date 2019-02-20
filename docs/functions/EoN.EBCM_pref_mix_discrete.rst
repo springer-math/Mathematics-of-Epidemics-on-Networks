@@ -1,5 +1,5 @@
-EoN.EBCM_pref_mix_discrete
-==========================
+EoN.EBCM\_pref\_mix\_discrete
+=============================
 
 .. currentmodule:: EoN
 

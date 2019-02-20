@@ -1,5 +1,5 @@
-EoN.percolate_network
-=====================
+EoN.percolate\_network
+======================
 
 .. currentmodule:: EoN
 
