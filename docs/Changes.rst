@@ -57,8 +57,9 @@ New in v 1.0.3
   No changes to package, but a small change attempting to get readthedocs to
   correctly build.
   
-New in v 1.0.4rc2
+New in v 1.0.4rc3
 -----------------
-  No changes to package, but fixing a problem I had missed with readthedocs
-  failing to provide documentation for each function.
+  Readthedocs is now providing documentation for each function.
   
+  Made `Gillespie_Arbitrary` back-compatible to networkx 1.11.  
+    

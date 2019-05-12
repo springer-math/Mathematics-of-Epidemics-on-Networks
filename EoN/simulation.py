@@ -3219,6 +3219,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         
     For SIR they would be:
         **graph 1** 'I'->'R' with weight gamma and
+        
         **graph 2** ('I', 'S') -> ('I', 'I') with rate tau.
         ]
         
@@ -3304,8 +3305,8 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
 
     **(times, status1, status2, ...)**  tuple of scipy arrays
         first entry is the times at which events happen.
-        second (etc) entry is number at given time of status in corresponding
-        position of `return_statuses`
+        second (etc) entry is an array with the same number of entries as `times`
+        giving the number of nodes of status ordered as they are in `return_statuses` 
         
     
     :SAMPLE USE:
@@ -3387,9 +3388,9 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
 
 
     for transition in spontaneous_transitions:
-        rate[transition] = spontaneous_transition_graph.edges[transition[0],transition[1]]['rate']
-        if 'weight_label' in spontaneous_transition_graph.edges[transition[0],transition[1]]:
-            wl = spontaneous_transition_graph.edges[transition[0],transition[1]]['weight_label']
+        rate[transition] = spontaneous_transition_graph.adj[transition[0]][transition[1]]['rate']
+        if 'weight_label' in spontaneous_transition_graph.adj[transition[0]][transition[1]]:
+            wl = spontaneous_transition_graph.adj[transition[0]][transition[1]]['weight_label']
             get_weight[transition] = nx.get_node_attributes(G, wl)
             potential_transitions[transition] = _ListDict_(weighted=True)#max_weight[transition] = max(get_weight[transition].values())
         else:
@@ -3398,10 +3399,10 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
     for transition in induced_transitions:
         if transition[0][0] != transition[1][0]:
             raise EoN.EoNError("transition {} -> {} not allowed: first node must keep same status".format(transition[0],transition[1]))
-        rate[transition] = nbr_induced_transition_graph.edges[transition[0],transition[1]]['rate']
+        rate[transition] = nbr_induced_transition_graph.adj[transition[0]][transition[1]]['rate']
 
-        if 'weight_label' in nbr_induced_transition_graph.edges[transition[0],transition[1]]:
-            wl = nbr_induced_transition_graph.edges[transition[0],transition[1]]['weight_label']
+        if 'weight_label' in nbr_induced_transition_graph.adj[transition[0]][transition[1]]:
+            wl = nbr_induced_transition_graph.adj[transition[0]][transition[1]]['weight_label']
             get_weight[transition] = nx.get_edge_attributes(G, wl)
             potential_transitions[transition] = _ListDict_(weighted=True)
         else:

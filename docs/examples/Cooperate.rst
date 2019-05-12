@@ -24,11 +24,17 @@ self-isolating at home.
     from collections import defaultdict
     import matplotlib.pyplot as plt
     
-    N = 1000000
+    N = 2000000
     G = nx.fast_gnp_random_graph(N, 5./(N-1))
     
+    #In the below:
+    #'SS' means a node susceptible to both diseases
+    #'SI' means susceptible to disease 1 and infected with disease 2
+    #'RS' means recovered from disease 1 and susceptible to disease 2.
+    #etc.
+    
     H = nx.DiGraph()  #DiGraph showing possible transitions that don't require an interaction
-    H.add_node('SS')
+    H.add_node('SS')  
     H.add_edge('SI', 'SR', rate = 1)
     H.add_edge('IS', 'RS', rate = 1)
     H.add_edge('II', 'IR', rate = 1)
@@ -36,6 +42,12 @@ self-isolating at home.
     H.add_edge('IR', 'RR', rate = 0.5)
     H.add_edge('RI', 'RR', rate = 0.5)
     
+    #In the below the edge (('SI', 'SS'), ('SI', 'SI')) means an
+    #'SI' node connected to an 'SS' node can lead to a transition in which
+    #the 'SS' node becomes 'SI'.  The rate of this transition is 0.2.
+    #
+    #Note that `IR` and `RI` nodes are more infectious than other nodes.
+    #
     J = nx.DiGraph()    #DiGraph showing transitiona that do require an interaction.
     J.add_edge(('SI', 'SS'), ('SI', 'SI'), rate = 0.2)
     J.add_edge(('SI', 'IS'), ('SI', 'II'), rate = 0.2)
