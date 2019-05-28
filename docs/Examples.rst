@@ -166,7 +166,7 @@ for networkx 2.x and 1.x).
 
    SIS weighted edges <examples/SIS_weighted.rst>
 
-Non-SIS/SIR processes with  `Gillespie_Arbitrary <functions/EoN.Gillespie_Arbitrary.html>`_ 
+Non-SIS/SIR processes with  `Gillespie_simple_contagion <functions/EoN.Gillespie_simple_contagion.html>`_ 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The default Gillespie and Event-driven algorithms assume SIS or SIR dynamics.

@@ -1,6 +1,43 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.4
+-----------------
+
+  
+  
+  Have added
+  
+  Gillespie_complex_contagion which can handle complex contagions.
+  
+  The old Gillespie_Arbitrary has been renamed Gillespie_simple_contagion.  I 
+  have fixed a bug in previous versions that prevented it from handling weighted
+  graphs.
+  
+  
+  
+
+  `Gillespie_Arbitrary` is now back-compatible to networkx 1.11 (but it has 
+  been renamed). 
+
+  Readthedocs is now providing documentation for each function.
+  
+  
+  
+
+New in v 1.0.3
+--------------
+
+  No changes to package, but a small change attempting to get readthedocs to
+  correctly build.
+    
+New in v 1.0.2
+--------------
+  
+  No changes (I accidentally made a typo just before uploading v1.0.1 to pypi
+  and I can't reupload with the same name).
+  
+
 New in v 1.0.1
 --------------
 
@@ -44,22 +81,3 @@ but nothing else).
 & `17 <https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/17>`_)
 
 
-
-New in v 1.0.2
---------------
-  
-  No changes (I accidentally made a typo just before uploading v1.0.1 to pypi
-  and I can't reupload with the same name).
-  
-
-New in v 1.0.3
---------------
-  No changes to package, but a small change attempting to get readthedocs to
-  correctly build.
-  
-New in v 1.0.4rc3
------------------
-  Readthedocs is now providing documentation for each function.
-  
-  Made `Gillespie_Arbitrary` back-compatible to networkx 1.11.  
-    

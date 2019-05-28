@@ -62,7 +62,8 @@ Quick list
    fast_nonMarkov_SIS
    Gillespie_SIR
    Gillespie_SIS
-   Gillespie_Arbitrary
+   Gillespie_simple_contagion
+   Gillespie_complex_contagion
    basic_discrete_SIR
    basic_discrete_SIS
    discrete_SIR

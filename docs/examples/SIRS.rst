@@ -29,7 +29,7 @@ SIRS
     
     return_statuses = ('S', 'I', 'R')
     
-    t, S, I, R = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses, tmax = 30)
+    t, S, I, R = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses, tmax = 30)
         
     plt.plot(t, S, label = 'Susceptible') 
     plt.plot(t, I, label = 'Infected')  

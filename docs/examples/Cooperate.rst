@@ -77,7 +77,7 @@ self-isolating at home.
         IC[node] = 'II'
     
     
-    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses, 
+    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses, 
                                             tmax = float('Inf'))    
     
     plt.semilogy(t, IS+II+IR, '-.', label = 'Infected with disease 1')

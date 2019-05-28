@@ -99,9 +99,27 @@ class _ListDict_(object):
         self.max_weight_count = C[self.max_weight]
 
         
-    def add(self, item, weight_increment = None):
+    def insert(self, item, weight = None):
         r'''
-        If not present, then adds the thing (with weight if appropriate)
+        If not present, then inserts the thing (with weight if appropriate)
+        if already there, replaces the weight unless weight is 0
+        
+        If weight is 0, then it removes the item and doesn't replace.
+        
+        WARNING:
+            replaces weight if already present, does not increment weight.
+            
+        
+        '''
+        if self.__contains__(item):
+            self.remove(item)
+        if weight != 0:
+            self.update(item, weight_increment=weight)
+        
+
+    def update(self, item, weight_increment = None):
+        r'''
+        If not present, then inserts the thing (with weight if appropriate)
         if already there, increments weight
         
         WARNING:
@@ -1885,10 +1903,12 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     the rules of transmission times and recovery times.  There are two ways to do
     this.  The user can define a function that calculates the recovery time
     and another function that calculates the transmission time.  If recovery is after
-    transmission, then transmission occurs.
+    transmission, then transmission occurs.  We do this if the time to transmission
+    is independent of the time to recovery.
     
-    Alternately, the user can define a single function (details below) that would 
-    determine both recovery and transmission times.  
+    Alternately, the user may want to model a situation where time to transmission
+    and time to recovery are not independent.  Then the user can define a single 
+    function (details below) that would determine both recovery and transmission times.  
     
 
     :Arguments: 
@@ -2028,7 +2048,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                                 rec_time_args=(D,),
                                 initial_infecteds = range(initial_inf_count))
         
-        # note the comma after `rate` and `D`.  This is needed for python
+        # note the comma after `tau` and `D`.  This is needed for python
         # to recognize these are tuples
 
         # initial condition has first 100 nodes in G infected.
@@ -2894,11 +2914,11 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         IS_links = _ListDict_()
 
     for node in initial_infecteds:
-        infecteds.add(node, weight_increment = nodeweight(node)) #weight is none if unweighted
+        infecteds.update(node, weight_increment = nodeweight(node)) #weight is none if unweighted
         for nbr in G.neighbors(node):  #must have this in a separate loop 
                                        #from assigning status
             if status[nbr] == 'S':
-                IS_links.add((node, nbr), weight_increment = edgeweight(node,nbr))
+                IS_links.update((node, nbr), weight_increment = edgeweight(node,nbr))
     
     total_recovery_rate = gamma*infecteds.total_weight() #gamma*I_weight_sum
     
@@ -2929,11 +2949,11 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             if return_full_data:
                 transmissions.append((t, transmitter, recipient))
                 infection_times[node].append(t)
-            infecteds.add(recipient, weight_increment = nodeweight(recipient))
+            infecteds.update(recipient, weight_increment = nodeweight(recipient))
 
             for nbr in G.neighbors(recipient):
                 if status[nbr] == 'S':
-                    IS_links.add((recipient, nbr), weight_increment=edgeweight(recipient, nbr))
+                    IS_links.update((recipient, nbr), weight_increment=edgeweight(recipient, nbr))
                 elif status[nbr]=='I' and nbr != recipient: #self edge would break this without last test.elif
                     IS_links.remove((nbr, recipient))
                      
@@ -3113,11 +3133,11 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         
         
     for node in initial_infecteds:
-        infecteds.add(node, weight_increment = nodeweight(node))
+        infecteds.update(node, weight_increment = nodeweight(node))
         for nbr in G.neighbors(node):  #must have this in a separate loop 
                                        #after assigning status of node
             if status[nbr] == 'S':
-                IS_links.add((node, nbr), weight_increment=edgeweight(node, nbr))
+                IS_links.update((node, nbr), weight_increment=edgeweight(node, nbr))
     
     total_recovery_rate = gamma*infecteds.total_weight()#I_weight_sum
     total_transmission_rate = tau*IS_links.total_weight()#IS_weight_sum
@@ -3140,7 +3160,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
                 elif status[nbr] == 'S':
                     IS_links.remove((recovering_node, nbr))
                 else:
-                    IS_links.add((nbr, recovering_node), weight_increment = edgeweight(recovering_node, nbr))
+                    IS_links.update((nbr, recovering_node), weight_increment = edgeweight(recovering_node, nbr))
                         
             times.append(t)
             S.append(S[-1])
@@ -3152,10 +3172,10 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
                 infection_times[recipient].append(t)
                 transmissions.append((t, transmitter, recipient))
 
-            infecteds.add(recipient, weight_increment = nodeweight(recipient))
+            infecteds.update(recipient, weight_increment = nodeweight(recipient))
             for nbr in G.neighbors(recipient):
                 if status[nbr] == 'S':
-                    IS_links.add((recipient, nbr), weight_increment = edgeweight(recipient, nbr))
+                    IS_links.update((recipient, nbr), weight_increment = edgeweight(recipient, nbr))
                 elif nbr != recipient: #otherwise a self-loop breaks the code
                     IS_links.remove((nbr, recipient))
                     
@@ -3181,10 +3201,191 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         return EoN.Simulation_Investigation(G, node_history, SIR=False)
 
-def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_graph,
-  IC, return_statuses, tmin = 0,  tmax=100, return_full_data = False):
+def Gillespie_complex_contagion(G, rate_function, transition_choice, 
+    get_influence_set, IC, return_statuses, tmin = 0, tmax=100, 
+    return_full_data = False, parameters = None):
+    
+    r''' 
+    Initially intended for a complex contagion.  However, this can allow influence
+    from any nodes, not just immediate neighbors.
+    
+    :Arguments: 
+        
+    **G** (NetworkX Graph)
+        The underlying network
+        
+    **rate_function** 
+        A function that will take the network, a node, and the statuses of all 
+        the nodes and calculate the rate at which the node changes its status.
+
+        The function is called like 
+        
+        if parameters is None:
+            rate_function(G, node, status)
+        else:
+            rate_function(G, node, status, parameters)
+        
+        where G is the graph, node is the node, status is a dict such that 
+        status[u] returns the status of u, and parameters is the parameters
+        passed to the function.
+        
+        it returns a number, the combined rate at which `node` might change 
+        status.
+        
+        
+    **transition_choice**
+        A function that takes the network, a node, and the statuses of all the
+        nodes and chooses which event will happen.  The function should be 
+        called [with or without `parameters`]
+        
+        if parameters is None:
+            transition_choice(G, node, status)
+        else:
+            transition_choice(G, node, status, parameters)
+        
+        where G is the graph, node is the node, status is a dict such that 
+        status[u] returns the status of u, and parameters is the parameters
+        passed to the function.
+        
+        It should return the new status of `node` based on the fact that the
+        node is changing status.
+        
+    **get_influence_set**
+        When a node `u` changes status, we want to know which nodes may have their
+        rate altered.  We need to update their rates.  This function returns all
+        nodes that may be affected by `u` (either in its previous state or its 
+        current state).  We will go through and recalculate the rates for all
+        of these nodes.  For a contagion, we can simply choose all neighbors,
+        but it may be faster to leave out any nodes that it wouldn't have
+        affected before or after its transition (e.g., R or I neighbors in SIR).
+        
+        if parameters is None:
+            get_influence_set(G, node, status)
+        else:
+            get_influence_set(G, node, status, parameters) 
+        
+        where G is the graph, node is the node, status is a dict such that 
+        status[u] returns the status of u, and parameters is the parameters
+        passed to the function.
+        
+        it should return the set of nodes whose rates need to be recalculated.
+        
+        Most likely, it is 
+        
+        def get_influence_set(G, node, status):
+            return G.neighbors(node)
+            
+    
+    **IC**   
+        A dict.  IC[node] returns the status of node.
+        
+    **return_statuses** list or other iterable (but not a generator)
+        The statuses that we will return information for, in the order
+        we will return them.
+        
+    **tmin** number (default 0)
+        starting time
+            
+    **tmax** number (default 100)
+        stop time
+            
+    **return_full_data** boolean
+        currently needs to be False.  True raises an error.
+        
+    **parameters**  list/tuple.
+        Any parameters of the functions rate_function, transition_choice, influence_set
+        We assume all three functions can accept parameters.  
+        Examples: recovery rate, transmission rate, ...
+        
+        
+    :Returns: 
+
+    **(times, status1, status2, ...)**  tuple of scipy arrays
+        first entry is the times at which events happen.
+        second (etc) entry is an array with the same number of entries as `times`
+        giving the number of nodes of status ordered as they are in `return_statuses` 
+        
+        
+    '''
+    
+    if parameters is None:
+        parameters = ()
+        
+    if return_full_data:
+        raise EoN.EoNError("Gillespie_complex_contagion does not currently support return_full_data=True")
+
+    status = {node: IC[node] for node in G.nodes()}
+
+    times = [tmin]
+    t = tmin
+    data = {}
+    C = Counter(status.values())
+    for return_status in return_statuses:
+        data[return_status] = [C[return_status]]                
+
+    nodes_by_rate = _ListDict_(weighted=True)
+    
+    for u in G.nodes():
+        rate = rate_function(G, u, status, parameters)
+        if rate>0:
+            nodes_by_rate.insert(u, weight = rate)
+            
+    if nodes_by_rate.total_weight()>0:
+        delay = random.expovariate(nodes_by_rate.total_weight())
+    else:
+        delay = float('Inf')
+    t += delay
+    while nodes_by_rate.total_weight()>0 and t< tmax:
+        
+        times.append(t)
+#        print(delta_t, nodes_by_rate.total_weight())
+        node = nodes_by_rate.choose_random()
+        new_status = transition_choice(G, node, status, parameters)
+
+        for x in data.keys():         
+            data[x].append(data[x][-1])
+        if status[node] in return_statuses:
+            data[status[node]][-1] -= 1
+        if new_status in return_statuses:
+            data[new_status][-1] += 1
+
+        status[node] = new_status
+
+        #update self
+        weight = rate_function(G, node, status, parameters)
+        nodes_by_rate.insert(node, weight = weight)
+
+        influence_set = get_influence_set(G, node, status, parameters)  
+        
+        for nbr in influence_set:
+            weight = rate_function(G, nbr, status, parameters)
+            nodes_by_rate.insert(nbr, weight=weight) 
+
+        if nodes_by_rate.total_weight()>0:
+            delay = random.expovariate(nodes_by_rate.total_weight())
+        else:
+            delay = float('Inf')
+        t += delay
+
+    returnval = []
+    times = scipy.array(times)
+    returnval.append(times)
+    for return_status in return_statuses:
+        data[return_status] = scipy.array(data[return_status])
+        returnval.append(data[return_status])
+    print(status)
+    return returnval
+    
+    
+def Gillespie_simple_contagion(G, spontaneous_transition_graph, 
+  nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
+  return_full_data = False):
     r'''
     Performs simulations for epidemics, allowing more flexibility than SIR/SIS.
+    
+    Each transition is determined only by edges.  So this does not handle complex
+    contagions appropriately.
+    
     
     The example below demonstrates an SEIR epidemic.
     
@@ -3202,14 +3403,18 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
     Both types of transitions can be represented by weighted directed graphs.
       
     - The spontaneous transitions can be represented by a graph whose nodes are 
-      the possible statuses and whose edges represent a transition from A to B
-      with rate given by the weight of the edge.
+      the possible statuses and an edge from 'A' to 'B' represent that in the 
+      absence of any influence from others an indivdiual of status A 
+      transitions to status B with rate given by the weight of the edge.
     
-    - The neighbor-induced transitions can be represented by a graph whose
-      nodes are length-2 tuples, and an edge from the node ('A', 'B') to the
-      node ('A', 'C') represents that an 'AB' edge in the contact network can 
-      cause the second node to transition to status 'C'.  The weight of the 
-      edge represents the transmission rate.  
+    - The neighbor-induced transitions can be represented by a "transitions 
+      graph" whose nodes are length-2 tuples.  The first entry represents the 
+      first individual of a partnership and the second represents the second 
+      individual.  **only the second individual changes status**.  An edge in 
+      the transitions graph from the node ('A', 'B') to the node ('A', 'C') 
+      represents that an 'AB' partnership in the contact network can cause the 
+      second individual to transition to status 'C'.  The weight of the edge 
+      represents the transition rate.  
       
     [for reference, if you look at Fig 4.3 on pg 122 of Kiss, Miller & Simon
     the graphs for SIS would be:
@@ -3354,7 +3559,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         
         return_statuses = ('S', 'E', 'I', 'R')
         
-        t, S, E, I, R = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
+        t, S, E, I, R = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses,
                                                 tmax = float('Inf'))
         
         plt.semilogy(t, S, label = 'Susceptible')
@@ -3367,20 +3572,20 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
 '''
 
     if return_full_data:
-        raise EoN.EoNError("Gillespie_Arbitrary does not currently support return_full_data=True")
+        raise EoN.EoNError("Gillespie_simple_contagion does not currently support return_full_data=True")
 
     status = {node: IC[node] for node in G.nodes()}
 
     times = [tmin]
     data = {}
-    C = Counter(status.values())
+    C = Counter(status.values())     
     for return_status in return_statuses:
-        data[return_status] = [C[return_status]]                
+        data[return_status] = [C[return_status]] #
 
     spontaneous_transitions = list(spontaneous_transition_graph.edges())
     induced_transitions = list(nbr_induced_transition_graph.edges())
     potential_transitions = {}
-    rate = {}# intrensic rate of a transition
+    rate = {}# intrinsic rate of a transition
     #weight_sum = defaultdict(lambda: 0)
     #weights = defaultdict(lambda: None)
     #max_weight = defaultdict(lambda: 0)
@@ -3391,7 +3596,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
         rate[transition] = spontaneous_transition_graph.adj[transition[0]][transition[1]]['rate']
         if 'weight_label' in spontaneous_transition_graph.adj[transition[0]][transition[1]]:
             wl = spontaneous_transition_graph.adj[transition[0]][transition[1]]['weight_label']
-            get_weight[transition] = nx.get_node_attributes(G, wl)
+            get_weight[transition] = nx.get_node_attributes(G, wl) #This is a dict mapping node to its weight.
             potential_transitions[transition] = _ListDict_(weighted=True)#max_weight[transition] = max(get_weight[transition].values())
         else:
             potential_transitions[transition] = _ListDict_()#max_weight[transition]=1
@@ -3412,7 +3617,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
     for node in G.nodes():        
         if spontaneous_transition_graph.has_node(status[node]) and spontaneous_transition_graph.degree(status[node])>0:
             for transition in spontaneous_transition_graph.edges(status[node]):
-                potential_transitions[transition].add(node, weight_increment = get_weight[transition][node])
+                potential_transitions[transition].update(node, weight_increment = get_weight[transition][node])
                 #weight increment defaults to None if not present                    
                     
                     
@@ -3422,7 +3627,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
                 for transition in nbr_induced_transition_graph.edges((status[node],status[nbr])):
                     if (node, nbr) not in get_weight[transition]: #since edge may be in opposite order to earlier
                         get_weight[transition][(node, nbr)] = get_weight[transition][(nbr, node)]
-                    potential_transitions[transition].add((node, nbr), weight_increment = get_weight[transition][(node, nbr)])
+                    potential_transitions[transition].update((node, nbr), weight_increment = get_weight[transition][(node, nbr)])
 
     t = tmin
     
@@ -3475,7 +3680,7 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             if transition[0] == old_status:
                 potential_transitions[transition].remove(node)
             if transition[0] == status[node]:
-                potential_transitions[transition].add(node, weight_increment = get_weight[transition][node])
+                potential_transitions[transition].update(node, weight_increment = get_weight[transition][node])
             #roundoff error can kill the calculation, but it's slow to do this right.
             #so we'll only deal with it if the value is small enough that roundoff
             #error might matter.
@@ -3487,16 +3692,21 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph, nbr_induced_transition_
             #add edge to any induced lists
             for nbr in G.neighbors(node):
                 nbr_status = status[nbr]
+                
                 if (node, nbr) not in get_weight[transition]:
                     get_weight[transition][(node,nbr)] = get_weight[transition][(nbr,node)]
+                elif (nbr, node) not in get_weight[transition]:
+                    get_weight[transition][(nbr, node)] = get_weight[transition][(node, nbr)]
+                    
                 if transition[0] == (nbr_status, old_status):
                     potential_transitions[transition].remove((nbr, node))
                 if transition[0] == (old_status, nbr_status):
                     potential_transitions[transition].remove((node, nbr))
+                    
                 if transition[0] == (nbr_status, status[node]):
-                    potential_transitions[transition].add((nbr, node), weight_increment = get_weight[transition][nbr, node])
+                    potential_transitions[transition].update((nbr, node), weight_increment = get_weight[transition][(nbr, node)])
                 if transition[0] == (status[node], nbr_status):
-                    potential_transitions[transition].add((node, nbr), weight_increment = get_weight[transition][node, nbr])
+                    potential_transitions[transition].update((node, nbr), weight_increment = get_weight[transition][(node, nbr)])
                 
                 #roundoff error can kill the calculation, but it's slow to do this right.
                 #so we'll only deal with it if the value is small enough that roundoff

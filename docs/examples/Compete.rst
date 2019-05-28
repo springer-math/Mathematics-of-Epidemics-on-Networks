@@ -69,7 +69,7 @@ what happens if there is just one disease present.
     
     return_statuses = ('SS', 'SI', 'SR', 'IS', 'II', 'IR', 'RS', 'RI', 'RR')
     
-    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
+    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses,
                                             tmax = float('Inf'))
     
     plt.plot(t, SS, '-.', label = 'Susceptible')
@@ -83,7 +83,7 @@ what happens if there is just one disease present.
     IC = defaultdict(lambda: 'SS')
     for node in range(5):
         IC[node] = 'IS'
-    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
+    t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses,
                                             tmax = float('Inf'))
     
     plt.clf()
