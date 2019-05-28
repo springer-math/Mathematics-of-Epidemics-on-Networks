@@ -1,8 +1,14 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.7
+----------------
+
+   No changes (fixing an error in a tag)
+
 New in v 1.0.6
 -----------------
+
    Documentation for Gillespie_complex_contagion includes an example.
    Removed print command (left over from debugging) from Gillespie_complex_contagion.
    
