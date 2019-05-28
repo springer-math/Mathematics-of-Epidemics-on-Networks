@@ -1,9 +1,10 @@
 Changes from v 1.0
 ==================
 
-New in v 1.0.6rc1
+New in v 1.0.6
 -----------------
    Documentation for Gillespie_complex_contagion includes an example.
+   Removed print command (left over from debugging) from Gillespie_complex_contagion.
    
 New in v 1.0.5
 -----------------

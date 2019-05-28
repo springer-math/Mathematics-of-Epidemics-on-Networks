@@ -3331,7 +3331,7 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
             else:
                 return 0
                 
-       def transition_choice(G, node, status, parameters):
+        def transition_choice(G, node, status, parameters):
             #this function needs to return the new status of node.  We already
             #know it is changing status.
             #
@@ -3434,7 +3434,6 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
     for return_status in return_statuses:
         data[return_status] = scipy.array(data[return_status])
         returnval.append(data[return_status])
-    print(status)
     return returnval
     
 def Gillespie_Arbitrary(G, spontaneous_transition_graph, 
