@@ -62,6 +62,7 @@ Quick list
    fast_nonMarkov_SIS
    Gillespie_SIR
    Gillespie_SIS
+   Gillespie_Arbitrary
    Gillespie_simple_contagion
    Gillespie_complex_contagion
    basic_discrete_SIR
@@ -99,14 +100,20 @@ Short descriptions
   recovery rates.  They are commonly used, but in many cases are slower than
   the event driven methods.  I do not see evidence that they are ever 
   significantly faster.  It is not very practical to get away from the 
-  constant rate assumptions so I prefer to avoid them.  However, the
-  `Gillespie_Arbitrary` allows the user to do SEIR, SIRS, or any of a number
-  of other more exotic scenarios that are not currently in the event-driven
-  code.
+  constant rate assumptions so I prefer to avoid them.  However, 
+  `Gillespie_simple_contagion` allows the user to do SEIR, SIRS, or any of a number
+  of other more exotic "simple contagion" scenarios that are not in the event-driven
+  code.  `Gillespie_complex_contagion` handles complex contagions, in which an
+  individual requires multiple partners to have a given state before it changes
+  status.  For legacy reasons, Gillespie_Arbitrary is included, it simply calls
+  Gillespie_simple_contagion, and will be removed in future versions.
   
   - **Gillespie_SIR**
   - **Gillespie_SIS**
   - **Gillespie_Arbitrary**
+  - **Gillespie_simple_contagion**
+  - **Gillespie_complex_contagion**
+  
 
 - Discrete-time algorithms
 

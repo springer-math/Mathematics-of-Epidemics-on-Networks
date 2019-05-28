@@ -3376,7 +3376,22 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
     print(status)
     return returnval
     
-    
+def Gillespie_Arbitrary(G, spontaneous_transition_graph, 
+  nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
+  return_full_data = False):
+  r'''Calls Gillespie_simple_contagion.  This is here for legacy reasons.
+  
+  Gillespie_Arbitrary has been replaced by Gillespie_simple_contagion.  It
+  will be removed in future versions.
+  '''
+  
+  print("Gillespie_Arbitrary has been replaced by Gillespie_simple_contagion.\n",   
+        "It will be removed in future versions.")
+        
+  return Gillespie_simple_contagion(G, spontaneous_transition_graph, 
+  nbr_induced_transition_graph, IC, return_statuses, tmin = tmin,  tmax=tmax, 
+  return_full_data = return_full_data)
+  
 def Gillespie_simple_contagion(G, spontaneous_transition_graph, 
   nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
   return_full_data = False):

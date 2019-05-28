@@ -1,6 +1,13 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.5
+-----------------
+
+   Reintroduced Gillespie_Arbitrary which just calls Gillespie_simple_contagion
+   and provides a warning that it will be discontinued later.
+   
+   
 New in v 1.0.4
 -----------------
 

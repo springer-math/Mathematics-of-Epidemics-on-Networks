@@ -31,7 +31,7 @@ for node in range(200):
 
 return_statuses = ('S', 'E', 'I', 'R')
 
-t, S, E, I, R = EoN.Gillespie_Arbitrary(G, H, J, IC, return_statuses,
+t, S, E, I, R = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses,
                                         tmax = float('Inf'))
 
 plt.semilogy(t, S, label = 'Susceptible')
