@@ -3305,6 +3305,67 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
         second (etc) entry is an array with the same number of entries as `times`
         giving the number of nodes of status ordered as they are in `return_statuses` 
         
+
+    :SAMPLE USE:
+    This simply does an SIR epidemic, by saying that the rate of becoming 
+    infected is tau times the number of infected neighbors.  
+    
+
+    ::
+
+
+        import networkx as nx
+        import EoN
+        import matplotlib.pyplot as plt
+        from collections import defaultdict #makes defining the initial condition easier
+        
+        
+        def rate_function(G, node, status, parameters):    
+            #This function needs to return the rate at which node changes status.
+            #
+            tau,gamma = parameters                       
+            if status[node] == 'I':
+                return gamma         
+            elif status[node] == 'S':                                          
+                return tau*len([nbr for nbr in G.neighbors(node) if status[nbr] == 'I'])
+            else:
+                return 0
+                
+       def transition_choice(G, node, status, parameters):
+            #this function needs to return the new status of node.  We already
+            #know it is changing status.
+            #
+            #this function could be more elaborate if there were different
+            #possible transitions that could happen.
+            if status[node] == 'I':                       
+                return 'R'
+            elif status[node] == 'S':
+                return 'I'         
+                
+        def get_influence_set(G, node, status, parameters):
+            #this function needs to return any node whose rates might change
+            #because `node` has just changed status.
+            #
+            #the only neighbors a node might affect are the susceptible ones.
+            
+            return {nbr for nbr in G.neighbors(node) if status[nbr] == 'S'}
+            
+        G = nx.fast_gnp_random_graph(100000,0.00005)  
+        
+        gamma = 1.
+        tau = 0.5
+        parameters = (tau, gamma)
+        
+        IC = defaultdict(lambda: 'S')
+        for node in range(200):      
+            IC[node] = 'I'
+            
+        t, S, I, R = EoN.Gillespie_complex_contagion(G, rate_function, 
+                                   transition_choice, get_influence_set, IC, 
+                                   return_statuses=('S', 'I', 'R'), 
+                                   parameters=parameters)
+                                    
+        plt.plot(t, I)
         
     '''
     

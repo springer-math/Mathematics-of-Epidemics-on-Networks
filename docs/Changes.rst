@@ -1,6 +1,10 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.6rc1
+-----------------
+   Documentation for Gillespie_complex_contagion includes an example.
+   
 New in v 1.0.5
 -----------------
 
