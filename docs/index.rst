@@ -7,8 +7,7 @@ the spread of SIS and SIR diseases in networks.
 
 **Support EoN**:  
   - The best way to support EoN `is to let me know you're using it`_.
-  - This will help my case when applying for grants & promotions and help me 
-justify the time I spend on it. 
+  - This will help my case when applying for grants & promotions and help me justify the time I spend on it. 
 
 Distributed under MIT license.  See :download:`license.txt<../license.txt>` for 
 full details.
