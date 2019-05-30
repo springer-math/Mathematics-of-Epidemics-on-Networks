@@ -9,16 +9,10 @@ the spread of SIS and SIR diseases in networks.
   - The best way to support EoN `is to let me know you're using it`_.
   - This will help my case when applying for grants & promotions and help me justify the time I spend on it. 
 
-Distributed under MIT license.  See :download:`license.txt<../license.txt>` for 
+**MIT License**:
+See :download:`license.txt<../license.txt>` for 
 full details.
 
-.. toctree::
-   :maxdepth: 2
-
-   Getting Started <GettingStarted>
-   Examples 
-   EoN 
-   Changes
 
 Highlights 
 ----------
@@ -40,9 +34,10 @@ Highlights
     
   - Gillespie algorithms for Markovian dynamics
 
-    - lots of effort to optimize these (making the unweighted version comparable to the
-      event-based simulation)
+    - Through some careful optimization the unweighted SIS/SIR versions are comparable to the event-based simulation.
     - The weighted version is slower, but still reasonably fast.
+    - There are methods for generic simple contagions and generic complex contagions.
+    
   - discrete-time (synchronous update) models
   - tools for visualizing and animating simulated epidemics.
   
@@ -52,8 +47,17 @@ Highlights
   - effective degree models
   - edge-based compartmental models
 
-There is also support for producing figures and animations and other detailed
-investigation of simulations.
+Table of Contents
+-----------------
+
+.. toctree::
+   :maxdepth: 2
+
+   Getting Started <GettingStarted>
+   Examples 
+   EoN 
+   Changes
+
 
 .. _repository: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
