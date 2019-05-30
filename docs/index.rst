@@ -3,9 +3,15 @@ Welcome to Epidemics on Networks's documentation!
 
 
 **EoN** (Epidemics on Networks)  is a Python module that provides tools to study 
-the spread of SIS and SIR diseases in networks.  
+the spread of SIS and SIR diseases in networks. 
 
-Distributed under MIT license.  See :download:`license.txt<../license.txt>` for full details.
+**Support EoN**:  
+  - The best way to support EoN `is to let me know you're using it`_.
+  - This will help my case when applying for grants & promotions and help me 
+justify the time I spend on it. 
+
+Distributed under MIT license.  See :download:`license.txt<../license.txt>` for 
+full details.
 
 .. toctree::
    :maxdepth: 2
@@ -25,7 +31,7 @@ Highlights
   **EoN** is built on top of NetworkX_.  Its repository_ is on github.   
   EoN's tools fall into two broad categories:
 
-- **Stochastic simulation of SIS and SIR disease**
+- **Stochastic simulation of SIS and SIR disease** 
 
   - Event-based simulation 
   
@@ -53,6 +59,6 @@ investigation of simulations.
 .. _repository: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
 .. _NetworkX: https://networkx.github.io
-
+.. _is to let me know you're using it: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/31
 
    

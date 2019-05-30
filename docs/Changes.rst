@@ -9,13 +9,14 @@ New in v 1.0.7
 New in v 1.0.6
 -----------------
 
-   Documentation for Gillespie_complex_contagion includes an example.
-   Removed print command (left over from debugging) from Gillespie_complex_contagion.
+   Documentation for ``Gillespie_complex_contagion`` now includes an example.
+   
+   Removed print command (left over from debugging) from ``Gillespie_complex_contagion.``
    
 New in v 1.0.5
 -----------------
 
-   Reintroduced Gillespie_Arbitrary which just calls Gillespie_simple_contagion
+   Reintroduced ``Gillespie_Arbitrary`` which just calls ``Gillespie_simple_contagion``
    and provides a warning that it will be discontinued later.
    
    
@@ -26,16 +27,16 @@ New in v 1.0.4
   
   Have added
   
-  Gillespie_complex_contagion which can handle complex contagions.
+  ``Gillespie_complex_contagion`` which can handle complex contagions.
   
-  The old Gillespie_Arbitrary has been renamed Gillespie_simple_contagion.  I 
+  The old ``Gillespie_Arbitrary`` has been renamed ``Gillespie_simple_contagion``.  I 
   have fixed a bug in previous versions that prevented it from handling weighted
   graphs.
   
   
   
 
-  `Gillespie_Arbitrary` is now back-compatible to networkx 1.11 (but it has 
+  ``Gillespie_Arbitrary`` is now back-compatible to networkx 1.11 (but it has 
   been renamed). 
 
   Readthedocs is now providing documentation for each function.
@@ -62,7 +63,7 @@ New in v 1.0.1
 Returning transmission chains
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When simulations have `return_full_data=True`, the returned object now includes
+When simulations have ``return_full_data=True``, the returned object now includes
 information on who infected whom at each time.  This can be accessed through: 
 
 `transmissions <functions/EoN.Simulation_Investigation.transmissions.html>`_
@@ -88,7 +89,7 @@ disease, and quite a few other options.  This is done using:
 
 Examples are `here <Examples.html#non-sis-sir-processes-with-gillespie-arbitrary>`_.
 
-Currently this does not accept `return_full_data=True`, and it requires that 
+Currently this does not accept ``return_full_data=True``, and it requires that 
 the events all occur as Poisson processes (that is, it makes sense to say 
 that there is a rate at which things happen, and that rate depends on the 
 status of the nodes and perhaps some property of the node or the partnership, 

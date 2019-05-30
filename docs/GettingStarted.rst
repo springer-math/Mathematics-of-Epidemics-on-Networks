@@ -13,16 +13,16 @@ You can install **EoN** version 1.0.7 with pip
 The documentation provided here is for version 1.0.7.  
 
 
-You can also clone or download
-the distribution from GitHub 
-at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks to get
-a more recent version.  Then just move into the main directory and run
+
+The version on GitHub is version 1.0.7.
+You can clone or download the Github version at 
+https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks.  
+Then just move into the main directory and run
 
 :: 
 
     python setup.py install
 
-This will currently install version 1.0.7.  
 
 If you have installed a previous version and want to reinstall.  The easiest
 way is 
@@ -33,8 +33,12 @@ way is
     pip install EoN
     
 If you want to see changes from previous versions, please see 
-`Changes from v1.0 <Changes.html>`_
+`Changes from v1.0 <Changes.html>`_.
 
+If you use EoN, or publish anything based on it, please
+`let me know <https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/31>`_ 
+so that I can use it for performance reviews and grant applications and generally
+because it makes me happy.
 
 QuickStart Guide
 ----------------

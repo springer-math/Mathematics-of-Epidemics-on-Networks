@@ -11,7 +11,12 @@ The algorithms are based on the book
 `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_
 by Kiss, Miller & Simon
         
-Please cite the book if using these algorithms
+Please cite the book if using these algorithms.
+
+If you use EoN, please `leave a note here`_ 
+so that **I can get promoted / get funding**.  
+Or just do it because it makes me happy when people use the software.  And
+a happy developer will work to improve the software.
 
 For simulations, we assume that input networks are **NetworkX** 
 graphs; see https://networkx.github.io/
@@ -524,5 +529,5 @@ Short Description
     
     
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
-
+.. _leave a note here: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/31
 
