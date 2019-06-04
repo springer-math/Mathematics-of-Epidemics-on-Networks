@@ -1,6 +1,14 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.8
+--------------
+Bug fixes in ``basic_discrete_SIS``.
+
+Changed the discrete SIS and SIR code so that the initial infections occur at 
+t=-1 for the ``simulation_investigation`` objects.
+
+
 New in v 1.0.7
 ----------------
 

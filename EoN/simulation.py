@@ -407,7 +407,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         transmissions = []
         for node in initial_infecteds:
             node_history[node] = ([tmin], ['I'])
-            transmissions.append((tmin, None, node))
+            transmissions.append((tmin-1, None, node))
         if initial_recovereds is not None:
             for node in initial_recovereds:
                 node_history[node] = ([tmin], ['R'])
@@ -631,11 +631,11 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     #else it is assumed to be a list of nodes.
 
     if return_full_data:
-        transmissions = {}
+        transmissions = []
         node_history = defaultdict(lambda : ([tmin], ['S']))
         for u in initial_infecteds:
             node_history[u] = ([tmin], ['I'])
-            transmissions.append(tmin, None, u)
+            transmissions.append((tmin-1, None, u))
     N=G.order()
     t = [tmin]
     S = [N-len(initial_infecteds)]
@@ -650,7 +650,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
                 if v not in infecteds and random.random()<p:
                     if v not in new_infecteds:
                         new_infecteds.add(v)
-                        infector[v] = u
+                        infector[v] = [u]
                     else:
                         infector[v].append(u)
                         

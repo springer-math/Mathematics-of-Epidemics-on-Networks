@@ -2,7 +2,7 @@ Welcome to Epidemics on Networks's documentation!
 =================================================
 
 
-**EoN** (Epidemics on Networks)  is a Python module that provides tools to study 
+**EoN** (Epidemics on Networks) is a Python module that provides tools to study 
 the spread of SIS and SIR diseases in networks. 
 
 **Support EoN**:  
