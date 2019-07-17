@@ -180,6 +180,7 @@ Gillespie approach.
    
    SEIR <examples/SEIR.rst>
    SIRS <examples/SIRS.rst>
+   SIRS with heterogeneity <examples/SIRS_heterogeneous.rst>
    Competing SIR Diseases <examples/Compete.rst>
    Cooperative SIR Diseases <examples/Cooperate.rst>
    

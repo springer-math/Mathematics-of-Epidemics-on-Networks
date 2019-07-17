@@ -7,7 +7,8 @@ from matplotlib.animation import FuncAnimation
 
 from collections import defaultdict
 
-
+#I want to modify this to accept arbitrary statuses so that users can use this
+#for the Gillespie_Simple and Gillespie_Complex models.
         
 
 class Simulation_Investigation():
@@ -57,7 +58,19 @@ class Simulation_Investigation():
                             
  
     def __init__(self, G, node_history, transmissions, SIR = True, pos = None, 
-                    colordict={'S':'#009a80','I':'#ff2020', 'R':'gray'}):
+                    colordict=None, return_statuses = None):
+        if SIR and return_statuses is not None:
+            raise EoN.EoNError('if SIR, then return_statuses should be None, (may change in future versions)')
+        if colordict is None:
+            if return_statuses is None:  #SIS or SIR
+                colordict = {'S':'#009a80','I':'#ff2000', 'R':'gray'}
+                
+            else:
+                print("If you're seeing this message then I forgot to fix this."+
+                    "Submit a bug report and say nasty things about my laziness." +
+                    "if you want to plot you'll need to update the colordict" +
+                    "see sim_update_colordict and update_ts_colordict")
+                colordict = {}#status: X for status in return_statuses}
         self.G = G
         self._node_history_ = node_history
         self._transmissions_ = transmissions
@@ -388,7 +401,7 @@ class Simulation_Investigation():
         self.colordict = colordict
         
         
-#    def add_timeseries_from_analytic_model(self, tau, gamma, model = EoN.EBCM_from_graph, tmin = 0, tmax = 10, tcount = 1001, SIR = True, colordict={'S':'#009a80','I':'#ff2020', 'R':'gray'}, label = None):
+#    def add_timeseries_from_analytic_model(self, tau, gamma, model = EoN.EBCM_from_graph, tmin = 0, tmax = 10, tcount = 1001, SIR = True, colordict={'S':'#009a80','I':'#ff2000', 'R':'gray'}, label = None):
 #        r''' Uses one of the analytic models to predict the curve.
 #        The analytic model needs to be one of the *_from_graph models.
 #        (currently the pref mixing EBCM models do not work with this either)

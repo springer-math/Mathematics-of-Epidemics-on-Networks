@@ -1,12 +1,23 @@
 Changes from v 1.0
 ==================
 
-New in v 1.0.8
---------------
-Bug fixes in ``basic_discrete_SIS``.
+New in v 1.0.8rc2
+-----------------
 
-Changed the discrete SIS and SIR code so that the initial infections occur at 
-t=-1 for the ``simulation_investigation`` objects.
+    ``Gillespie_simple_contagion`` is now more flexible in how it handles heterogeneity.
+    The user can now define a function which will give the 'transmission' rates between
+    a pair of nodes and the 'recovery' rates of individual nodes.  So it can be
+    more general than the original version.  (a heterogeneous SIRS example is now
+    provided)
+
+    Bug fixes in ``basic_discrete_SIS``.
+
+    Changed the discrete SIS and SIR code so that the initial infections occur 
+    at t=-1 for the ``simulation_investigation`` objects.
+    
+    Small change to the default color for Infected nodes (FF2020->FF2000) in 
+    simulation_investigation
+    
 
 
 New in v 1.0.7
@@ -33,9 +44,7 @@ New in v 1.0.4
 
   
   
-  Have added
-  
-  ``Gillespie_complex_contagion`` which can handle complex contagions.
+  Have added ``Gillespie_complex_contagion`` which can handle complex contagions.
   
   The old ``Gillespie_Arbitrary`` has been renamed ``Gillespie_simple_contagion``.  I 
   have fixed a bug in previous versions that prevented it from handling weighted
@@ -45,7 +54,7 @@ New in v 1.0.4
   
 
   ``Gillespie_Arbitrary`` is now back-compatible to networkx 1.11 (but it has 
-  been renamed). 
+  been renamed -- see above). 
 
   Readthedocs is now providing documentation for each function.
   
