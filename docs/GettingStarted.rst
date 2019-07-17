@@ -26,8 +26,8 @@ Then just move into the main directory and run
     python setup.py install
 
 
-If you have installed a previous version and want to reinstall.  The easiest
-way is 
+If you have installed a previous version and want to reinstall the most recent
+version available through pip (1.0.7).  The easiest way is 
 
 ::
 

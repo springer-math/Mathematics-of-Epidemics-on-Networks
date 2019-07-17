@@ -3,7 +3,8 @@ EoN Examples
 
 
 We have collected a number of examples using **EoN** to generate figures.    We 
-start with examples from the book Mathematics of Epidemics on Networks.  Then
+start with examples from the book 
+`Mathematics of Epidemics on Networks: from Exact to Approximate Models`_.  Then
 we give a few other examples.  If none of these examples helps with the particular
 problem you are facing, `Submit an issue`_ and I'll try to help.
 
