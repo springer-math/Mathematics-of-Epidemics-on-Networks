@@ -3461,11 +3461,12 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     r'''
     Performs simulations for epidemics, allowing more flexibility than SIR/SIS.
     
-    Each transition is determined only by edges.  So this does not handle complex
-    contagions appropriately.
+    This does not handle complex contagions.  It assumes that when an individual
+    changes status either he/she has received a "transmission" from a *single*
+    neighbor or he/she is changing status independently of any neighbors.  So
+    this is like SIS or SIR.  Other examples would be like SEIR, SIRS, etc   
     
-    
-    The example below demonstrates an SEIR epidemic.
+    There is an example below demonstrating an SEIR epidemic.
     
     We allow for nodes to undergo two types of transitions.  They can be:
     
@@ -3704,7 +3705,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     is taken to be the same for all nodes.
     
     There are more examples in the
-    `online documentation <../Examples.html#non-sis-sir-processes-with-gillespie-arbitrary>`_
+    online documentation at :ref:`simple-contagion-section`.
 
     ::
 

@@ -170,6 +170,8 @@ for networkx 2.x and 1.x).
 
    SIS weighted edges <examples/SIS_weighted.rst>
 
+.. _simple-contagion-section:
+
 Non-SIS/SIR processes with  `Gillespie_simple_contagion <functions/EoN.Gillespie_simple_contagion.html>`_ 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
