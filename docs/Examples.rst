@@ -6,7 +6,10 @@ We have collected a number of examples using **EoN** to generate figures.    We
 start with examples from the book 
 `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_.  Then
 we give a few other examples.  If none of these examples helps with the particular
-problem you are facing, `Submit an issue`_ and I'll try to help.
+problem you are facing, `Submit an issue`_ or go to `stackoverflow`_ and use the 'eon' tag.
+
+If you have an example you think would be useful here, please `submit an issue`_
+or email me.
 
 Reproducing figures from "Mathematics of Epidemics on Networks"
 ---------------------------------------------------------------
@@ -175,7 +178,7 @@ However, you may want something else, such as SEIR or SIRS or maybe more exotic
 things.  If you are willing to assume that events all happen as Poisson processes
 (that is, an event happens at a rate), then it's possible to do this with a
 Gillespie approach.
-
+ 
 .. toctree::
    :maxdepth: 1
    
@@ -192,9 +195,12 @@ Other
 
 Are you trying to do something but can't figure it out and would like an example?  
 
-`Submit an issue`_ and I'll try to help.
+`Submit an issue`_ or go to `stackoverflow`_ and use the 'eon' tag.
+I'll try to help.
 
+If you have developed something that you think would make a good example and you'd
+like to share it, please let me know.
 
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
 .. _Submit an issue: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues
-
+.. _stackoverflow: https://stackoverflow.com/questions/tagged/eon?tab=Newest
