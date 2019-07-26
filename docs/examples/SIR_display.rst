@@ -1,6 +1,8 @@
 SIR Animation Example
 ---------------------
 
+:download:`Downloadable Source Code <SIR_display.py>` 
+
 The code below produces an animation of an SIR epidemic:
 
 .. raw:: html 
@@ -26,7 +28,7 @@ used when generating the simulation_investigation object.
     sim_kwargs = {'pos': pos}    
     sim = EoN.fast_SIR(G, 2.0, 1.0, initial_infecteds = initial_infections, 
                    tmax = 40, return_full_data=True, sim_kwargs = sim_kwargs)
-    sim.set_pos(pos)
+
     ani=sim.animate(ts_plots=['I', 'SIR'], node_size = 4)  
     ani.save('SIR_2dgrid.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
 

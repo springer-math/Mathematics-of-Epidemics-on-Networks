@@ -1,6 +1,9 @@
 SIRV display and animation example
 ----------------------------------
 
+:download:`Downloadable Source Code <SIRV_display.py>` 
+
+
 The code below looks at an SIRV epidemic (SIR + vaccination) and produces the image
 
 .. image:: SIRV_display.png

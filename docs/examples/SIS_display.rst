@@ -1,5 +1,8 @@
 SIS display example
 -------------------
+
+:download:`Downloadable Source Code <SIS_display.py>` 
+
 The code below produces a snapshot of an SIS epidemic with the timeseries:
 
 .. image:: SIS_2dgrid.png
