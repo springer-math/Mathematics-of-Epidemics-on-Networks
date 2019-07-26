@@ -128,9 +128,6 @@ are given here.
    Figure 9.5 <examples/fig9p5.rst>
 
 
-Section to cross-reference
---------------------------
-
 
 Additional Examples
 -------------------
