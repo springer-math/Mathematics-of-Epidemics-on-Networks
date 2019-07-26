@@ -1,6 +1,13 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.8rc4
+-----------------
+    
+    The ``Simulation_Investigation`` code now handles plotting things like
+    ``'S+V'`` if we add a time series appropriately.  The last example of
+    :ref:`visualization` shows this.
+    
 New in v 1.0.8rc3
 -----------------
 

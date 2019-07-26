@@ -165,7 +165,22 @@ This includes automated generation of animations.
 This is particularly useful if we want to look at time series or at animations
 of the network as the disease spreads.
 
-Some :ref:`examples <Simulation_Investigation>` are provided.
+When EoN performs a simulation with ``return_full_data`` set to ``True``, it returns
+a Simulation_Investigation object.  At it's core, this has the data about when
+each node changed status and what its new status became.  This allows us to 
+generate plots of the network at any given instance in time and to produce 
+animations.
+
+The basic display produced by a Simulation_Investigation object shows the 
+network at a given snapshot in time on the left, and on the right it shows the
+time series of S, I, and (if SIR) R.  It has the option to add additional 
+curves that might have been calculated by an analytic model, or perhaps
+another simulation.
+
+In general, any of the dynamic simulations will produce a Simulation_Investigation
+object if we pass it ``return_full_data = True``.  
+
+Some examples appear in section :ref:`visualization`.
 
 Quick List
 ^^^^^^^^^^

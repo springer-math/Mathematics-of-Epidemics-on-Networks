@@ -128,19 +128,36 @@ are given here.
    Figure 9.5 <examples/fig9p5.rst>
 
 
+Section to cross-reference
+--------------------------
+
+
 Additional Examples
 -------------------
+
+
+.. _visualization:
+
 
 Visualizing or animating disease spread
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
 We can visualize snapshots or animations of disease spread in a network.
+For these examples, we'll take a 100x100 grid of nodes [each node is (i,j)]
+connected to their 4 nearest neighbors (except the nodes on the edges).  
+This isn't the most realistic network, but it is a good example for showing 
+the automatic plotting tools.
 
 .. toctree:: 
    :maxdepth: 1
    
-   Visualizing disease spread in a lattice network <examples/Simulation_Investigation.rst>
+   Visualizing a snapshot of SIS disease spread in the network <examples/SIS_display.rst>
+   Visualizing an animation of SIR disease spread in the network <examples/SIR_display.rst>
+   Visualizing non-SIS/SIR processes (SIRV) spreading in the network <examples/SIRV_display.rst>
+   
+The last example shows how we might plot things like ``'I'+'R'`` or other combinations of
+the data.
+   
 
 
 Non-uniform infectiousness
@@ -173,7 +190,7 @@ for networkx 2.x and 1.x).
 .. _simple-contagion-section:
 
 Non-SIS/SIR processes with  `Gillespie_simple_contagion <functions/EoN.Gillespie_simple_contagion.html>`_ 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The default Gillespie and Event-driven algorithms assume SIS or SIR dynamics.
 However, you may want something else, such as SEIR or SIRS or maybe more exotic

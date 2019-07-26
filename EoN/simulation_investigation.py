@@ -66,13 +66,16 @@ class Simulation_Investigation():
                 #print('tex=',self._tex_)
                 if self._tex_:
                     for status in statuses_to_plot:
-                        ax.plot(self._t_, self._D_[status], color = self.colordict[status], label=self.label+': ${}$'.format(status), **self.plt_kwargs)
+                        if status in self._D_:
+                            ax.plot(self._t_, self._D_[status], color = self.colordict[status], label=self.label+': ${}$'.format(status), **self.plt_kwargs)
                 else:
                     for status in statuses_to_plot:
-                        ax.plot(self._t_, self._D_[status], color = self.colordict[status], label=self.label+': {}'.format(status), **self.plt_kwargs)
+                        if status in self._D_:
+                            ax.plot(self._t_, self._D_[status], color = self.colordict[status], label=self.label+': {}'.format(status), **self.plt_kwargs)
             else:
                 for status in statuses_to_plot:
-                    ax.plot(self._t_, self._D_[status], color = self.colordict[status], **self.plt_kwargs)
+                    if status in self._D_:
+                        ax.plot(self._t_, self._D_[status], color = self.colordict[status], **self.plt_kwargs)
 
         def update_kwargs(self, **kwargs):
             self.plt_kwargs.update(kwargs)
