@@ -30,17 +30,17 @@ class myQueue(object):
     time is ignored.
     
     This is a priority queue of 4-tuples of the form 
-                   `(t, counter, function, function_arguments)`
+                   ``(t, counter, function, function_arguments)``
 
-    The 'counter' is present just to break ties, which generally only occur when 
+    The ``'counter'`` is present just to break ties, which generally only occur when 
     multiple events are put in place for the initial condition, but could also 
     occur in cases where events tend to happen at discrete times.
 
     note that the function is understood to have its first argument be t, and 
-    the tuple `function_arguments` does not include this first t.
+    the tuple ``function_arguments`` does not include this first t.
 
     So function is called as 
-        `function(t, *function_arguments)`
+        ``function(t, *function_arguments)``
 
     Previously I used a class of events, but sorting using the __lt__ function 
     I wrote was significantly slower than simply using tuples.
@@ -60,7 +60,7 @@ class myQueue(object):
         t, counter, function, args = heapq.heappop(self._Q_)
         function(t, *args)
     def __len__(self): 
-        r'''this will allow us to use commands like "while Q:" '''
+        r'''this will allow us to use commands like ``while Q:`` '''
         return len(self._Q_)
         
         
@@ -282,7 +282,7 @@ def _simple_test_transmission_(u, v, p):
 def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(), 
                 initial_infecteds=None, initial_recovereds = None, 
                 rho = None, tmin = 0, tmax = float('Inf'),
-                return_full_data = False):
+                return_full_data = False, sim_kwargs = None):
     #tested in test_discrete_SIR
     r'''
     Simulates an SIR epidemic on G in discrete time, allowing user-specified transmission rules
@@ -296,13 +296,13 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     time and then recover with immunity.
 
     This is defined to handle a user-defined function
-    `test_transmission(node1,node2,*args)`
+    ``test_transmission(node1,node2,*args)``
     which determines whether transmission occurs.
 
     So elaborate rules can be created as desired by the user.
 
     By default it uses 
-    `_simple_test_transmission_`
+    ``_simple_test_transmission_``
     in which case args should be entered as (p,)
 
     :Arguments: 
@@ -357,6 +357,9 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
             
 
     :Returns: 
@@ -364,7 +367,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         
     **t, S, I, R** scipy arrays
             
-    Or `if return_full_data is True` returns
+    Or ``if return_full_data is True`` returns
     
     **full_data**  Simulation_Investigation object
         from this we can extract the status history of all nodes
@@ -440,7 +443,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
                     susceptible[v] = False
                     infector[v] = [u]
                 elif return_full_data and v in new_infecteds and test_transmission(u, v, *args):
-                    #if `v` already infected on this round, consider if it is
+                    #if ``v`` already infected on this round, consider if it is
                     #multiply infected this round.
                     infector[v].append(u)
                     
@@ -467,14 +470,18 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         return scipy.array(t), scipy.array(S), scipy.array(I), \
                scipy.array(R)
     else:
-        return EoN.Simulation_Investigation(G, node_history, transmissions)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, transmissions, 
+                                            possible_statuses = ['S', 'I', 'R'], 
+                                            **sim_kwargs)
 
 
 
 def basic_discrete_SIR(G, p, initial_infecteds=None, 
                                 initial_recovereds = None, rho = None,
                                 tmin = 0, tmax=float('Inf'), 
-                                return_full_data = False):
+                                return_full_data = False, sim_kwargs = None):
     #tested in test_basic_discrete_SIR   
     r'''
     Performs simple discrete SIR simulation assuming constant transmission 
@@ -521,6 +528,10 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
     **return_full_data**  boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
+
     :Returns: 
         
     if return_full_data is False returns 
@@ -530,7 +541,7 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
         these scipy arrays give all the times observed and the number 
         in each state at each time.
             
-    Or `if return_full_data is True` returns
+    Or ``if return_full_data is True`` returns
         **full_data**  Simulation_Investigation object
             
         from this we can extract the status history of all nodes
@@ -558,10 +569,11 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
 
     return discrete_SIR(G, _simple_test_transmission_, (p,), 
                                     initial_infecteds, initial_recovereds, 
-                                    rho, tmin, tmax, return_full_data)
+                                    rho, tmin, tmax, return_full_data, sim_kwargs=sim_kwargs)
 
 def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
-                                tmin = 0, tmax = 100, return_full_data = False):
+                                tmin = 0, tmax = 100, return_full_data = False, 
+                                sim_kwargs = None):
     
     '''Does a simulation of the simple case of all nodes transmitting
     with probability p independently to each susceptible neighbor and then
@@ -592,6 +604,10 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
 
     **return_full_data**  boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
+
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
 
     :Returns: 
 
@@ -681,7 +697,11 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     if not return_full_data:
         return scipy.array(t), scipy.array(S), scipy.array(I)
     else:
-        return EoN.Simulation_Investigation(G, node_history, transmissions, SIR=False)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, transmissions, 
+                                            possible_statuses = ['S', 'I'], 
+                                            sim_kwargs=sim_kwargs)
 
     
     
@@ -734,12 +754,12 @@ def percolate_network(G, p):
 
 def _edge_exists_(u, v, H):
     r'''
-    Tests if directed edge u, v exists in graph H.
+    Tests if directed edge ``u``, ``v`` exists in graph ``H``.
     
     From figure 6.10 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
 
-    Tests whether H has an edge from u to v.
+    Tests whether ``H`` has an edge from ``u`` to ``v``.
 
     :Arguments: 
 
@@ -749,8 +769,8 @@ def _edge_exists_(u, v, H):
 
     :Returns: 
         
-    **True**  if H has the edge
-    **False**  if H does not have the edge
+    **True**  if ``H`` has the edge
+    **False**  if ``H`` does not have the edge
     '''
     return H.has_edge(u,v)
 
@@ -759,7 +779,7 @@ def percolation_based_discrete_SIR(G, p,
                                             initial_recovereds = None,
                                             rho = None, tmin = 0,
                                             tmax = float('Inf'),
-                                            return_full_data = False):
+                                            return_full_data = False, sim_kwargs = None):
     #tested in test_basic_discrete_SIR   
     r'''
     perfoms a simple SIR epidemic but using percolation as the underlying 
@@ -777,7 +797,7 @@ def percolation_based_discrete_SIR(G, p,
         
     You probably **shouldn't use this algorithm**.
         
-    See `basic_discrete_SIR` which produces equivalent outputs.  
+    See ``basic_discrete_SIR`` which produces equivalent outputs.  
     
     That algorithm will be faster than this one.  
     
@@ -817,11 +837,15 @@ def percolation_based_discrete_SIR(G, p,
     **return_full_data**  boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
+
     :Returns: 
         
     **t, S, I, R** Scipy arrays
         
-    OR if `return_full_data is True`:
+    OR if ``return_full_data is True``:
             
     **full_data**    Simulation_Investigation object
         from this we can extract the status history of all nodes
@@ -849,7 +873,8 @@ def percolation_based_discrete_SIR(G, p,
                                 initial_infecteds=initial_infecteds, 
                                 initial_recovereds = initial_recovereds,
                                 rho = rho, tmin = tmin, tmax = tmax, 
-                                return_full_data=return_full_data)
+                                return_full_data=return_full_data, 
+                                sim_kwargs=sim_kwargs)
                                 
 
 def estimate_SIR_prob_size(G, p):
@@ -886,7 +911,7 @@ def estimate_SIR_prob_size(G, p):
         estimates of the probability and proportion 
         infected (attack rate) in epidemics
         (the two are equal, but each given for consistency with 
-        `estimate_directed_SIR_prob_size`)
+        ``estimate_directed_SIR_prob_size``)
           
             
     :SAMPLE USE:
@@ -922,10 +947,10 @@ def directed_percolate_network(G, tau, gamma, weights = True):
 
     :See Also:
 
-    `nonMarkov_directed_percolate_network` which allows for duration and 
+    ``nonMarkov_directed_percolate_network`` which allows for duration and 
         time to infect to come from other distributions.
     
-    `nonMarkov_directed_percolate_network` which allows for more complex 
+    ``nonMarkov_directed_percolate_network`` which allows for more complex 
         rules
     
     :Arguments: 
@@ -1102,7 +1127,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     why are you using this command? If it's to better understand the
     relationship between percolation and SIR epidemics, that's fine.  
     But this command IS NOT an efficient way to calculate anything.  Don't do 
-    it like this.  Use one of the other algorithms.  Try `fast_SIR`, 
+    it like this.  Use one of the other algorithms.  Try ``fast_SIR``, 
     for example.
     
     :Arguments: 
@@ -1177,7 +1202,7 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
     
     :See Also:
 
-    `estimate_nonMarkov_SIR_prob_size` which handles nonMarkovian versions
+    ``estimate_nonMarkov_SIR_prob_size`` which handles nonMarkovian versions
 
     :Arguments: 
 
@@ -1463,9 +1488,9 @@ def nonMarkov_directed_percolate_network_with_timing(G,
         
     The returned graph is built by assigning each node an infection duration 
     and then each edge (in each direction) a delay until transmission.  
-    If   delay<duration  it adds directed edge to `H`.  
+    If   delay<duration  it adds directed edge to ``H``.  
     
-    if weights is True, then `H` contains the duration and delays
+    if weights is True, then ``H`` contains the duration and delays
     as weights.  Else it's just a directed graph.
 
     '''
@@ -1504,13 +1529,13 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
 
     :See Also:
         
-    `nonMarkov_directed_percolate_network_with_timing`
+    ``nonMarkov_directed_percolate_network_with_timing``
         
         if your rule for creating the percolated network is based on calculating
         a recovery time for each node and then calculating a separate
         transmission time for the edges this will be better.
     
-    `directed_percolate_network`
+    ``directed_percolate_network``
         
         if it's just a constant transmission and recovery rate.
 
@@ -1741,7 +1766,7 @@ def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rat
 
 def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None, 
                 rho = None, tmin = 0, tmax=float('Inf'), transmission_weight = None, 
-                recovery_weight = None, return_full_data = False):
+                recovery_weight = None, return_full_data = False, sim_kwargs = None):
     r'''
     fast SIR simulation for exponentially distributed infection and 
     recovery times
@@ -1805,12 +1830,16 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
     **return_full_data**   boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
-    
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
+
+        
     :Returns:
         
     **times, S, I, R** Scipy arrays
         
-    Or if `return_full_data is True`
+    Or if ``return_full_data is True``
             
     **full_data**  Simulation_Investigation object
             from this we can extract the status history of all nodes.
@@ -1862,7 +1891,8 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
                         initial_infecteds = initial_infecteds, 
                         initial_recovereds = initial_recovereds, 
                         rho=rho, tmin = tmin, tmax = tmax, 
-                        return_full_data = return_full_data)
+                        return_full_data = return_full_data, 
+                        sim_kwargs=sim_kwargs)
     else:
         #the transmission rate is tau for all edges.  We can use this
         #to speed up the code.
@@ -1878,7 +1908,8 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
                         initial_infecteds = initial_infecteds, 
                         initial_recovereds = initial_recovereds, 
                         rho=rho, tmin = tmin, tmax = tmax, 
-                        return_full_data = return_full_data)
+                        return_full_data = return_full_data, 
+                        sim_kwargs=sim_kwargs)
 
 
 
@@ -1891,7 +1922,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                         initial_infecteds = None,
                         initial_recovereds = None,
                         rho=None, tmin = 0, tmax = float('Inf'), 
-                        return_full_data = False):
+                        return_full_data = False, sim_kwargs = None):
     r'''
     A modification of the algorithm in figure A.3 of Kiss, Miller, & 
     Simon to allow for user-defined rules governing time of 
@@ -1926,7 +1957,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
 
         Will be called using the form
                  
-        `trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)`
+        ``trans_delay = trans_time_fxn(source_node, target_node, *trans_time_args)``
             Here trans_time_args is a tuple of the additional
             arguments the functions needs.
 
@@ -1943,7 +1974,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
 
         Called using the form
             
-        `rec_delay = rec_time_fxn(node, *rec_time_args)`
+        ``rec_delay = rec_time_fxn(node, *rec_time_args)``
             Here rec_time_args is a uple of additional arguments
             the function needs.
     
@@ -1952,14 +1983,14 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         from source to susceptible neighbors and a float giving delay until 
         recovery of the source.  
                                  
-        Can only be used **INSTEAD OF** `trans_time_fxn` AND `rec_time_fxn`.
+        Can only be used **INSTEAD OF** ``trans_time_fxn`` AND ``rec_time_fxn``.
               
         Gives an **ERROR** if these are also defined
             
         Called using the form 
-        `trans_delay_dict, rec_delay = trans_and_rec_time_fxn(
+        ``trans_delay_dict, rec_delay = trans_and_rec_time_fxn(
                                            node, susceptible_neighbors,
-                                           *trans_and_rec_time_args)`
+                                           *trans_and_rec_time_args)``
         here trans_delay_dict is a dict whose keys are those neighbors
         who receive a transmission and rec_delay is a float.
             
@@ -2003,13 +2034,16 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
 
     
     :Returns: 
         
     **times, S, I, R** Scipy arrays
         
-    Or if `return_full_data is True`
+    Or if ``return_full_data is True``
             
     **full_data**  Simulation_Investigation object
         from this we can extract the status history of all nodes
@@ -2051,7 +2085,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                                 rec_time_args=(D,),
                                 initial_infecteds = range(initial_inf_count))
         
-        # note the comma after `tau` and `D`.  This is needed for python
+        # note the comma after ``tau`` and ``D``.  This is needed for python
         # to recognize these are tuples
 
         # initial condition has first 100 nodes in G infected.
@@ -2140,7 +2174,11 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                 
         node_history = _transform_to_node_history_(infection_times, recovery_times, 
                                                     tmin, SIR = True)
-        return EoN.Simulation_Investigation(G, node_history, transmissions)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, transmissions, 
+                                            possible_statuses = ['S', 'I', 'R'], 
+                                            **sim_kwargs)
 
 
 def _find_trans_and_rec_delays_SIS_(node, neighbors, trans_time_fxn, 
@@ -2414,7 +2452,7 @@ def _process_rec_SIS_(time, node, times, recovery_times, S, I, status):
 
 def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100, 
                 transmission_weight = None, recovery_weight = None, 
-                return_full_data = False):
+                return_full_data = False, sim_kwargs = None):
     r'''Fast SIS simulations for epidemics on weighted or unweighted
     networks, allowing edge and node weights to scale the transmission
     and recovery rates.  Assumes exponentially distributed times to recovery
@@ -2459,10 +2497,14 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     **recovery_weight** string       (default None)
         a label for a weight given to the nodes to scale their 
         recovery rates
-        `gamma_i = G.node[i][recovery_weight]*gamma`
+        ``gamma_i = G.node[i][recovery_weight]*gamma``
     
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
+
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
 
     :Returns: 
         
@@ -2542,14 +2584,18 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return EoN.Simulation_Investigation(G, node_history, transmissions, SIR=False)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, transmissions, 
+                                            possible_statuses=['S', 'I'], 
+                                            **sim_kwargs)
 
 
 def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None, 
                         trans_and_rec_time_fxn = None, trans_time_args=(),
                         rec_time_args = (), trans_and_rec_time_args=(),
                         initial_infecteds = None, rho = None, tmin=0, tmax = 100,
-                        return_full_data = False):
+                        return_full_data = False, sim_kwargs = None):
                         
     r'''Similar to fast_nonMarkov_SIR. 
     
@@ -2605,7 +2651,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
         giving duration of infection of the source.  
                                  
         can only be **used instead of** 
-        `trans_time_fxn` and `rec_time_fxn`.  
+        ``trans_time_fxn`` and ``rec_time_fxn``.  
         there is an **error** if these are also defined.
         
         Called using the form 
@@ -2648,6 +2694,10 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
+
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
 
     :Returns: 
         
@@ -2727,7 +2777,9 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return EoN.Simulation_Investigation(G, node_history, transmissions, SIR=False)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, transmissions, possible_statuses = ['S', 'I'], **sim_kwargs)
 
 
 
@@ -2736,8 +2788,8 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 
 def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, 
                     initial_recovereds = None, rho = None, tmin = 0, 
-                    tmax=float('Inf'), return_full_data = False, 
-                    recovery_weight = None, transmission_weight = None):
+                    tmax=float('Inf'), recovery_weight = None, 
+                    transmission_weight = None, return_full_data = False, sim_kwargs = None):
     #tested in test_SIR_dynamics
     r'''    
     
@@ -2805,9 +2857,6 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     **tmax** number (default Infinity)
         stop time
         
-    **return_full_data** boolean (default False)
-        Tells whether a Simulation_Investigation object should be returned.  
-
     **recovery_weight** string (default None)
         the string used to define the node attribute for the weight.
         Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
@@ -2818,6 +2867,14 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         Assumes that the transmission rate from u to v is 
         tau*G.adj[u][v][transmission_weight]
         If None, then just uses tau without scaling.
+
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
+
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
+
 
     :Returns: 
         
@@ -2985,12 +3042,14 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         
 
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
-        return EoN.Simulation_Investigation(G, node_history, transmissions)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, transmissions, possible_statuses = ['S', 'I', 'R'], **sim_kwargs)
 
 
 def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
-                    tmax=100, return_full_data = False, recovery_weight=None,
-                    transmission_weight = None):
+                    tmax=100, recovery_weight=None, transmission_weight = None, 
+                    return_full_data = False, sim_kwargs = None):
     r'''
     Performs SIS simulations for epidemics on networks with or without weighted edges.
     
@@ -3034,9 +3093,6 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     **tmax** number
         stop time
         
-    **return_full_data** boolean (default False)
-        Tells whether a Simulation_Investigation object should be returned.  
-        
     **recovery_weight** string (default None)
         the string used to define the node attribute for the weight.
         Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
@@ -3046,13 +3102,20 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         the string used to define the edge attribute for the weight.
         Assumes that the transmission rate from u to v is 
         tau*G.adj[u][v][transmission_weight]
+
+    **return_full_data** boolean (default False)
+        Tells whether a Simulation_Investigation object should be returned.  
+        
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
         
     :Returns: 
 
     **times, S, I** scipy arrays
         giving times and number in each status for corresponding time
 
-    or if `return_full_data==True`
+    or if ``return_full_data==True``
 
     **full_data**  Simulation_Investigation object
         from this we can extract the status history of all nodes
@@ -3202,15 +3265,24 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         return scipy.array(times), scipy.array(S), scipy.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-        return EoN.Simulation_Investigation(G, node_history, SIR=False)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, possible_statuses=['S', 'I'], **sim_kwargs)
 
 def Gillespie_complex_contagion(G, rate_function, transition_choice, 
-    get_influence_set, IC, return_statuses, tmin = 0, tmax=100, 
-    return_full_data = False, parameters = None):
+    get_influence_set, IC, return_statuses, tmin = 0, tmax=100, parameters = None, 
+    return_full_data = False, sim_kwargs = None):
     
     r''' 
     Initially intended for a complex contagion.  However, this can allow influence
     from any nodes, not just immediate neighbors.
+    
+    The complex contagion must be something that all nodes do something simultaneously
+    
+    **This is not the same as if node ``v`` primes node ``u`` and later
+    node ``w`` causes ``u`` to transition.  This will require that both ``v`` 
+    and ``w`` have the relevant states at the moment of transition and it has
+    forgotten any previous history.**
     
     :Arguments: 
         
@@ -3232,14 +3304,14 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
         status[u] returns the status of u, and parameters is the parameters
         passed to the function.
         
-        it returns a number, the combined rate at which `node` might change 
+        it returns a number, the combined rate at which ``node`` might change 
         status.
         
         
     **transition_choice**
         A function that takes the network, a node, and the statuses of all the
         nodes and chooses which event will happen.  The function should be 
-        called [with or without `parameters`]
+        called [with or without ``parameters``]
         
         if parameters is None:
             transition_choice(G, node, status)
@@ -3250,13 +3322,13 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
         status[u] returns the status of u, and parameters is the parameters
         passed to the function.
         
-        It should return the new status of `node` based on the fact that the
+        It should return the new status of ``node`` based on the fact that the
         node is changing status.
         
     **get_influence_set**
-        When a node `u` changes status, we want to know which nodes may have their
+        When a node ``u`` changes status, we want to know which nodes may have their
         rate altered.  We need to update their rates.  This function returns all
-        nodes that may be affected by `u` (either in its previous state or its 
+        nodes that may be affected by ``u`` (either in its previous state or its 
         current state).  We will go through and recalculate the rates for all
         of these nodes.  For a contagion, we can simply choose all neighbors,
         but it may be faster to leave out any nodes that it wouldn't have
@@ -3305,8 +3377,8 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
 
     **(times, status1, status2, ...)**  tuple of scipy arrays
         first entry is the times at which events happen.
-        second (etc) entry is an array with the same number of entries as `times`
-        giving the number of nodes of status ordered as they are in `return_statuses` 
+        second (etc) entry is an array with the same number of entries as ``times``
+        giving the number of nodes of status ordered as they are in ``return_statuses`` 
         
 
     :SAMPLE USE:
@@ -3347,7 +3419,7 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
                 
         def get_influence_set(G, node, status, parameters):
             #this function needs to return any node whose rates might change
-            #because `node` has just changed status.
+            #because ``node`` has just changed status.
             #
             #the only neighbors a node might affect are the susceptible ones.
             
@@ -3375,10 +3447,11 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
     if parameters is None:
         parameters = ()
         
-    if return_full_data:
-        raise EoN.EoNError("Gillespie_complex_contagion does not currently support return_full_data=True")
 
     status = {node: IC[node] for node in G.nodes()}
+
+    if return_full_data:
+        node_history = {node:([tmin], [status[node]]) for node in G.nodes()}
 
     times = [tmin]
     t = tmin
@@ -3414,6 +3487,9 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
             data[new_status][-1] += 1
 
         status[node] = new_status
+        if return_full_data:
+            node_history[node][0].append(t)
+            node_history[node][1].append(new_status)
 
         #update self
         weight = rate_function(G, node, status, parameters)
@@ -3431,17 +3507,22 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
             delay = float('Inf')
         t += delay
 
-    returnval = []
-    times = scipy.array(times)
-    returnval.append(times)
-    for return_status in return_statuses:
-        data[return_status] = scipy.array(data[return_status])
-        returnval.append(data[return_status])
-    return returnval
+    if not return_full_data:
+        returnval = []
+        times = scipy.array(times)
+        returnval.append(times)
+        for return_status in return_statuses:
+            data[return_status] = scipy.array(data[return_status])
+            returnval.append(data[return_status])
+        return returnval
+    else:
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, possible_statuses = return_statuses, **sim_kwargs)
     
 def Gillespie_Arbitrary(G, spontaneous_transition_graph, 
   nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
-  spont_kwargs = None, nbr_kwargs=None, return_full_data = False):
+  spont_kwargs = None, nbr_kwargs=None, return_full_data = False, sim_kwargs = None):
   r'''Calls Gillespie_simple_contagion.  This is here for legacy reasons.
   
   Gillespie_Arbitrary has been replaced by Gillespie_simple_contagion.  It
@@ -3452,12 +3533,14 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph,
         "It will be removed in future versions.")
         
   return Gillespie_simple_contagion(G, spontaneous_transition_graph, 
-  nbr_induced_transition_graph, IC, return_statuses, tmin = tmin,  tmax=tmax, 
-  return_full_data = return_full_data)
+                                    nbr_induced_transition_graph, IC, 
+                                    return_statuses, tmin = tmin,  tmax=tmax, 
+                                    return_full_data = return_full_data, 
+                                    **sim_kwargs)
   
 def Gillespie_simple_contagion(G, spontaneous_transition_graph, 
   nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
-  spont_kwargs = None, nbr_kwargs=None, return_full_data = False):
+  spont_kwargs = None, nbr_kwargs=None, return_full_data = False, sim_kwargs = None):
     r'''
     Performs simulations for epidemics, allowing more flexibility than SIR/SIS.
     
@@ -3484,43 +3567,43 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     and whose edges represent possible transitions of statuses.
       
     - The spontaneous transitions can be represented by a graph whose nodes are 
-      the possible statuses and an edge from 'A' to 'B' represent that in the 
-      absence of any influence from others an indivdiual of status A 
-      transitions to status B with default rate given by the weight of the edge 
+      the possible statuses and an edge from ``'A'`` to ``'B'`` represent that in the 
+      absence of any influence from others an indivdiual of status ``'A'`` 
+      transitions to status ``'B'`` with default rate given by the weight of the edge 
       in this spontaneous transition graph.  The rate may be modified by
-      properties of the nodes in the contact network `G`.
+      properties of the nodes in the contact network ``G``.
     
     - The neighbor-induced transitions can be represented by a "transitions 
       graph" whose nodes are length-2 tuples.  The first entry represents the 
       first individual of a partnership and the second represents the second 
       individual.  **only the second individual changes status**.  An edge in 
-      the transitions graph from the node ('A', 'B') to the node ('A', 'C') 
-      represents that an 'AB' partnership in the contact network can cause the 
-      second individual to transition to status 'C'.  The weight of the edge 
+      the transitions graph from the node ``('A', 'B')`` to the node ``('A', 'C')``
+      represents that an ``'AB'`` partnership in the contact network can cause the 
+      second individual to transition to status ``'C'``.  The weight of the edge 
       in the represents the default transition rate.  The rate may be modified
-      by properties of the nodes or the edge in the contact network `G`.
+      by properties of the nodes or the edge in the contact network ``G``.
       
     [for reference, if you look at Fig 4.3 on pg 122 of Kiss, Miller & Simon
     the graphs for **SIS** would be:
-        `spontaneous_transition_graph`: 'I'->'S' with the edge weighted by gamma and
+        ``spontaneous_transition_graph``: ``'I'``->``'S'`` with the edge weighted by ``gamma`` and
         
-        `nbr_induced_transition_graph`: ('I', 'S') -> ('I', 'I') with the edge weighted by tau.
+        ``nbr_induced_transition_graph``: ``('I', 'S')`` -> ``('I', 'I')`` with the edge weighted by ``tau``.
         
     For **SIR** they would be:
-        `spontaneous_transition_graph`: 'I'->'R' with weight gamma and
+        ``spontaneous_transition_graph``: ``'I'``->``'R'`` with weight ``gamma`` and
         
-        `nbr_induced_transition_graph`: ('I', 'S') -> ('I', 'I') with rate tau.
+        ``nbr_induced_transition_graph``: ``('I', 'S')`` -> ``('I', 'I')`` with rate ``tau``.
         ]
         
     These graphs must be defined and then input into the algorithm.  
     
-    It is possible to weight edges or nodes in the contact network `G` (that is, 
+    It is possible to weight edges or nodes in the contact network ``G`` (that is, 
     not the 2 directed networks defined above, but the original contact 
     network) so that some of these transitions have different rates for 
     different individuals/partnerships.  These are included as attributes in the
     contact network.  In the most general case, the transition rate depends
     on some function of the attributes of the nodes or edge in the contact
-    network `G`.  
+    network ``G``.  
     
     There are two ways we introduce individual or pair-level heterogeneity in
     the population.  The first way is through introducing weights to individuals
@@ -3533,31 +3616,31 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     - We first describe examples of weighting nodes/edges in the population
     
     So for the SIR case, if some people have higher recovery rate, we might 
-    define a node attribute 'recovery_weight' for each node in `G`, and the 
+    define a node attribute ``'recovery_weight'`` for each node in ``G``, and the 
     recovery would occur with rate G.node[node]['recovery_weight']*gamma.  So
     a value of 1.1 would correspond to a 10% increased recovery rate.  Since I
     don't know what name you might choose for the weight label as I write this 
-    algorithm, in defining the spontaneous transition graph (H), the 'I'->'R' 
-    edge would be given an attribute 'weight_label' so that 
-    H.adj['I']['R']['weight_label'] = 'recovery_weight'.
-    If you define the attribute 'weight_label' for an edge in H, then it will be
-    assumed that every node in G has a corresponding weight.  If no attribute
+    algorithm, in defining the spontaneous transition graph (H), the ``'I'``->``'R'`` 
+    edge would be given an attribute ``'weight_label'`` so that 
+    ``H.adj['I']['R']['weight_label'] = 'recovery_weight'``.
+    If you define the attribute ``'weight_label'`` for an edge in ``H``, then it will be
+    assumed that every node in ``G`` has a corresponding weight.  If no attribute
     is given, then it is assumed that all transitions happen with the original
     rate.
     
     We similarly define the weight_labels as edge attributes in the 
-    neighbor-induced transition graph.  The edges of the graph 'G' have a 
-    corresponding G[u,v]['transmission_weight']
+    neighbor-induced transition graph.  The edges of the graph ``'G'`` have a 
+    corresponding ``G[u,v]['transmission_weight']``
     
     - Alternately we might introduce a function.
     
     So for the SIR case if the recovery rate depends on two attributes of a node
-    (say, age and gender), we define a function `rate_function(G,node)` which
+    (say, age and gender), we define a function ``rate_function(G,node)`` which
     will then look at G.node[node]['age'] and G.node[node]['gender'] and then
-    return a factor which will be multiplied by `gamma` to give the recovery 
+    return a factor which will be multiplied by ``gamma`` to give the recovery 
     rate.  Similarly, if we are considering a neighbor induced transition and
     the rate depends on properties of both nodes we define another function
-    `rate_function(G,u,v)` which may use attributes of u or v or the edge
+    ``rate_function(G,u,v)`` which may use attributes of u or v or the edge
     to find the appropriate scaling factor.
     
     
@@ -3568,45 +3651,45 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         The underlying contact network
             
     **spontaneous_transition_graph** Directed networkx graph
-        The nodes of this graph are the possible statuses of a node in G.
-        An edge in this graph is a possible transition in G that occurs
+        The nodes of this graph are the possible statuses of a node in ``G``.
+        An edge in this graph is a possible transition in ``G`` that occurs
         without any influence from neighbors.
             
         An edge in this directed graph is labelled with attributes
         
-          - `'rate'`   [a number, the default rate of the transition]
-          - `'weight_label'`  (optional) [a string, giving the label of 
-                            a **node** attribute in the contact network `G`
+          - ``'rate'``   [a number, the default rate of the transition]
+          - ``'weight_label'``  (optional) [a string, giving the label of 
+                            a **node** attribute in the contact network ``G``
                             that scales the transition rate]
-          - `'rate_function'` (optional not combinable with `'weight_label'`
+          - ``'rate_function'`` (optional not combinable with ``'weight_label'``
                             for some edge.)
                             [a user-defined function of the contact network 
                             and node that will scale the transition rate.
                             This cannot depend on the statuses of any nodes - 
                             we must be able to calculate it once at the
                             beginning of the process.]  It will be called as
-                            `rate_function(G, node,**spont_kwargs)` where
-                            `spont_kwargs` is described below.
+                            ``rate_function(G, node,**spont_kwargs)`` where
+                            ``spont_kwargs`` is described below.
                             
-        Only one of `'weight_label'` and `'rate_function'` can be given.
+        Only one of ``'weight_label'`` and ``'rate_function'`` can be given.
         
         In the description below, let's use   
-          - `rate = spontaneous_transition_graph.adj[Status1][Status2]['rate']`
-          - `weight_label = spontaneous_transition_graph.adj[Status1][Status2]['weight_label']`
-          - `rate_function = spontaneous_transition_graph.adj[Status1][Status2]['rate_function']`
+          - ``rate = spontaneous_transition_graph.adj[Status1][Status2]['rate']``
+          - ``weight_label = spontaneous_transition_graph.adj[Status1][Status2]['weight_label']``
+          - ``rate_function = spontaneous_transition_graph.adj[Status1][Status2]['rate_function']``
         
-        For a node `u` whose status is `Status1`, the rate at which `u` 
-        transitions to `Status2` is
-          - `rate`    if neither `weight_label` nor `rate_function` is defined.
-          - `rate*G.node[u][weight_label]` if `weight_label` is defined.
-          - `rate*rate_function(G, u, **spont_kwargs)` if `rate_function` is 
+        For a node ``u`` whose status is ``Status1``, the rate at which ``u`` 
+        transitions to ``Status2`` is
+          - ``rate``    if neither ``weight_label`` nor ``rate_function`` is defined.
+          - ``rate*G.node[u][weight_label]`` if ``weight_label`` is defined.
+          - ``rate*rate_function(G, u, **spont_kwargs)`` if ``rate_function`` is 
              defined.
       
       
         So for example in the case of an SIR disease, this would be a graph
-        with an isolated node `'S'` and an edge from node `'I'` to `'R'` with 
-        `rate` equal to `gamma` (the recovery rate).  It would not actually 
-        be necessary to have the node `'S'`.
+        with an isolated node ``'S'`` and an edge from node ``'I'`` to ``'R'`` with 
+        ``rate`` equal to ``gamma`` (the recovery rate).  It would not actually 
+        be necessary to have the node ``'S'``.
 
                     
         Note that the rate_function version is more general, and in principle 
@@ -3619,15 +3702,15 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         The nodes of this graph are tuples with possible statuses of nodes 
         at the end of an edge. The first node in the tuple is the node that
         could be affecting the second.  So for example for the SIR model
-        we would expect a node `('I', 'S')` with an edge to `('I', 'I')`.
+        we would expect a node ``('I', 'S')`` with an edge to ``('I', 'I')``.
         
         An edge in this directed graph is labelled with attributes
         
-          - `'rate'`   [a number, the default rate of the transition]
-          - `'weight_label'`  (optional) [a string, giving the label of 
-                            an *edge** attribute in the contact network `G`
+          - ``'rate'``   [a number, the default rate of the transition]
+          - ``'weight_label'``  (optional) [a string, giving the label of 
+                            an *edge** attribute in the contact network ``G``
                             that scales the transition rate]
-          - `'rate_function'` (optional not combinable with `'weight_label'`
+          - ``'rate_function'`` (optional not combinable with ``'weight_label'``
                             for some edge.)
                             [a user-defined function of the contact network 
                             and source and target nodes that will scale the 
@@ -3636,26 +3719,26 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
                             we must be able to calculate it once at the
                             beginning of the process.
                             It will be called as 
-                            `rate_function(G, source, target, *nbr_kwargs)]
+                            ``rate_function(G, source, target, *nbr_kwargs)``]
                             
-        Only one of `'weight_label'` and `'rate_function'` can be given.  
+        Only one of ``'weight_label'`` and ``'rate_function'`` can be given.  
         
         In the description below, let's use
         
-         - `rate = spontaneous_transition_graph.adj[Status1][Status2]['rate']`
-         - `weight_label = spontaneous_transition_graph.adj[Status1][Status2]['weight_label']`
-         - `rate_function = spontaneous_transition_graph.adj[Status1][Status2]['rate_function']`        
+         - ``rate = spontaneous_transition_graph.adj[Status1][Status2]['rate']``
+         - ``weight_label = spontaneous_transition_graph.adj[Status1][Status2]['weight_label']``
+         - ``rate_function = spontaneous_transition_graph.adj[Status1][Status2]['rate_function']``        
         
         If the transition is (A,B) to (A,C) and we have a source node of
         status A joined to a target node of status B then the target node
         transitions from B to C with rate
-          - `rate`    if neither `weight_label` nor `rate_function` is defined.
-          - `rate*G.adj[source][target][weight_label]` if `weight_label` is defined.
-          - `rate*rate_function(G, source, target, **nbr_kwargs)` if `rate_function` is defined
+          - ``rate``    if neither ``weight_label`` nor ``rate_function`` is defined.
+          - ``rate*G.adj[source][target][weight_label]`` if ``weight_label`` is defined.
+          - ``rate*rate_function(G, source, target, **nbr_kwargs)`` if ``rate_function`` is defined
         
         So for example in the case of an SIR disease with transmission rate
-        tau, this would be a graph with an edge from the node `('I','S')` to 
-        `('I', 'I')`.  The attribute `'rate'` for the edge would be `tau`.
+        tau, this would be a graph with an edge from the node ``('I','S')`` to 
+        ``('I', 'I')``.  The attribute ``'rate'`` for the edge would be ``tau``.
         
     **IC** dict
         states the initial status of each node in the network.
@@ -3685,16 +3768,18 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         function as def f(..., **kwargs) 
            
     **return_full_data** boolean
-        currently needs to be False.  True raises an error.  I expect this to
-        change in the future.
+        Tells whether to return a Simulation_Investigation object or not
         
+    **sim_kwargs** keyword arguments
+        Any keyword arguments to be sent to the Simulation_Investigation object
+        Only relevant if ``return_full_data=True``
         
     :Returns: 
 
     **(times, status1, status2, ...)**  tuple of scipy arrays
         first entry is the times at which events happen.
-        second (etc) entry is an array with the same number of entries as `times`
-        giving the number of nodes of status ordered as they are in `return_statuses` 
+        second (etc) entry is an array with the same number of entries as ``times``
+        giving the number of nodes of status ordered as they are in ``return_statuses`` 
         
     
     :SAMPLE USE:
@@ -3705,7 +3790,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     is taken to be the same for all nodes.
     
     There are more examples in the
-    online documentation at :ref:`simple-contagion-section`.
+    online documentation at :ref:``simple-contagion-section``.
 
     ::
 
@@ -3760,11 +3845,12 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     if nbr_kwargs is None:
         nbr_kwargs = {}
         
+    if sim_kwargs is None:
+        sim_kwargs = {}
+        
     status = {node: IC[node] for node in G.nodes()}
 
-    if return_full_data:#currently won't ever be true.
-        raise EoN.EoNError("Gillespie_simple_contagion does not currently support return_full_data=True")
-        #let's start trying to code this.
+    if return_full_data:
         transmissions = []
         node_history = {node:([tmin], [status[node]]) for node in G.nodes()}
 
@@ -3844,13 +3930,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             #print(status[node],status[nbr])
             if nbr_induced_transition_graph.has_node((status[node],status[nbr])):# and nbr_induced_transition_graph.degree((status[node],status[nbr])) >0:
                 for transition in nbr_induced_transition_graph.edges((status[node],status[nbr])):
-                    #if (node, nbr) not in get_weight[transition]: #since edge may be in opposite order to earlier, but only if undirected
-                    #    get_weight[transition][(node, nbr)] = get_weight[transition][(nbr, node)]
                     potential_transitions[transition].update((node, nbr), weight_increment = get_weight[transition][(node, nbr)])
-    #print(potential_transitions[('I', 'R')].items)
-    # for node in potential_transitions[('I', 'R')].items:
-    #     print(node, status[node])
-    # print(potential_transitions[('I', 'R')].total_weight())
     t = tmin
     
     #NOW WE'RE READY TO GET STARTED WITH THE SIMULATING
@@ -3881,12 +3961,9 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             old_status = transition[0]
             new_status = transition[1]
             #node changes status
-            if return_full_data:#currently won't ever be true.
-                #let's start trying to code this.
-                node_history[node][0] = [t]
-                node_history[node][1] = new_status
 
-        else:
+        else:                    
+
             source, target = actor
             modified_node = target
 
@@ -3895,9 +3972,14 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             
             if return_full_data:
                 transmissions.append((t, source, modified_node))
+
+                
             #modified_node changes status
 
         status[modified_node] = new_status
+        if return_full_data:
+            node_history[modified_node][0].append(t)
+            node_history[modified_node][1].append(new_status)
         
         #it might look like there is a cleaner way to do this, but what if it
         #happens that old_status == status[modified_node]???  This way still works.
@@ -3970,12 +4052,8 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             returnval.append(data[return_status])
         return returnval
     else:
-        return EoN.Simulation_Investigation(G, node_history, transmissions, SIR = False, return_statuses=return_statuses)
+        if sim_kwargs is None:
+            sim_kwargs = {}
+        return EoN.Simulation_Investigation(G, node_history, transmissions, possible_statuses= return_statuses, **sim_kwargs)
 
-    # return_full_data=False
-    # if not return_full_data:
-    #     return scipy.array(times), scipy.array(S), scipy.array(I)
-    # else:
-    #     node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
-    #     return EoN.Simulation_Investigation(G, node_history, SIR=False)
 

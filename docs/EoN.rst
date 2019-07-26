@@ -25,7 +25,7 @@ graphs; see https://networkx.github.io/
 **EoN** consists of several sets of algorithms.  
 
 - The first deals with **stochastic simulation of epidemics on networks**.  
-  The most significant of these are `fast_SIS` and `fast_SIR` which 
+  The most significant of these are ``fast_SIS`` and ``fast_SIR`` which 
   usually outperform Gillespie algorithms (also included).  These algorithms 
   are discussed in more detail in the appendix of the book.
 
@@ -89,9 +89,9 @@ Short descriptions
 ^^^^^^^^^^^^^^^^^^
 - Event-based algorithms:
 
-  These algorithms use an efficient approach to simulate epidemics.  `fast_SIR` 
-  and `fast_SIS` assume constant transmission and recovery rates, while
-  `fast_nonMarkov_SIR` and `fast_nonMarkov_SIS` allow the user to specify  
+  These algorithms use an efficient approach to simulate epidemics.  ``fast_SIR`` 
+  and ``fast_SIS`` assume constant transmission and recovery rates, while
+  ``fast_nonMarkov_SIR`` and ``fast_nonMarkov_SIS`` allow the user to specify  
   more detailed rules for transmission.
   
   - **fast_SIR**
@@ -106,12 +106,12 @@ Short descriptions
   the event driven methods.  I do not see evidence that they are ever 
   significantly faster.  It is not very practical to get away from the 
   constant rate assumptions so I prefer to avoid them.  However, 
-  `Gillespie_simple_contagion` allows the user to do SEIR, SIRS, or any of a number
+  ``Gillespie_simple_contagion`` allows the user to do SEIR, SIRS, or any of a number
   of other more exotic "simple contagion" scenarios that are not in the event-driven
-  code.  `Gillespie_complex_contagion` handles complex contagions, in which an
+  code.  ``Gillespie_complex_contagion`` handles complex contagions, in which an
   individual requires multiple partners to have a given state before it changes
-  status.  For legacy reasons, Gillespie_Arbitrary is included, it simply calls
-  Gillespie_simple_contagion, and will be removed in future versions.
+  status.  For legacy reasons, ``Gillespie_Arbitrary`` is included, it simply calls
+  ``Gillespie_simple_contagion``, and will be removed in future versions.
   
   - **Gillespie_SIR**
   - **Gillespie_SIS**
@@ -123,9 +123,9 @@ Short descriptions
 - Discrete-time algorithms
 
   These algirthms are appropriate for where we separate infection into 
-  generations.  We assume infection lasts a single time step.  The `basic_*` 
+  generations.  We assume infection lasts a single time step.  The ``basic_*`` 
   algorithms assume that transmission occurs with probability p for all edges.
-  In contrast `discrete_SIR` allows for very general user-specified
+  In contrast ``discrete_SIR`` allows for very general user-specified
   transmission rules.
   
   - **basic_discrete_SIR**
@@ -190,10 +190,12 @@ Quick List
    add_timeseries
    update_ts_kwargs
    update_ts_label
-   update_ts_colordict
+   update_ts_colordict 
+   update_ts_tex
    sim_update_kwargs
    sim_update_label
    sim_update_colordict
+   sim_update_tex
    set_pos
    
 Short description
@@ -233,8 +235,9 @@ Short description
     that u transmitted to v at time t.
   - **transmission_tree** returns a MultiDiGraph where an edge from u to v with
     attribute time = t means that u transmitted to v at time t.  (For SIR this
-    is a tree or a forest)
+    is a tree or a forest).
   
+
 - Details for plotting
 
   The remaining commands are to do with the specifics of how the plots appear
@@ -242,11 +245,12 @@ Short description
   - **update_ts_kwargs**
   - **update_ts_label**
   - **update_ts_colordict**
+  - **update_ts_tex**
   - **sim_update_kwargs**
   - **sim_update_label**
   - **sim_update_colordict**
+  - **sim_update_tex**
   - **set_pos**
-
 
 
 

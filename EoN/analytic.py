@@ -314,7 +314,7 @@ def get_Pk(G):
     :Returns: 
 
     **Pk** dict
-        Pk[k] is the proportion of nodes with degree k.
+        ``Pk[k]`` is the proportion of nodes with degree ``k``.
     '''
 
     Nk = Counter(dict(G.degree()).values())
@@ -393,8 +393,8 @@ def get_Pnk(G):
     :Returns: 
 
     **Pnk** dict
-        Pnk[k1][k2] is the proportion of neighbors of degree k1 nodes 
-        that have degree k2.
+        ``Pnk[k1][k2]`` is the proportion of neighbors of degree ``k1`` nodes 
+        that have degree ``k2``.
     '''
     Pnk = {k1:defaultdict(int)  for k1 in dict(G.degree()).values()}
     Nk = Counter(dict(G.degree()).values())

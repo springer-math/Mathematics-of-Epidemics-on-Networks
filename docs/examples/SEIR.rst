@@ -33,7 +33,7 @@ rate of transitioning from exposed to infected across different nodes.
     
     
     H = nx.DiGraph()
-    H.add_node('S')
+    H.add_node('S') #This line is actually unnecessary.
     H.add_edge('E', 'I', rate = 0.6, weight_label='expose2infect_weight')
     H.add_edge('I', 'R', rate = 0.1)
     

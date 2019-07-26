@@ -20,7 +20,7 @@ version available through pip (1.0.7).  The easiest way is
     pip install EoN
 
 
-The documentation provided here is for version 1.0.8rc2 which is on GitHub.  
+The documentation provided here is for version 1.0.8rc3 which is on GitHub.  
 You can clone or download the Github version at 
 https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks.  
 Then just move into the main directory and run

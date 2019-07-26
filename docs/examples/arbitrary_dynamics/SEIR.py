@@ -19,7 +19,7 @@ nx.set_edge_attributes(G, values=edge_attribute_dict, name='transmission_weight'
 
 
 H = nx.DiGraph()
-H.add_node('S')
+H.add_node('S')  #This line is unnecessary.
 H.add_edge('E', 'I', rate = 0.6, weight_label='expose2infect_weight')
 H.add_edge('I', 'R', rate = 0.1)
 

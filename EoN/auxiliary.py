@@ -19,7 +19,7 @@ def subsample(report_times, times, status1, status2=None,
     **report_times** iterable (ordered)
         times at which we want to know state of system
                    
-    **times** : iterable (ordered)
+    **times** iterable (ordered)
         times at which we have the system state (assumed no change 
         between these times)
             
@@ -28,7 +28,6 @@ def subsample(report_times, times, status1, status2=None,
         
         number of nodes in given status at corresponding time in times.
         
-
     **status2**  iterable  (optional, default None)
         generally S, I, or R
         
@@ -43,7 +42,7 @@ def subsample(report_times, times, status1, status2=None,
 
     If only status1 is defined
         **report_status1** scipy array 
-        gives status1 subsampled just at report_times.
+        gives ``status1`` subsampled just at ``report_times``.
                      
     If more are defined then it returns a list, either
         **[report_status1, report_status2]**
@@ -185,6 +184,7 @@ def get_time_shift(times, L, threshold):
             plt.plot(t-tshift, I, color = 'red', linewidth = 1, alpha = 0.4)
         plt.savefig("timeshift_demonstration.pdf")
     '''
+    
     for index, t in enumerate(times):
         if L[index]>= threshold:
             break

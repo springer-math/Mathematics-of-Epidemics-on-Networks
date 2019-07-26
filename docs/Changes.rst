@@ -1,6 +1,18 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.8rc3
+-----------------
+
+    The ``Gillespie_simple_contagion`` and ``Gillespie_complex_contagion`` code 
+    can now handle ``return_full_data=True``.
+    
+    The ``Simulation_Investigation`` objects can now handle arbitrary statuses,
+    rather than just SIS and SIR.
+
+    Examples using the ``Simulation_Investigation`` objects have been added or
+    updated.
+    
 New in v 1.0.8rc2
 -----------------
 
