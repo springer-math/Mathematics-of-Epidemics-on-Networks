@@ -218,7 +218,7 @@ for cntr in range(10):
 
     subsampled_ts = np.linspace(t[0], t[-1], 1000)
     subI, subR = EoN.subsample(subsampled_ts, t, I, R) 
-    plt.plot(t, I+R)
+    plt.plot(subsampled_ts, subI+subR)
 
 plt.xlabel('$t$')
 plt.ylabel('Number infected or recovered')
