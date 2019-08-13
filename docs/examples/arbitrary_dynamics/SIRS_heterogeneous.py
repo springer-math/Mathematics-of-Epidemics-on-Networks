@@ -20,7 +20,7 @@ genders = {node: 'M' if random.random()<0.5 else 'F' for node in G}
 nx.set_node_attributes(G, values=ages, name = 'age')
 nx.set_node_attributes(G, values = genders, name = 'gender')
 
-#Now we define the rate_functions
+#Now we define functions which will be used to scale the transition rates
 def transmission_weighting(G, source, target, **kwargs):
     scale = 1
     if G.node[target]['age']<kwargs['age_cutoff']:

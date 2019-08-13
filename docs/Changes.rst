@@ -1,6 +1,15 @@
 Changes from v 1.0
 ==================
 
+
+New in v 1.0.8rc5
+    The ``display`` and ``animate`` functions now allow an optional 
+    ``statuses_to_plot`` argument, allowing us to leave some statuses out.
+    This may require networkx v2.3 or later to work right.
+    
+    There is now a ``hierarchy_pos`` function which allows us to plot transmission
+    trees in a nice way. 
+    
 New in v 1.0.8rc4
 -----------------
     

@@ -38,7 +38,7 @@ We start with a few useful auxiliary functions
 '''
 
 __author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
-__version__ = "1.0.8rc4"
+__version__ = "1.0.8rc5"
 
 
 #__all__ = 

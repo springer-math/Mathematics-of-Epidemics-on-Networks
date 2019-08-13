@@ -1,3 +1,5 @@
+.. _heterogeneous_SIRS_example:
+
 SIRS with Heterogeneity
 -----------------------
 
@@ -11,6 +13,11 @@ We consider a model comparable to our basic SIRS example, except that some of
 the contacts are more infectious than before.  However, some individuals recover
 faster, while others take longer to return to the susceptible state after 
 recovery.  So the difference from our basic SIRS outcomes are not very large.
+
+Specifically we have transmission and recovery rates depend on age and gender.
+Transmission rates are not always symmetric, so it is not as simple as 
+introducing a weight to scale the partnerships.  So we introduce functions 
+to scale the transition rates.
 
 :: 
 
@@ -36,7 +43,7 @@ recovery.  So the difference from our basic SIRS outcomes are not very large.
     nx.set_node_attributes(G, values=ages, name = 'age')
     nx.set_node_attributes(G, values = genders, name = 'gender')
     
-    #Now we define the rate_functions
+    #Now we define functions which will be used to scale the transition rates
     def transmission_weighting(G, source, target, **kwargs):
         scale = 1
         if G.node[target]['age']<kwargs['age_cutoff']:

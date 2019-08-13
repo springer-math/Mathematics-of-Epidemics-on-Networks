@@ -19,7 +19,7 @@ from distutils.core import setup
 
 setup(name='EoN',
       packages = ['EoN'], 
-      version='1.0.8rc4',  #http://semver.org/
+      version='1.0.8rc5',  #http://semver.org/
       description = 'Epidemics on Networks',
       author = 'Joel C. Miller, Istvan Z. Kiss, and Peter Simon',
       author_email = 'joel.c.miller.research@gmail.com',
@@ -28,6 +28,7 @@ setup(name='EoN',
       keywords = ['Epidemics on Networks', 'Epidemic Sonnet Works'],
       install_requires = [
           'networkx',
+          'numpy',
           'scipy',
           'matplotlib'
           ],

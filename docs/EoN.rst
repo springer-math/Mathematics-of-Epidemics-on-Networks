@@ -205,11 +205,11 @@ Quick List
    add_timeseries
    update_ts_kwargs
    update_ts_label
-   update_ts_colordict 
+   update_ts_color_dict 
    update_ts_tex
    sim_update_kwargs
    sim_update_label
-   sim_update_colordict
+   sim_update_color_dict
    sim_update_tex
    set_pos
    

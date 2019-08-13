@@ -1,7 +1,7 @@
 import networkx as nx
 import random
 import heapq
-import scipy
+import numpy as np
 import EoN
 from collections import defaultdict
 from collections import Counter
@@ -63,17 +63,176 @@ class myQueue(object):
         r'''this will allow us to use commands like ``while Q:`` '''
         return len(self._Q_)
         
-        
+# from sortedcontainers import SortedList 
+# 
+#         
+# class _MySortedList_(object):
+#     r'''
+#     This code is intended as a possible replacement for the ListDict that I've
+#     been using.  
+#     
+#     I'm leaving it in place, but so far for my tests it is slower than ListDict.
+#     It might do better in cases where the probabilities of events have a wider
+#     range.  
+#     
+#     Since the cases I've tried may have fairly similar probabilities, the rejection
+#     sampling seems to outperform it.  If rejection sampling often resulted in rejections, this
+#     data type might perform better.
+#      ''' 
+#     
+#      
+#     def __init__(self, weighted = False):
+#         if weighted is True:
+#             self.weighted = True
+#             self.SL = SortedList()
+#             self.itemcounter = 0
+#             #
+#             #the SortedList self.SL will hold tuples that look like
+#             #(weight, itemcounter, item).
+#             #itemcounter is included to break any ties and make sure that
+#             #the comparison algorithm never looks at item (since I don't know
+#             #whether comparison is even defined for them.
+#             #
+#             #The entries will be ordered by weight first, and if there is
+#             #a tie, then by itemcounter (which increments whenever something
+#             #is added)
+#             #
+#             
+#             self.item2weight = {}
+#             #
+#             #self.item2weight is a dict where self.item2weight[item] is a tuple
+#             # of the form (weight, itemcounter), which will allow us to quickly
+#             #find the item in the list if we ever need it.
+#             #it also allows for a quick test to see if item has been put in.
+#             self._total_weight = 0
+#         else:
+#             self.weighted = False #need to build up this case.  Should basically be a listdict
+#             raise EoN.EoNError("you should be using a ListDict instead")
+#             
+#     def insert(self, item, weight = None):
+#         r'''
+#         If not present, then inserts the thing (with weight if appropriate)
+#         if already there, replaces the weight unless weight is 0
+#         
+#         If weight is 0, then it removes the item and doesn't replace.
+#         
+#         WARNING:
+#             if already present, then replaces weight.  To increment weight
+#             use update
+#         '''
+#         
+#         if item in self.item2weight:
+#             datum = (*self.item2weight.pop(item), item)
+#             self.SL.remove(datum)
+#         if weight > 0:
+#             self.update(item, weight_increment=weight)
+# 
+#     def update(self, item, weight_increment = None):
+#         r'''
+#         If not present, then inserts the thing (with weight if appropriate)
+#         if already there, increments weight
+#         
+#         WARNING:
+#             if already present, just increments weight.  To overwrite weight 
+#             use insert.
+#         '''
+#         if weight_increment is not None: #will break if passing a weight to unweighted case
+#             self._total_weight += weight_increment
+#             if item in self.item2weight:
+#                 datum = (*self.item2weight.pop(item), item)
+#                 self.SL.remove(datum)
+#                 new_weight = datum[0]+weight_increment
+#             else:
+#                 new_weight = weight_increment
+#             if new_weight >0:
+#                 self.itemcounter += 1
+#                 self.SL.add((new_weight, self.itemcounter, item))
+#                 self.item2weight[item] = (new_weight, self.itemcounter)
+#         elif self.weighted:
+#             raise Exception('if weighted, must assign weight_increment')
+#     
+#     
+#     def __len__(self):
+#         return len(self.items)
+# 
+#     def __contains__(self, item):
+#         return item in self.item2weight
+# 
+#     def remove(self, item):
+#         datum = (*self.item2weight.pop(item), item)
+#         self.SL.remove(datum)
+#         self._total_weight -= datum[0]
+#         
+#     def choose_random(self):
+#         #presumes weighted and sorted in increasing order.  So start from end
+#         #and work back.
+#         current_index = len(self.SL)-1
+#         largest_r = 0
+#         q=0
+#         p=1
+#         while current_index >= 0:
+#             datum = self.SL[current_index]
+#             W = datum[0]
+#             r = (q+p*random.random())**(1./W)
+#             if r> largest_r:
+#                 largest_r = r
+#                 returnindex = current_index
+#                 
+#             q = largest_r**W
+#             p = 1-q
+#             current_index -= np.random.geometric(p)
+#     
+#         return self.SL[returnindex][2]
+# 
+#         
+# 
+#     def random_removal(self):
+#         r'''uses other class methods to choose an entry by weight and then remove it'''
+#         choice = self.choose_random()
+#         self.remove(choice)
+#         return choice
+# 
+#     def total_weight(self):
+#         if self.weighted:
+#             return self._total_weight
+#         else:
+#             return len(self)
+# 
+#     def update_total_weight(self):
+#         self._total_weight = sum(self.weight[item] for item in self.items)
+
+
 class _ListDict_(object):
     r'''
-    The Gillespie algorithm with rejection-sampling will involve a step 
-    that samples a random element from a set.  This is slow in Python.  
+    The Gillespie algorithm will involve a step that samples a random element 
+    from a set based on its weight.  This is awkward in Python.
+    
     So I'm introducing a new class based on a stack overflow answer by
     Amber (http://stackoverflow.com/users/148870/amber) 
     for a question by
     tba (http://stackoverflow.com/users/46521/tba) 
     found at
     http://stackoverflow.com/a/15993515/2966723
+    
+    This will allow me to select a random element uniformly, and then use 
+    rejection sampling to make sure it's been selected with the appropriate 
+    weight.
+
+    
+    I believe a faster data structure can be created with a (binary) tree.
+    We add an object with a weight to the tree.  The nodes track their weights
+    and the sum of the weights below it.  So choosing a random object (by weight)
+    means that we choose a random number between 0 and weight_sum.  Then 
+    if it's less than the first node's weight, we choose that.  Otherwise,
+    we see if the remaining bit is less than the total under the first child.  
+    If so, go there, otherwise, it's the other child.  Then iterate.  Adding
+    a node would probably involve placing higher weight nodes higher in
+    the tree.  Currently I don't have a fast enough implementation of this
+    for my purposes.  So for now I'm sticking to the mixture of lists & 
+    dictionaries.
+    
+    I believe this structure I'm describing is similar to a "partial sum tree"
+    or a "Fenwick tree", but they seem different.
     '''
     def __init__(self, weighted = False):
         self.item_to_position = {}
@@ -365,7 +524,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     :Returns: 
         
         
-    **t, S, I, R** scipy arrays
+    **t, S, I, R** numpy arrays
             
     Or ``if return_full_data is True`` returns
     
@@ -467,8 +626,8 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         S.append(S[-1]-I[-1])
         t.append(t[-1]+1)
     if not return_full_data:
-        return scipy.array(t), scipy.array(S), scipy.array(I), \
-               scipy.array(R)
+        return np.array(t), np.array(S), np.array(I), \
+               np.array(R)
     else:
         if sim_kwargs is None:
             sim_kwargs = {}
@@ -536,9 +695,9 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
         
     if return_full_data is False returns 
         
-        **t, S, I, R**    scipy arrays
+        **t, S, I, R**    numpy arrays
         
-        these scipy arrays give all the times observed and the number 
+        these numpy arrays give all the times observed and the number 
         in each state at each time.
             
     Or ``if return_full_data is True`` returns
@@ -614,7 +773,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     if return_full_data is False
         **t, S, I**
             
-        All scipy arrays 
+        All numpy arrays 
 
     if return_full_data is True
         **full_data**    Simulation_Investigation object
@@ -695,7 +854,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
             
         
     if not return_full_data:
-        return scipy.array(t), scipy.array(S), scipy.array(I)
+        return np.array(t), np.array(S), np.array(I)
     else:
         if sim_kwargs is None:
             sim_kwargs = {}
@@ -843,7 +1002,7 @@ def percolation_based_discrete_SIR(G, p,
 
     :Returns: 
         
-    **t, S, I, R** Scipy arrays
+    **t, S, I, R** numpy arrays
         
     OR if ``return_full_data is True``:
             
@@ -1724,8 +1883,8 @@ def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rat
     duration = random.expovariate(rec_rate_fxn(node))
 
         
-    trans_prob = 1-scipy.exp(-tau*duration)
-    number_to_infect = scipy.random.binomial(len(sus_neighbors),trans_prob)
+    trans_prob = 1-np.exp(-tau*duration)
+    number_to_infect = np.random.binomial(len(sus_neighbors),trans_prob)
         #print(len(suscep_neighbors),number_to_infect,trans_prob, tau, duration)
     transmission_recipients = random.sample(sus_neighbors,number_to_infect)
     trans_delay = {}
@@ -1755,8 +1914,8 @@ def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rat
 #        index += jump
 
 ##slow approach 2:
-    #trans_prob = 1-scipy.exp(-tau*duration)
-    #number_to_infect = scipy.random.binomial(len(sus_neighbors),trans_prob)
+    #trans_prob = 1-np.exp(-tau*duration)
+    #number_to_infect = np.random.binomial(len(sus_neighbors),trans_prob)
         #print(len(suscep_neighbors),number_to_infect,trans_prob, tau, duration)
     #transmission_recipients = random.sample(sus_neighbors,number_to_infect)
     #trans_delay = {}
@@ -1837,7 +1996,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         
     :Returns:
         
-    **times, S, I, R** Scipy arrays
+    **times, S, I, R** numpy arrays
         
     Or if ``return_full_data is True``
             
@@ -2041,7 +2200,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     
     :Returns: 
         
-    **times, S, I, R** Scipy arrays
+    **times, S, I, R** numpy arrays
         
     Or if ``return_full_data is True``
             
@@ -2160,8 +2319,8 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     R=R[len(initial_infecteds):]
 
     if not return_full_data:
-        return scipy.array(times), scipy.array(S), scipy.array(I), \
-               scipy.array(R) 
+        return np.array(times), np.array(S), np.array(I), \
+               np.array(R) 
     else:
         #strip pred_inf_time and rec_time down to just the values for nodes 
         #that became infected
@@ -2508,7 +2667,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
 
     :Returns: 
         
-    **times, S, I** each a scipy array
+    **times, S, I** each a numpy array
         times and number in each status for corresponding time
         
     or if return_full_data=True
@@ -2581,7 +2740,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     I=I[len(initial_infecteds):]
 
     if not return_full_data:
-        return scipy.array(times), scipy.array(S), scipy.array(I)
+        return np.array(times), np.array(S), np.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         if sim_kwargs is None:
@@ -2701,7 +2860,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 
     :Returns: 
         
-    **times, S, I** each a scipy array
+    **times, S, I** each a numpy array
         giving times and number in each status for corresponding time
     
     or if return_full_data=True:
@@ -2774,7 +2933,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
     I=I[len(initial_infecteds):]
 
     if not return_full_data:
-        return scipy.array(times), scipy.array(S), scipy.array(I)
+        return np.array(times), np.array(S), np.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         if sim_kwargs is None:
@@ -2878,7 +3037,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
 
     :Returns: 
         
-    **times, S, I, R** each a scipy array
+    **times, S, I, R** each a numpy array
         giving times and number in each status for corresponding time
 
     OR if return_full_data=True:
@@ -2993,7 +3152,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             recovering_node = infecteds.random_removal() #does weighted choice and removes it
             status[recovering_node]='R'
             if return_full_data:
-                recovery_times[node].append(t)
+                recovery_times[recovering_node].append(t)
 
             for nbr in G.neighbors(recovering_node):
                 if status[nbr] == 'S':
@@ -3008,7 +3167,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
 
             if return_full_data:
                 transmissions.append((t, transmitter, recipient))
-                infection_times[node].append(t)
+                infection_times[recipient].append(t)
             infecteds.update(recipient, weight_increment = nodeweight(recipient))
 
             for nbr in G.neighbors(recipient):
@@ -3034,12 +3193,15 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         t += delay
 
     if not return_full_data:
-        return scipy.array(times), scipy.array(S), scipy.array(I), \
-                scipy.array(R)
+        return np.array(times), np.array(S), np.array(I), \
+                np.array(R)
     else:
+        #print(infection_times)
+        #print(recovery_times)
         infection_times = {node: L[0] for node, L in infection_times.items()}
         recovery_times = {node: L[0] for node, L in recovery_times.items()}
-        
+        #print(infection_times)
+        #print(recovery_times)
 
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = True)
         if sim_kwargs is None:
@@ -3112,7 +3274,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         
     :Returns: 
 
-    **times, S, I** scipy arrays
+    **times, S, I** numpy arrays
         giving times and number in each status for corresponding time
 
     or if ``return_full_data==True``
@@ -3229,7 +3391,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
                     IS_links.update((nbr, recovering_node), weight_increment = edgeweight(recovering_node, nbr))
                         
             times.append(t)
-            S.append(S[-1])
+            S.append(S[-1]+1)
             I.append(I[-1]-1)
         else:
             transmitter, recipient = IS_links.choose_random()
@@ -3262,7 +3424,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         t += delay
 
     if not return_full_data:
-        return scipy.array(times), scipy.array(S), scipy.array(I)
+        return np.array(times), np.array(S), np.array(I)
     else:
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         if sim_kwargs is None:
@@ -3375,7 +3537,7 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
         
     :Returns: 
 
-    **(times, status1, status2, ...)**  tuple of scipy arrays
+    **(times, status1, status2, ...)**  tuple of numpy arrays
         first entry is the times at which events happen.
         second (etc) entry is an array with the same number of entries as ``times``
         giving the number of nodes of status ordered as they are in ``return_statuses`` 
@@ -3509,10 +3671,10 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
 
     if not return_full_data:
         returnval = []
-        times = scipy.array(times)
+        times = np.array(times)
         returnval.append(times)
         for return_status in return_statuses:
-            data[return_status] = scipy.array(data[return_status])
+            data[return_status] = np.array(data[return_status])
             returnval.append(data[return_status])
         return returnval
     else:
@@ -3776,7 +3938,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         
     :Returns: 
 
-    **(times, status1, status2, ...)**  tuple of scipy arrays
+    **(times, status1, status2, ...)**  tuple of numpy arrays
         first entry is the times at which events happen.
         second (etc) entry is an array with the same number of entries as ``times``
         giving the number of nodes of status ordered as they are in ``return_statuses`` 
@@ -4045,10 +4207,10 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         
     if not return_full_data:
         returnval = []
-        times = scipy.array(times)
+        times = np.array(times)
         returnval.append(times)
         for return_status in return_statuses:
-            data[return_status] = scipy.array(data[return_status])
+            data[return_status] = np.array(data[return_status])
             returnval.append(data[return_status])
         return returnval
     else:

@@ -29,7 +29,7 @@ class Simulation_Investigation():
     class _time_series_():
         
         
-        def __init__(self, ts_data, colordict, label=None, tex = True,
+        def __init__(self, ts_data, color_dict, label=None, tex = True,
                     **kwargs):
             r'''
             
@@ -40,8 +40,8 @@ class Simulation_Investigation():
                 ``D[status]`` is a numpy array giving the number of individuals
                 of given status at corresponding time in ``t``.
                 
-            **colordict** a dict
-                ``colordict[status]`` is the color to be used for status in plots
+            **color_dict** a dict
+                ``color_dict[status]`` is the color to be used for status in plots
                 
             **label** a string
                 The label to be used for these plots
@@ -57,32 +57,31 @@ class Simulation_Investigation():
             self._t_ = ts_data[0]
             self._D_ = ts_data[1]
             self._tex_ = tex
-            self.colordict = colordict
+            self.color_dict = color_dict
             self.label=label
             self.plt_kwargs = kwargs
 
         def _plot_(self, ax, statuses_to_plot):
             if self.label:
-                #print('tex=',self._tex_)
                 if self._tex_:
                     for status in statuses_to_plot:
                         if status in self._D_:
-                            ax.plot(self._t_, self._D_[status], color = self.colordict[status], label=self.label+': ${}$'.format(status), **self.plt_kwargs)
+                            ax.plot(self._t_, self._D_[status], color = self.color_dict[status], label=self.label+': ${}$'.format(status), **self.plt_kwargs)
                 else:
                     for status in statuses_to_plot:
                         if status in self._D_:
-                            ax.plot(self._t_, self._D_[status], color = self.colordict[status], label=self.label+': {}'.format(status), **self.plt_kwargs)
+                            ax.plot(self._t_, self._D_[status], color = self.color_dict[status], label=self.label+': {}'.format(status), **self.plt_kwargs)
             else:
                 for status in statuses_to_plot:
                     if status in self._D_:
-                        ax.plot(self._t_, self._D_[status], color = self.colordict[status], **self.plt_kwargs)
+                        ax.plot(self._t_, self._D_[status], color = self.color_dict[status], **self.plt_kwargs)
 
         def update_kwargs(self, **kwargs):
             self.plt_kwargs.update(kwargs)
                             
  
     def __init__(self, G, node_history, transmissions = None, 
-                    possible_statuses = None, pos = None, colordict=None,
+                    possible_statuses = None, pos = None, color_dict=None,
                     tex = True):
                     
         r'''
@@ -108,7 +107,7 @@ class Simulation_Investigation():
             If not given, then defaults to the values in node_history.
         **pos** (dict - default None)
             The ``pos`` argument to be given to the networkx plotting commands.
-        **colordict** (dict - default None)
+        **color_dict** (dict - default None)
             A dictionary stating for each status what color is to be used when
             plotting.
             If not given and your statuses are ``'S'``, and ``'I'`` or they are 
@@ -118,7 +117,7 @@ class Simulation_Investigation():
             me. 
             Otherwise if not given, it will cycle through a set of 7 colors
             which I believe are color-blind friendly.  If you have more than
-            7 statuses, you probably want to set your own colordict.
+            7 statuses, you probably want to set your own color_dict.
             
         **tex** Boolean (default `True`)
             If 'True`, then labels for statuses will be in tex's math mode
@@ -131,14 +130,14 @@ class Simulation_Investigation():
                 ps = ps.union(set(node_history[node]))
             possible_statuses = list(ps)
             
-        if colordict is None:
+        if color_dict is None:
             if set(possible_statuses) == set(['S', 'I', 'R']):
-                colordict = {'S':'#009a80','I':'#ff2000', 'R':'gray'}
+                color_dict = {'S':'#009a80','I':'#ff2000', 'R':'gray'}
             elif set(possible_statuses) == set(['S', 'I']):
-                colordict = {'S':'#009a80','I':'#ff2000'}
+                color_dict = {'S':'#009a80','I':'#ff2000'}
             else:
                 colors = ['#FF2000', '#009A80', '#5AB3E6', '#E69A00', '#CD9AB3', '#0073B3','#F0E442']
-                colordict = {status:colors[index%len(colors)] for index, status in enumerate(possible_statuses)}
+                color_dict = {status:colors[index%len(colors)] for index, status in enumerate(possible_statuses)}
                 
                 
         self.G = G
@@ -146,13 +145,13 @@ class Simulation_Investigation():
         self._transmissions_ = transmissions
         self._tex_ = tex
         self._possible_statuses_ = possible_statuses
-        self.sim_colordict = colordict
+        self.sim_color_dict = color_dict
         self.pos = pos #don't go through the effort to define this until a plot
                        #is made
         self.summary() #defines self._t_, self._D_
         self._time_series_list_ = []
         self._simulation_time_series_ = self._time_series_(self._summary_,
-                                    colordict=self.sim_colordict, 
+                                    color_dict=self.sim_color_dict, 
                                     label = 'Simulation', tex = tex
                                     )
         self._time_series_list_.append(self._simulation_time_series_)
@@ -304,16 +303,16 @@ class Simulation_Investigation():
     def t(self):
         r''' Returns the times of events
         Generally better to get these all through summary()'''
-        return self.summary[0]
+        return self._summary_[0]
     
     def S(self):
         r''' 
         
-        If ``'S'`` is a state, then this will return the number susceptible at each time
+        If ``'S'`` is a state, then this will return the number susceptible at each time. 
         
         Else it raises an error
 
-        Generally better to get these all through summary()'''
+        Generally better to get these all through ``summary()``  '''
 
         if 'S' in self._possible_statuses_:
             return self._summary_[1]['S']
@@ -389,7 +388,7 @@ class Simulation_Investigation():
                 T.add_edge(u, v, time=t)
         return T
         
-    def add_timeseries(self, ts_data, colordict = None, label = None, tex = None,
+    def add_timeseries(self, ts_data, color_dict = None, label = None, tex = None,
                         **kwargs):
         r'''
         
@@ -404,7 +403,7 @@ class Simulation_Investigation():
             and D is a dict
             where D[status] is the number of individuals of given status at 
             corresponding time.
-        **colordict** dict  (default None)
+        **color_dict** dict  (default None)
             a dictionary mapping statuses to the color
             desired for their plots.  Defaults to the same as the simulation
         **label** (string)
@@ -423,9 +422,9 @@ class Simulation_Investigation():
         This adds the timeseries object ``ts`` to the internal ``_time_series_list_``
         
         '''
-        if colordict is None:
-            colordict = self.colordict
-        ts = self._time_series_(ts_data, colordict = colordict, label=label, 
+        if color_dict is None:
+            color_dict = self.color_dict
+        ts = self._time_series_(ts_data, color_dict = color_dict, label=label, 
                                 tex=self._tex_, **kwargs)
         self._time_series_list_.append(ts)
         return ts
@@ -465,22 +464,22 @@ class Simulation_Investigation():
         
         ts.label=label
     
-    def update_ts_colordict(self, ts, colordict):
+    def update_ts_color_dict(self, ts, color_dict):
         r'''
         
-        updates the colordict for time series plots
+        updates the color_dict for time series plots
         
         :Arguments:
         **ts** timeseries object
             the timeseries object whose key word args we are updating.
-        **colordict** dict
-            the new colordict
+        **color_dict** dict
+            the new color_dict
         '''
 
         for status in ts._D_:
-            if status not in colordict:
-                raise EoN.EoNError("Status {} is not in colordict".format(status))
-        ts.colordict=colordict        
+            if status not in color_dict:
+                raise EoN.EoNError("Status {} is not in color_dict".format(status))
+        ts.color_dict=color_dict        
     
     def sim_update_kwargs(self, **kwargs):
         r'''Allows us to change some of the matplotlib key word arguments
@@ -513,24 +512,24 @@ class Simulation_Investigation():
         '''
         self.label=label
 
-    def sim_update_colordict(self, colordict):
+    def sim_update_color_dict(self, color_dict):
         r'''
         
-        updates the colordict for the simulation 
+        updates the color_dict for the simulation 
         
         :Arguments:
-        **colordict** dict
-            the new colordict
+        **color_dict** dict
+            the new color_dict
         '''
         for status in self._possible_statuses_:
-            if status not in colordict:
-                raise EoN.EoNError("Status {} is not in colordict".format(status))
+            if status not in color_dict:
+                raise EoN.EoNError("Status {} is not in color_dict".format(status))
 
-        self.sim_colordict = colordict
-        self._simulation_time_series_.colordict=colordict
+        self.sim_color_dict = color_dict
+        self._simulation_time_series_.color_dict=color_dict
         
         
-#    def add_timeseries_from_analytic_model(self, tau, gamma, model = EoN.EBCM_from_graph, tmin = 0, tmax = 10, tcount = 1001, SIR = True, colordict={'S':'#009a80','I':'#ff2000', 'R':'gray'}, label = None):
+#    def add_timeseries_from_analytic_model(self, tau, gamma, model = EoN.EBCM_from_graph, tmin = 0, tmax = 10, tcount = 1001, SIR = True, color_dict={'S':'#009a80','I':'#ff2000', 'R':'gray'}, label = None):
 #        r''' Uses one of the analytic models to predict the curve.
 #        The analytic model needs to be one of the *_from_graph models.
 #        (currently the pref mixing EBCM models do not work with this either)
@@ -565,7 +564,7 @@ class Simulation_Investigation():
 #                    tcount=tcount, return_full_data=False)
 #            R=None
 #
-#        self.add_timeseries(t, S=S, I=I, R=R, colordict=colordict, label=label)
+#        self.add_timeseries(t, S=S, I=I, R=R, color_dict=color_dict, label=label)
 #        def calculate_approximate_time_series(self, function, rho = None, **params):
 #        r'''calls function to estimate time series.  If using one of the
 #        networkx functions, it will use one of the X_from_graph functions'''
@@ -585,7 +584,7 @@ class Simulation_Investigation():
         '''
         self.pos = pos
         
-    def _display_graph_(self, pos, nodestatus, nodelist, StatusOrder, ax, **nx_kwargs):
+    def _display_graph_(self, pos, nodestatus, nodelist, status_order, statuses_to_plot, ax, **nx_kwargs):
 
         '''
         
@@ -601,11 +600,16 @@ class Simulation_Investigation():
             a list of the nodes to plot.  This partially determines which
             nodes appear on top
             
-        **StatusOrder**  list of statuses  
+        **status_order**  list of statuses  
             Each status will appear on top of all later statuses.  If list 
             empty or ``False``, will ignore.
             Any statuses not appearing in list will simply be below those on the
             list and will not have priority by status.
+            
+        **statuses_to_plot** list of statuses to plot.
+            If given, then the other nodes will be left invisible when plotting
+            but I think this requires networkx v2.3 or later.
+            
             
         **ax** axis
         
@@ -615,39 +619,40 @@ class Simulation_Investigation():
         '''
 
         
-        #print(nodelist)
         if nodelist:
-            #print('in if')
             nodeset = set(nodelist) #containment test in next line is quicker with set
             edgelist = [edge for edge in self.G.edges() if edge[0] in nodeset and edge[1] in nodeset]
         else:
             nodelist = list(self.G.nodes())
             random.shuffle(nodelist)#assume no order desired unless sent in
             edgelist = list(self.G.edges())
-        #print(nodelist)
-        if StatusOrder: #redefine nodelist order so that particular status on top
-            nodes_by_status = [[node for node in nodelist if nodestatus[node] == status] for status in reversed(StatusOrder)]
+        if status_order: #redefine nodelist order so that particular status on top
+            nodes_by_status = [[node for node in nodelist if nodestatus[node] == status] for status in reversed(status_order)]
             # I_nodes = [node for node in nodelist if nodestatus[node] == 'I']
-            other_nodes = [node for node in nodelist if nodestatus[node] not in StatusOrder]
+            other_nodes = [node for node in nodelist if nodestatus[node] not in status_order]
             nodelist = other_nodes
             for L in nodes_by_status:
                 nodelist.extend(L)
 
-        colorlist = [self.sim_colordict[nodestatus[node]] for node in nodelist]
+        color_list = [self.sim_color_dict[nodestatus[node]] if nodestatus[node] in statuses_to_plot else "None" for node in nodelist]
 
         nx.draw_networkx_edges(self.G, pos, edgelist=edgelist, ax=ax, **nx_kwargs)
-        drawn_nodes = nx.draw_networkx_nodes(self.G, pos, nodelist = nodelist, node_color=colorlist, ax=ax, **nx_kwargs)
+        drawn_nodes = nx.draw_networkx_nodes(self.G, pos, nodelist = nodelist, node_color=color_list, ax=ax, **nx_kwargs)
+        if "with_labels" in nx_kwargs and nx_kwargs['with_labels']==True:
+            nx.draw_networkx_labels(self.G, pos)
+        if "with_edge_labels" in nx_kwargs and nx_kwargs['with_edge_labels'] == True:
+            nx.draw_networkx_edge_labels(self.G, pos)
         ax.set_xticks([])
         ax.set_yticks([])
         
         fakelines = []
-        for status in self._possible_statuses_:
-            fakelines.append(plt.Line2D([0,0],[0,1], color=self.sim_colordict[status], marker = 'o', linestyle = ''))
+        for status in statuses_to_plot:
+            fakelines.append(plt.Line2D([0,0],[0,1], color=self.sim_color_dict[status], marker = 'o', linestyle = ''))
         
         if self._tex_:
-            ax.legend(fakelines, ['${}$'.format(status) for status in self._possible_statuses_])
+            ax.legend(fakelines, ['${}$'.format(status) for status in statuses_to_plot])
         else:
-            ax.legend(fakelines, self._possible_statuses_)
+            ax.legend(fakelines, statuses_to_plot)
 
         return drawn_nodes
 
@@ -733,7 +738,8 @@ class Simulation_Investigation():
         return ts_axes, time_markers
         
     def display(self, time, ts_plots = None, ts_list = None, nodelist=None, 
-                StatusOrder=False, timelabel=r'$t$', pos=None, **nx_kwargs):
+                status_order=False, timelabel=r'$t$', pos=None, statuses_to_plot = None,
+                **nx_kwargs):
         r'''
             
         Provides a plot of the network at a specific time and (optionally) 
@@ -752,7 +758,8 @@ class Simulation_Investigation():
         **time** float
                 the time for the snapshot of the network.
                 
-        **ts_plots** (list of strings, default to self._possible_statuses_)
+        **ts_plots** (list of strings, defaults to ``statuses_to_plot``, which defaults 
+                      to ``self._possible_statuses_``)
         
                 if ``[]`` or ``False`` then the display only shows the network.  
                 
@@ -782,9 +789,9 @@ class Simulation_Investigation():
                 which nodes should be included in the network plot.  By default
                 this is the entire network.  
                 This also determines which nodes are on top of each other 
-                (particularly if ``StatusOrder`` is ``False``).
+                (particularly if ``status_order`` is ``False``).
             
-        **StatusOrder**  list of statuses  default ``False``
+        **status_order**  list of statuses  default ``False``
             Each status will appear on top of all later statuses.  If list 
             empty or ``False``, will ignore.
             Any statuses not appearing in list will simply be below those on the
@@ -796,6 +803,10 @@ class Simulation_Investigation():
         **pos**
                 overrides self.pos for this display (but does not overwrite 
                 self.pos.  Use set_pos if you want to do this)
+                
+        **statuses_to_plot** list of statuses to plot.
+            If given, then the other nodes will be left invisible when plotting
+            but I think this requires networkx v2.3 or later.
                 
         ****nx_kwargs**
                 any networkx keyword arguments to go into the network plot.
@@ -841,9 +852,11 @@ class Simulation_Investigation():
             network_ax, timeseries_axes = sim.display()
         
         '''
-                        
+                      
+        if statuses_to_plot is None:
+            statuses_to_plot = self._possible_statuses_  
         if ts_plots is None:
-            ts_plots = self._possible_statuses_
+            ts_plots = [[x] for x in statuses_to_plot]
         if ts_plots:
             fig = plt.figure(figsize=(10,4))
             graph_ax = fig.add_subplot(121)
@@ -859,7 +872,7 @@ class Simulation_Investigation():
             else:
                 pos = self.pos
                 
-        self._display_graph_(pos, nodestatus, nodelist, StatusOrder, graph_ax, **nx_kwargs)
+        self._display_graph_(pos, nodestatus, nodelist, status_order, statuses_to_plot, graph_ax, **nx_kwargs)
                 
         if ts_plots:
             ts_ax_list, time_markers = self._display_time_series_(fig, time, ts_plots, ts_list, timelabel)
@@ -869,20 +882,19 @@ class Simulation_Investigation():
         return graph_ax, ts_ax_list
        
     def _draw_specific_status(self, pos, nodes, status, ax, **nx_kwargs):
-        drawn = nx.draw_networkx_nodes(self.G, pos, nodelist = nodes, node_color = self.sim_colordict[status], **nx_kwargs) 
+        drawn = nx.draw_networkx_nodes(self.G, pos, nodelist = nodes, node_color = self.sim_color_dict[status], **nx_kwargs) 
         return drawn
         
-    def _update_ani_(self, time, pos, nodelist, drawn_nodes, drawn_elevated, StatusOrder, graph_ax, ts_axes, time_markers, nx_kwargs):
+    def _update_ani_(self, time, pos, nodelist, drawn_nodes, drawn_elevated, status_order, graph_ax, ts_axes, time_markers, nx_kwargs):
         '''
         '''
         nodestatus = self.get_statuses(self.G, time)
         
-        drawn_nodes.set_color([self.sim_colordict[nodestatus[node]] for node in nodelist])
-        for status in reversed(StatusOrder):
+        drawn_nodes.set_color([self.sim_color_dict[nodestatus[node]] for node in nodelist])
+        for status in reversed(status_order):
             nodes_with_status = [node for node in nodelist if nodestatus[node] == status]
             drawn_elevated[status][0].remove()
-            drawn_elevated[status][0] =  nx.draw_networkx_nodes(self.G, pos, nodelist=nodes_with_status, color = self.sim_colordict[status], ax = graph_ax, **nx_kwargs)
-        #print(len(time_markers),len(ts_axes))
+            drawn_elevated[status][0] =  nx.draw_networkx_nodes(self.G, pos, nodelist=nodes_with_status, color = self.sim_color_dict[status], ax = graph_ax, **nx_kwargs)
         for index, ax in enumerate(ts_axes):
             time_markers[index].remove()
             time_markers[index] = ax.axvline(x=time, linestyle='--', color='k')
@@ -890,8 +902,8 @@ class Simulation_Investigation():
 
 
     def animate(self, frame_times=None, ts_plots = None, 
-                ts_list = None, nodelist=None, StatusOrder=False, timelabel=r'$t$',  
-                pos = None, **nx_kwargs):
+                ts_list = None, nodelist=None, status_order=False, timelabel=r'$t$',  
+                pos = None, statuses_to_plot = None, **nx_kwargs):
         r'''
         
         As in display, but this produces an animation.  
@@ -926,7 +938,8 @@ class Simulation_Investigation():
             The times for animation frames.  If nothing is given, then it
             uses 101 times between 0 and t[-1]
                 
-        **ts_plots** (list of strings, default to self._possible_statuses_)
+        **ts_plots** (list of strings, defaults to ``statuses_to_plot``, which defaults 
+                      to ``self._possible_statuses_``)
         
                 if ``[]`` or ``False`` then the display only shows the network.  
                 
@@ -956,9 +969,9 @@ class Simulation_Investigation():
             which nodes should be included in the network plot.  By default
             this is the entire network.  
             This also determines which nodes are on top of each other 
-            (particularly if StatusOrder is ``False``).
+            (particularly if status_order is ``False``).
             
-        **StatusOrder**  list of statuses  default ``False``
+        **status_order**  list of statuses  default ``False``
             Each status will appear on top of all later statuses.  If list 
             empty or ``False``, will ignore.
             Any statuses not appearing in list will simply be below those on the
@@ -971,6 +984,10 @@ class Simulation_Investigation():
             overrides self.pos for this display (but does not overwrite 
             self.pos.  Use set_pos if you want to do this)
                 
+        **statuses_to_plot** list of statuses to plot.
+            If given, then the other nodes will be left invisible when plotting
+            but I think this requires networkx v2.3 or later.
+
         ****nx_kwargs**
             any networkx keyword arguments to go into the network plot.
                 
@@ -981,8 +998,10 @@ class Simulation_Investigation():
         
         if frame_times is None:
             frame_times = np.linspace(0,self._t_[-1], 101)
+        if statuses_to_plot is None:
+            statuses_to_plot = self._possible_statuses_
         if ts_plots is None:
-            ts_plots = self._possible_statuses_
+            ts_plots = statuses_to_plot
         if ts_plots:
             fig = plt.figure(figsize=(10,4))
             graph_ax = fig.add_subplot(121)
@@ -1003,8 +1022,8 @@ class Simulation_Investigation():
             nodelist = list(self.G.nodes())
             random.shuffle(nodelist)
             
-        if StatusOrder is False:
-            StatusOrder = []
+        if status_order is False:
+            status_order = []
             
         #First we draw all of the nodes with their original status, and without
         #putting particular status on top.  All nodes are in place, and their color
@@ -1014,11 +1033,11 @@ class Simulation_Investigation():
         #
         #For each status that goes on top, we draw it in a way that we'll be
         #able to redraw that status at a later time.
-        drawn_nodes = self._display_graph_(pos, initial_status, nodelist, False, graph_ax, **nx_kwargs)
-        elevated = {status: [node for node in self.G if initial_status[node] == status] for status in StatusOrder}
+        drawn_nodes = self._display_graph_(pos, initial_status, nodelist, False, statuses_to_plot, graph_ax, **nx_kwargs)
+        elevated = {status: [node for node in self.G if initial_status[node] == status] for status in status_order}
 
         drawn_elevated = {}
-        for status in reversed(StatusOrder):
+        for status in reversed(status_order):
             drawn_elevated[status]=[self._draw_specific_status_(pos, elevated[status], status, graph_ax, **nx_kwargs)] #making each a list so that I can change the entry in the list while still passing the same object
         #WARNING I'm defining a dict and while that definition is happening
         #it's drawing things
@@ -1032,7 +1051,7 @@ class Simulation_Investigation():
             ts_axes, time_markers = [], []
         plt.tight_layout()
         
-        fargs = (pos, nodelist, drawn_nodes, drawn_elevated, StatusOrder, graph_ax, ts_axes, time_markers, nx_kwargs)
+        fargs = (pos, nodelist, drawn_nodes, drawn_elevated, status_order, graph_ax, ts_axes, time_markers, nx_kwargs)
 
         ani = FuncAnimation(fig, self._update_ani_, frames = frame_times, fargs = fargs, repeat=False)
 

@@ -15,7 +15,8 @@ Reproducing figures from "Mathematics of Epidemics on Networks"
 ---------------------------------------------------------------
 
 Here are examples to generate (close approximations to) many of the figures in 
-`Mathematics of Epidemics on Networks: from Exact to Approximate Models`_. 
+`Mathematics of Epidemics on Networks: from Exact to Approximate Models`_.  
+Other examples are farther down.
 
 Chapter 1
 ^^^^^^^^^
@@ -198,11 +199,12 @@ Gillespie approach.
 .. toctree::
    :maxdepth: 1
    
-   SEIR <examples/SEIR.rst>
+   SEIR (with simple heterogeneities) <examples/SEIR.rst>
    SIRS <examples/SIRS.rst>
-   SIRS with heterogeneity <examples/SIRS_heterogeneous.rst>
+   SIRS (with more complicated heterogeneity) <examples/SIRS_heterogeneous.rst>
    Competing SIR Diseases <examples/Compete.rst>
    Cooperative SIR Diseases <examples/Cooperate.rst>
+   SIR with random concurrent vaccination <examples/SIRV_display.rst>
    
 
 
