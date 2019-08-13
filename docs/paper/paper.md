@@ -120,14 +120,19 @@ import matplotlib.pyplot as plt
 
 N = 10**6  #number of individuals
 kave = 5    #expected number of partners
+print('generating graph G with {} nodes'.format(N))
 G = nx.fast_gnp_random_graph(N, kave/(N-1)) #Erdős-Rényi graph
     
 rho = 0.005 #initial fraction infected
 tau = 0.3   #transmission rate
 gamma = 1.0 #recovery rate
+
+print('doing event-based simulation')
 t1, S1, I1, R1 = EoN.fast_SIR(G, tau, gamma, rho=rho)
+print('doing Gillespie simulation')
 t2, S2, I2, R2 = EoN.Gillespie_SIR(G, tau, gamma, rho=rho)
 
+print('done with simulations, now plotting')
 plt.plot(t1, I1, label = 'fast_SIR')
 plt.plot(t2, I2, label = 'Gillespie_SIR')
 plt.xlabel('$t$')
@@ -244,7 +249,7 @@ We demonstrate an SIS pairwise model and an SIR edge-based compartmental model.
 Our first example uses an SIS homogeneous pairwise model.  This model uses the
 average degree of the population and then attempts to track the number of [SI]
 and [SS] pairs.   We assume a network with an average degree of 20.  The initial
-condition is that a fraction rho of the population is infected at random.  
+condition is that a fraction $\rho$ (rho) of the population is infected at random.  
 
 ```python
 import networkx as nx
