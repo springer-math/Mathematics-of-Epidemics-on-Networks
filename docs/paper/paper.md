@@ -98,7 +98,7 @@ may be faster than the other), but the event-driven implementation can also hand
 non-Markovian dynamics.  In earlier versions, the event-driven simulations were 
 consistently faster than the Gillespie simulations, and thus they are named 
 `fast_SIR` and `fast_SIS`.  The Gillespie simulations were sped up using ideas
-from [holme] and [rejection].
+from [@holme2014model] and [@cota2017optimized].
 
 The algorithms can typically handle an SIR epidemic spreading on 
 hundreds of thousands of individuals within a few seconds on a laptop.  The SIS 
@@ -476,7 +476,7 @@ This produces
     
 Now we show two cooperative SIR diseases.  In isolation, each of these diseases
 would be unable to start an epidemic.  However, together, they can, and depending
-on stochastic effects, we can see some intersting osillatory behavior.
+on stochastic effects, we can see some interesting osillatory behavior.
 
 To the best of  our knowledge, this oscillatory behavior has not been studied
 previously.
