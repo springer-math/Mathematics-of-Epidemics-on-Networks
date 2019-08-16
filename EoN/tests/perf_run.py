@@ -3,12 +3,12 @@ import sys
 import os
 sys.path.append( os.path.dirname(os.path.realpath(__file__)) + "/../..")
 
-import perf
+import pyperf
 
 # G = nx.grid_2d_graph(50, 50)  # each node is (u,v) where 0<=u,v<=99
 # initial_infections = [(u, v) for (u, v) in G if 23 < u < 27 and 23 < v < 27]
 
-runner = perf.Runner()
+runner = pyperf.Runner()
 
 runner.timeit(name="Gillespie_SIS", stmt="EoN.Gillespie_SIS(G, 1.0, 1.0, initial_infecteds=initial_infections, return_full_data=False, tmax=10)",
                        setup="import EoN; import numpy as np; import networkx as nx; G = nx.grid_2d_graph(50, 50); initial_infections = [(u, v) for (u, v) in G if 23 < u < 27 and 23 < v < 27]")

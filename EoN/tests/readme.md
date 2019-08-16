@@ -78,11 +78,11 @@ For more details on usage, please see [http://nose.readthedocs.io/en/latest/usag
 
 ## Performance benchmark capturing 
 
-Perf benchmark run/analyzer are created using the Python *perf* module. To install *perf*: 
+Perf benchmark run/analyzer are created using the Python *pyperf* module. To install *pyperf*: 
 
-	pip install perf
+	pip install pyperf
 
-In a nutshell, *perf* features: 
+In a nutshell, *pyperf* features: 
 
 - Simple API to run reliable benchmarks
 - Automatically calibrate a benchmark for a time budget.
@@ -92,16 +92,16 @@ In a nutshell, *perf* features:
 - JSON format to store benchmark results.
 - Support multiple units: seconds, bytes and integer. 
 
-To run a benchmark use the *perf timeit* command, with result written into perf_run.json, use: 
+To run a benchmark use the *pyperf timeit* command, with result written into perf_run.json, use: 
 
 	python tests\perf_run.py -o perf_run.json
 
 An example to write your own benchmark script bench.py, is as follows: 
 
 	#!/usr/bin/env python3
-	import perf
+	import pyperf
 	
-	runner = perf.Runner()
+	runner = pyperf.Runner()
 	runner.timeit(name="sort a sorted list",
 	              stmt="sorted(s, key=f)",
 	              setup="f = lambda x: x; s = list(range(1000))")
@@ -114,7 +114,7 @@ Then you could take perf stats on this script simply by:
 
 The benchmark file generated for each execution include the environment context(so you could do a apple-2-apple comparison of benchmarks later on). It is stored at the end of the json file generated and can also be displayed by: 
 
-	python -m perf metadata bench.json
+	python -m pyperf metadata bench.json
 	Metadata:
 	- cpu_count: 4
 	- hostname: NA00327L
@@ -130,9 +130,9 @@ The benchmark file generated for each execution include the environment context(
 	- timer: QueryPerformanceCounter(), resolution: 395 ns
 	- unit: second
 
-To analyze benchmark results use the *perf stats* command:
+To analyze benchmark results use the *pyperf stats* command:
 
-	python -m perf stats bench.json
+	python -m pyperf stats bench.json
 	Total duration: 16.6 sec
 	Start date: 2018-05-18 16:23:58
 	End date: 2018-05-18 16:24:18
@@ -163,9 +163,9 @@ To analyze benchmark results use the *perf stats* command:
 	
 	Number of outlier (out of 83.0 us..99.6 us): 7
 
-Or you could render an histogram in text mode using the *perf hist* command as follows: 
+Or you could render an histogram in text mode using the *pyperf hist* command as follows: 
 
-	python -m perf hist bench.json
+	python -m pyperf hist bench.json
 	86.5 us:  3 ################
 	87.6 us:  5 ##########################
 	88.7 us: 15 ###############################################################################
@@ -195,18 +195,18 @@ Or you could render an histogram in text mode using the *perf hist* command as f
 
 Use *compare_to* to compare between benchmarks to see if there's any significant difference, output when it's looking good:
  
-	python -m perf compare_to bench.json bench2.json
+	python -m pyperf compare_to bench.json bench2.json
 	Benchmark hidden because not significant (1): sort a sorted list
 
 or when there's significant difference:  
 
-	python -m perf compare_to bench.json bench2.json
+	python -m pyperf compare_to bench.json bench2.json
 	+-----------+---------+------------------------------+
 	| Benchmark | bench   | bench2                       |
 	+===========+=========+==============================+
 	| timeit    | 4.70 us | 4.22 us: 1.11x faster (-10%) |
 	+-----------+---------+------------------------------+
 
+For more details on usage of *pyperf*, please see [https://github.com/vstinner/pyperf](https://github.com/vstinner/pyperf)
 
-For more details on usage of *perf*, please see [https://github.com/vstinner/perf](https://github.com/vstinner/perf)
  
