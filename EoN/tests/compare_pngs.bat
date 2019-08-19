@@ -1,1 +1,1 @@
-for %i in (tests\ExpectedPng\*.png) do "C:\Program Files\TortoiseSVN\bin\TortoiseIDiff.exe" ..\%i tests\ExpectedPng\%i
+for %%i in (ExpectedPng\*.png) do start "" "C:\Program Files\TortoiseSVN\bin\TortoiseIDiff.exe" ..\%%~nxi ExpectedPng\%%~nxi
