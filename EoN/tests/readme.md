@@ -11,7 +11,7 @@ Normal functional tests are written using *nose* package. To install *nose*:
 *Nose* allow many different ways of running tests. For e.g. test names specified may be file or module names, and may optionally indicate the test case to run by separating the module or file name from the test case name with a colon. 
 &nbsp;
 
-Examples:
+Examples (running inside EoN directory):
 
 	nosetests -v tests\test_sim_sweep_parameters.py
 	nosetests -v EoN.tests.test_sim_sweep_parameters
