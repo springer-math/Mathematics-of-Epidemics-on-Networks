@@ -314,7 +314,7 @@ class TestSample:
             plt.savefig('SIS_sims')
 
 
-    def test_SIR_final_sizes():
+    def test_SIR_final_sizes(self):
         print("test_SIR_final_sizes")
         plt.clf()
         G = nx.configuration_model([3, 6, 3, 6, 20] * 10000)
@@ -788,7 +788,7 @@ class TestSample:
 
     def test_Two_Cooperative_SIR_Diseases_oscillatory(self):
         # N = 1000000
-        N = 100000
+        N = 300000
         G = nx.fast_gnp_random_graph(N, 5. / (N - 1))
 
         print('got G')
@@ -837,7 +837,7 @@ class TestSample:
         return_statuses = ('SS', 'SI', 'SR', 'IS', 'II', 'IR', 'RS', 'RI', 'RR')
 
         # initial_size = 650
-        initial_size = 65
+        initial_size = 650
         IC = defaultdict(lambda: 'SS')
         for individual in range(initial_size):
             IC[individual] = 'II'
