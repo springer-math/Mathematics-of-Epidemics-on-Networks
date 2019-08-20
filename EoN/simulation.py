@@ -860,7 +860,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
             sim_kwargs = {}
         return EoN.Simulation_Investigation(G, node_history, transmissions, 
                                             possible_statuses = ['S', 'I'], 
-                                            sim_kwargs=sim_kwargs)
+                                            **sim_kwargs)
 
     
     

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from scipy import integrate
 from scipy.ndimage.interpolation import shift
+from scipy.special import binom
 import numpy as np
 import networkx as nx
 import EoN
@@ -4172,7 +4173,7 @@ def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
         Nk = np.array([Nk[k] for k in range(maxk+1)])       
         for s in range(maxk+1):
             for i in range(maxk+1-s):
-                binomial_result = np.special.binom(s+i,i)
+                binomial_result = binom(s+i,i)
                 if binomial_result < float('Inf'):
                     #sometimes sp.special.binom() returns 'inf', this tries to avoid those cases
                     S_si0[s,i] = (1-rho)*Nk[s+i] * binomial_result \
@@ -4290,7 +4291,7 @@ def SIR_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None,
         Nk = np.array([Nk[k] for k in range(maxk+1)])       
         for s in range(maxk+1):
             for i in range(maxk+1-s):
-                binomial_result = np.special.binom(s+i,i) 
+                binomial_result = binom(s+i,i) 
                 if binomial_result < float('Inf'):
                     S_si0[s,i] = (1-rho)*Nk[s+i] * binomial_result \
                                 * (rho**i) * (1-rho)**s

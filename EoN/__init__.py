@@ -11,10 +11,18 @@ models`
 by Kiss, Miller & Simon
         http://www.springer.com/book/9783319508047
         
-Please cite the book if using these algorithms
-
 For simulations, we assume that input networks are **NetworkX** 
 graphs; see https://networkx.github.io/
+
+The documentation is maintained at 
+
+      https://epidemicsonnetworks.readthedocs.io/en/latest/
+      
+      
+
+If you use the package in work that leads to a publication, please check 
+EoN.__citation__() for citation information.
+
 
 
 
@@ -37,15 +45,35 @@ We start with a few useful auxiliary functions
 
 '''
 
-__author__ = "Joel C. Miller, Istvan Z. Kiss, and Peter Simon"
+__author__ = "Joel C. Miller"
 __version__ = "1.0.8rc5"
+def __citation__():
+    print("A proper citation should be coming soon\n" + \
+              "Until then consider citing the github page\n" + \
+              "If you use one of the ODE models, you should cite\n" + \
+              "a source, such as the text:\n\n" + \
+              r"@book{kiss:EoN," + "\n" + \
+              r"    title = {Mathematics of Epidemics on Networks: from Exact to Approximate Models}," + "\n" + \
+              r"    author={Kiss, Istvan Z and Miller, Joel C and Simon, P{\'e}ter L}," + "\n" + \
+              r"    publisher = {Springer}," + "\n" + \
+              r"    series = {IAM}," + "\n" + \
+              r"    year={2017}" + "\n" + \
+              r"}" + "\n\n"
+              "You should also consider citing networkx:\n\n" + \
+              r"@techreport{hagberg2008exploring,"+"\n" + \
+              r"    title={Exploring network structure, dynamics, and function using NetworkX},"+"\n" + \
+              r"    author={Hagberg, Aric and Swart, Pieter and Schult, Daniel},"+"\n" + \
+              r"    year={2008}," + \
+              r"    institution={Los Alamos National Lab.(LANL), Los Alamos, NM (United States)}"+"\n" + \
+              r"}")
 
+              
 
 #__all__ = 
 
 class EoNError(Exception):
     r'''
-    this will be the basic error type for EoN
+    this will be the basic error type for EoN.
     '''
     pass
 

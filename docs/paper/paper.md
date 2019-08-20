@@ -25,13 +25,15 @@ affiliations:
 date: 19 July 2019
 
 bibliography: paper.bib
+
+
 ---
 
 # Summary
 
 EoN (EpidemicsOnNetworks) is a pure-python package designed to assist studies of
 infectious processes spreading through networks.  It originally rose out of the 
-book *Mathematics of Epidemics on Networks* [@EoNbook], and now consists of over 
+book *Mathematics of Epidemics on Networks* [@kiss:EoN], and now consists of over 
 100 user-functions.
 
 
@@ -48,50 +50,50 @@ disease
     - pairwise models
     - edge-based compartmental models
 - Stochastic simulation of a wide range of Simple and Complex contagions
-- Visualization of stochastic simulations
+- Visualization and analysis of stochastic simulations
 
-These algorithms are built on the networkx package [@hagberg2008exploring].  
-Here we provide brief descriptions with examples of a few of these tools.  
+These algorithms are built on the networkx package [@hagberg2008exploring].
+Here we provide brief descriptions with examples of a few of these tools.
 EoN's documentation is maintained at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/ 
 including numerous examples at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.
 
-Because we think of these models as capturing disease spread in a contact network
-It is often useful for mathematicians and physicists to formally think of 
-individuals as nodes with their potentially infectious partnerships as edges.  
-However, for those who come from other backgrounds this abstraction may be a 
-little less familiar.  Therefore, we will describe a contact network along which
-an infections process spreads as consisting of "individuals" and "partnerships" rather
-than "nodes" and "edges".  This has an additional benefit because in the simple 
-contagion code, we need to define some other networks whose nodes represent 
-possible statuses and whose edges represent transitions that can occur.  Referring
-to individuals and partnerships when discussing the process spreading on the
-contact network makes it easier to avoid confusion between the different networks.
+We model spreading processes on a contact network, and it is often useful for
+mathematicians and physicists to formally think of individuals as nodes with 
+their potentially infectious partnerships as edges.  However, for those who 
+come from other backgrounds this abstraction may be less familiar.  Therefore, 
+we will describe a contact network along which an infections process spreads 
+as consisting of "individuals" and "partnerships" rather than "nodes" and 
+"edges".  This has an additional benefit because in the simple contagion code, 
+we need to define some other networks whose nodes represent possible statuses
+and whose edges represent transitions that can occur.  Referring to "individuals" 
+and "partnerships" when discussing the process spreading on the contact network 
+makes it easier to avoid confusion between the different networks.
 
 We start with a description of the tools for studying SIS and SIR disease 
 through stochastic simulation and differential equations models.  Then we 
 describe the simple and complex contagions, including examples showing how
-the simple contagion function can be used to capture a range of standard disease
+the simple contagion can be used to capture a range of standard disease
 models.  Finally we demonstrate the visualization software.
 
 ## SIR and SIS disease
 
 ### Stochastic simulation
-The stochastic SIR and SIS simulation tools allow the user
-to investigate many standard SIS and SIR dynamics (SEIR/SIRS and other processes
-are addressed below):
+The stochastic SIR and SIS simulation tools allow the user to investigate many 
+standard SIS and SIR dynamics (SEIR/SIRS and other processes are addressed 
+below):
 
 - Markovian SIS and SIR simulations  (``fast_SIS``, ``Gillespie_SIS``, ``fast_SIR``, and ``Gillespie_SIR``).
 - non-Markovian SIS and SIR simulations (``fast_nonMarkovian_SIS`` and ``fast_nonMarkovian_SIR``).
 - discrete time SIS and SIR simulations where infections last a single time step 
   (``basic_discrete_SIS``, ``basic_discrete_SIR``, and ``discrete_SIR``).
 
-It is possible for transition rates to depend on intrinsic properties of individuals and
-of partnerships.
+It is possible for transition rates to depend on intrinsic properties of 
+individuals and of partnerships.
 
-The continuous-time stochastic simulations have a Gillespie implementation 
-[@gillespie1977exact, @doob1945markoff] and an Event-driven
+The continuous-time stochastic simulations have two different implementations: a 
+Gillespie implementation [@gillespie1977exact, @doob1945markoff] and an Event-driven
 implementation.  Both approaches are efficient.  They have similar speed if the 
 dynamics are Markovian (depending on the network and disease parameters either
 may be faster than the other), but the event-driven implementation can also handle 
@@ -107,9 +109,10 @@ larger in an SIS simulation.
 
 #### Examples
 
-To demonstrate these, we begin with SIR simulations on a "Erdős-Rényi" network
-having a million individuals (that is, each individual has identical probability
-of independently partnering with any other individual in the population).
+To demonstrate these, we begin with SIR simulations on an Erdős-Rényi network
+having a million individuals (in an Erdős-Rényi network each individual has 
+identical probability of independently partnering with any other individual in 
+the population).
 
 
 ```python
@@ -147,7 +150,7 @@ This produces
     
 The run-times of ``fast_SIR`` and ``Gillespie_SIR`` are both comparable to the
 time taken to generate the million individual network ``G``.  The epidemics 
-affect around 28 percent of the population.  The differences in the simulations 
+affect around 28 percent of the population.  The differences between the simulations 
 are entirely due to stochastic effects.
 
 We can perform similar simulations with an SIS epidemic.  Because SIS epidemics
@@ -162,14 +165,18 @@ import matplotlib.pyplot as plt
 
 N = 10**5   #number of individuals
 kave = 5    #expected number of partners
+print('generating graph G with {} nodes'.format(N))
 G = nx.fast_gnp_random_graph(N, kave/(N-1)) #Erdős-Rényi graph
     
 rho = 0.005 #initial fraction infected
 tau = 0.3   #transmission rate
 gamma = 1.0 #recovery rate
+print('doing Event-driven simulation')
 t1, S1, I1 = EoN.fast_SIS(G, tau, gamma, rho=rho, tmax = 30)
+print('doing Gillespie simulation')
 t2, S2, I2 = EoN.Gillespie_SIS(G, tau, gamma, rho=rho, tmax = 30)
 
+print('done with simulations, now plotting')
 plt.plot(t1, I1, label = 'fast_SIS')
 plt.plot(t2, I2, label = 'Gillespie_SIS')
 plt.xlabel('$t$')
@@ -194,21 +201,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def rec_time_fxn_gamma(u):
-    #gamma(shape, scale = 1.0)
-    return np.random.gamma(3,0.5)
+    return np.random.gamma(3,0.5) #gamma distributed random number
 
 def trans_time_fxn(u, v, tau):
     if tau >0:
         return np.random.exponential(1./tau)
     else:
         return float('Inf')
+        
 N = 10**6  #number of individuals
 kave = 5    #expected number of partners
+print('generating graph G with {} nodes'.format(N))
 G = nx.fast_gnp_random_graph(N, kave/(N-1)) #Erdős-Rényi graph
 tau = 0.3
 
 for cntr in range(10):
     print(cntr)
+    print('doing Event-driven simulation')
     t, S, I, R = EoN.fast_nonMarkov_SIR(G, trans_time_fxn = trans_time_fxn,
                         rec_time_fxn = rec_time_fxn_gamma, trans_time_args = (tau,))
 
@@ -218,6 +227,7 @@ for cntr in range(10):
 
     subsampled_ts = np.linspace(t[0], t[-1], 1000)
     subI, subR = EoN.subsample(subsampled_ts, t, I, R) 
+    print('done with simulation, now plotting')
     plt.plot(subsampled_ts, subI+subR)
 
 plt.xlabel('$t$')
@@ -235,7 +245,7 @@ models for SIS or SIR disease spread in networks.  The various models use differ
 amounts of knowledge about the network to make deterministic predictions about
 the fraction infected at different times.  These use the Scipy integration tools.
 The derivations of the models and explanations of their simplifying assumptions
-are described in [@EoNbook].
+are described in [@kiss:EoN].
 
 Depending on the model, we need different information about the network structure.
 The algorithms allow us to provide them as inputs to the model.  However, there
@@ -246,10 +256,11 @@ instead.  This will use the measured properties of the network.
 
 We demonstrate an SIS pairwise model and an SIR edge-based compartmental model.
 
-Our first example uses an SIS homogeneous pairwise model.  This model uses the
-average degree of the population and then attempts to track the number of [SI]
-and [SS] pairs.   We assume a network with an average degree of 20.  The initial
-condition is that a fraction $\rho$ (`rho`) of the population is infected at random.  
+Our first example uses an SIS homogeneous pairwise model (section 4.3.3 of 
+[@kiss:EoN]).  This model uses the average degree of the population and then 
+attempts to track the number of [SI] and [SS] pairs.   We assume a network 
+with an average degree of 20.  The initial condition is that a fraction $\rho$ 
+(``rho``) of the population is infected at random.  
 
 ```python
 import networkx as nx
@@ -286,15 +297,16 @@ If we are interested in proportion,we could arbitrarily set ``N=1``,
 and then our solutions would give us the proportion of the population in each 
 status.
 
-Our second example uses an Edge-based compartmental model for an SIR disease.
+Our second example uses an Edge-based compartmental model for an SIR disease 
+(section 6.5.2 of [@kiss:EoN]).
 This model incorporates information about the degree distribution (i.e., how the
 number of partners is distributed), but assumes that the partnerships are selected
 as randomly as possible given this distribution.  This requires we define the
 "generating function" $\psi(x)$ which is equal to the sum 
 $\sum_{k=0}^\infty S_k(0) x^k$ where
 $S_k(0)$ is the proportion of all individuals in the population who both have $k$
-partners and are susceptible at $t=0$.  It also requires the derivative of
-$\psi'(x)$ and $\phi_S(0)$, the probability
+partners and are susceptible at $t=0$.  It also requires the derivative
+$\psi'(x)$ as well as $\phi_S(0)$, the probability
 an edge from a susceptible node connects to another susceptible node at time 0.
 By default, it assumes there are no recovered individuals at time $0$.
 
@@ -352,13 +364,13 @@ In a "simple contagion" an individual ``u`` may be induced to change status by
 an interaction with its partner ``v``.  This status change occurs with the same
 rate regardless of the statuses of other partners of ``u`` (although, the other
 partners may cause ``u`` to change to another status first).  SIS and SIR 
-diseases are special cases. of "simple contagions".
+diseases are special cases of simple contagions.
 
 In a complex contagion however, we permit the rate at which ``u`` changes from
 one status to another to depend on the statuses of others in some more complicated way.
 Two infected individuals may cause a susceptible individual to become infected
 at some higher rate than would result from them acting independently.  This is
-frequently thought to model social contagions where an indivdiual may decide
+frequently thought to model social contagions where an individual may decide
 to believe something if multiple partners believe it [@centola:cascade].  
 
 The simple and complex contagions are currently implemented only in a 
@@ -367,8 +379,7 @@ Gillespie setting, and so they require Markovian assumptions.
 ### Simple contagions
 
 EoN provides a function ``Gillespie_simple_contagion`` which allows a user to 
-specify the rules governing an arbitrary simple contagion.  Because these are based on 
-Gillespie approaches, they require Markovian assumptions.
+specify the rules governing an arbitrary simple contagion.
 
 Examples are provided in the documentation, including
 - SEIR disease (there is an exposed state before becoming infectious)
@@ -377,11 +388,14 @@ Examples are provided in the documentation, including
 - Competing SIR diseases (there is cross immunity)
 - Cooperative SIR diseases (infection with one disease helps spread the other)
 
-The method separates out two distinct ways that transitions occur.  To help demonstrate
-consider an "SEIR" epidemic, where individuals begin susceptible, but when they interact
-with infectious individuals, they may enter an exposed state.  They remain in that exposed 
-state for some period of time before transitioning into the infectious state.  They
-remain infectious and eventually transition into the recovered state.
+The implementation requires the user to separate out two distinct ways that 
+transitions occur.  To help demonstrate consider an "SEIR" epidemic, where 
+individuals begin susceptible, but when they interact with infectious 
+individuals they may enter an exposed state.  They remain in that exposed 
+state for some period of time before transitioning into the infectious state.
+They remain infectious and eventually transition into the recovered state.  
+
+We can identify two broad types of transitions:
 
 - Sometimes individuals change status without influence from any other individual.
   For example, an infected individual may recover, or an exposed individual may 
@@ -392,33 +406,33 @@ remain infectious and eventually transition into the recovered state.
   we weight the edges by the rate.  In the SEIR case we would need the graph 
   ``H`` to have edges ``'E'``->``'I'`` and ``'I'``->``'R'``.  The
   edges would be weighted by the transition rates.  Note ``H`` need not have 
-  a node ``'S'``.
+  a node ``'S'`` because susceptible nodes do not change status on their own.
 
-- Sometimes individuals change status due to the influence of a single other 
-  individual.  For example an infected individual may transmit to a susceptible 
-  individual.  So an ``('I', 'S')`` pair may become ``('I', 'I')``.
-  We can represent these as a directed graph ``J``.  Here the nodes of ``J``
-  are pairs (tuples) of statuses, representing potential statuses of individuals 
+- Sometimes individuals change status due to the influence of a single partner.
+  For example an infected individual may transmit to a susceptible partner. 
+  So an ``('I', 'S')`` pair may become ``('I', 'I')``.  We can represent these 
+  transitions with a directed graph ``J``.  Here the nodes of ``J`` are pairs 
+  (tuples) of statuses, representing potential statuses of individuals 
   in a partnership.  An edge represents a possible partner-induced transition.
   In the SEIR case, there is only a single such transition, represented by the
   edge ``('I', 'S')`` -> ``('I', 'E')`` with a weight representing the transmission
   rate.  No other nodes are required in ``J``.  An edge always represents the
   possibility that a node in the first state can cause the other node to change
-  state.  The current version does not allow for both nodes to simultaneously change
-  states.
+  state.  So the first state in the pair remains the same.  The current 
+  version does not allow for both nodes to simultaneously change states.
   
 #### Examples
 
-We demonstrate this with an SEIR example.  To demonstrate some of the flexibility
-we allow some individuals have a higher rate of transitioning from ``'E'`` to ``'I'`` 
-and some partnerships have a higher
-transmission rate.  This is done by adding weights to the contact network `G`
-which scale the rates for those nodes or partners.  The documentation discusses
-other ways we can allow for heterogeneity in transition rates.
+We demonstrate this first with an SEIR example.  To demonstrate some of the 
+flexibility we allow some individuals to have a higher rate of transitioning from 
+``'E'`` to ``'I'`` and some partnerships to have a higher transmission rate. 
+This is done by adding weights to the contact network `G` which scale the 
+rates for those nodes or partners.  The documentation discusses other ways we 
+can allow for heterogeneity in transition rates.
 
 
 Note that this process is guaranteed to terminate, so we can set ``tmax`` to 
-be infinite.  Processes which may not terminate will require another value.
+be infinite.  Processes which may not terminate will require a finite value.
 The default is 100.
 
 ```python
@@ -429,6 +443,7 @@ import matplotlib.pyplot as plt
 import random
 
 N = 100000
+print('generating graph G with {} nodes'.format(N))
 G = nx.fast_gnp_random_graph(N, 5./(N-1))
 
 #they will vary in the rate of leaving exposed class.
@@ -462,9 +477,11 @@ for node in range(200):
 
 return_statuses = ('S', 'E', 'I', 'R')
 
+print('doing Gillespie simulation')
 t, S, E, I, R = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses,
                                         tmax = float('Inf'))
 
+print('done with simulation, now plotting')
 plt.plot(t, S, label = 'Susceptible')
 plt.plot(t, E, label = 'Exposed')
 plt.plot(t, I, label = 'Infected')
@@ -493,6 +510,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 
 N = 1000000
+print('generating graph G with {} nodes'.format(N))
 G = nx.fast_gnp_random_graph(N, 5./(N-1))
 
 #In the below:
@@ -544,6 +562,7 @@ IC = defaultdict(lambda: 'SS')
 for individual in range(initial_size):
     IC[individual] = 'II'
 
+print('doing Gillespie simulation')
 t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses,
                                         tmax = float('Inf'))
 
@@ -595,8 +614,9 @@ formulate the model of [@miller:contagion] in a way that is consistent with the 
 Here we use a simpler model that yields the same final state.  Once a node has
 reached its threshold number of infected partners, it transitions at rate 1 to 
 the infected state.  The dynamics are different, but it can be proven that the
-final states in both models are identical.  The following will produce the
-equivalent of Fig. 2a of [@miller:contagion] for our new dynamic model.
+final states in both models are identical and follow deterministically from the
+initial condition.  The following will produce the equivalent of Fig. 2a of 
+[@miller:contagion] for our new dynamic model.
 
 
 ```python
@@ -641,6 +661,7 @@ parameters = (2,)   #this is the threshold.  Note the comma.  It is needed
                     
 N = 600000
 deg_dist = [2, 4, 6]*int(N/3)
+print('generating graph G with {} nodes'.format(N))
 G = nx.configuration_model(deg_dist)
         
     
@@ -651,10 +672,12 @@ for rho in np.linspace(3./80, 7./80, 8):   #8 values from 3/80 to 7/80.
         if np.random.random()<rho:  #there are faster ways to do this random selection
             IC[node] = 'I'
     
+    print('doing Gillespie simulation')
     t, S, I = EoN.Gillespie_complex_contagion(G, transition_rate, transition_choice, 
                             get_influence_set, IC, return_statuses = ('S', 'I'),
                             parameters = parameters)
                             
+    print('done with simulation, now plotting')
     plt.plot(t, I)
     
 plt.xlabel('$t$')
@@ -675,6 +698,7 @@ If we instead define ``G`` by
 
 ```python
 deg_dist = [(0,1), (0,2), (0,3)]*int(N/3)
+print('generating graph G with {} nodes'.format(N))
 G = nx.random_clustered_graph(deg_dist)
 ```
 
@@ -699,11 +723,6 @@ with each state at each time.  However by setting a flag ``return_full_data=True
 we can know the exact status of each individual at each time, as well as who infected
 whom.  There are also methods which use this data to visualize the epidemic at 
 a specific time, or to create an animation.  
-
-These algorithms allow for a boolean flag `return_full_data`.  If it is set to `True`,
-then the data returned includes the full history of every individual in the network.
-In the SIS, SIR or simple contagion cases it also returns information about
-which individual induced a transition in some other individual.
 
 There are several visualization tools provided to produce output from the
 full data.  These allow us to produce a snapshot of the network at a given time.
@@ -735,7 +754,9 @@ import matplotlib.pyplot as plt
 G = nx.karate_club_graph()
 
 nx_kwargs = {"with_labels":True}
+print('doing Gillespie simulation')
 sim = EoN.Gillespie_SIR(G, 1, 1, return_full_data=True)
+print('done with simulation, now plotting')
 sim.display(time = 1, **nx_kwargs)
 plt.show()
 ```
@@ -761,7 +782,7 @@ This plots the transmission tree:
 
 The command ``hierarchy_pos`` is based on [@stackoverflow:29586520]
 
-#### Example - an animation of dynamics for SIR disease with vaccination in a lattice.
+#### Example - Visualizing dynamics of SIR disease with vaccination in a lattice.
 
 We finally consider an SIRV disease, that is an SIR disease with vaccination. 
 As the disease spreads susceptible individuals get vaccinated randomly, without 
@@ -779,6 +800,7 @@ import EoN
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
+print('generating graph G')
 G = nx.grid_2d_graph(100,100) #each node is (u,v) where 0<=u,v<=99
 #we'll initially infect those near the middle 
 initial_infections = [(u,v) for (u,v) in G if 45<u<55 and 45<v<55]
@@ -801,6 +823,7 @@ pos = {node:node for node in G}
 tex = False
 sim_kwargs = {'color_dict':color_dict, 'pos':pos, 'tex':tex}
 
+print('doing Gillespie simulation')
 sim = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses, tmax=30, 
                             return_full_data=True, sim_kwargs=sim_kwargs)
 
