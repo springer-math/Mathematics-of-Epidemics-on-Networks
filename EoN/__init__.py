@@ -46,7 +46,7 @@ We start with a few useful auxiliary functions
 '''
 
 __author__ = "Joel C. Miller"
-__version__ = "1.0.8rc5"
+__version__ = "1.0.8"
 def __citation__():
     print("A proper citation should be coming soon\n" + \
               "Until then consider citing the github page\n" + \

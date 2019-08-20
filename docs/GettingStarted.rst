@@ -4,7 +4,7 @@ Getting Started
 
 Installation
 ------------
-You can **install EoN version 1.0.7** with pip
+You can **install EoN version 1.0.8** with pip
 
 ::
 
@@ -12,24 +12,12 @@ You can **install EoN version 1.0.7** with pip
 
 
 If you have installed a previous version and want to reinstall the most recent
-version available through pip (1.0.7).  The easiest way is 
+version available through pip (1.0.8).  The easiest way is 
 
 ::
 
     pip uninstall EoN
     pip install EoN
-
-
-The documentation provided here is for version 1.0.8rc5 which is on GitHub.  
-
-To **install EoN version 1.0.8rc5** You can clone or download the Github version at 
-https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks.  
-Then just move into the main directory and run
-
-:: 
-
-    python setup.py install
-
 
     
 If you want to see changes from previous versions, please see 

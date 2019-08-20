@@ -14,6 +14,9 @@ Documentation (including installation instructions) is available at http://epide
 
 We released v1.0 on 9 Aug 2018
 
+To see changes since v1.0, please look at our 
+[list of changes](file:///Users/jomiller/Dropbox/work/SpringerGithub/docs/_build/html/Changes.html)
+
 ## Corrections
 
 For corrections or to report an error to the content in the published book, see the file [errata.md](errata.md) and follow instructions there.
