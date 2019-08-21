@@ -17,9 +17,9 @@ authors:
    affiliation: "2"
 
 affiliations:
- - name: La Trobe University
+ - name: La Trobe University, Melbourne, Australia
    index: 1
- - name: Institute for Disease Modeling
+ - name: Institute for Disease Modeling, Seattle, Washington, USA
    index: 2
    
 date: 19 July 2019
