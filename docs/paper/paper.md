@@ -17,9 +17,9 @@ authors:
    affiliation: "2"
 
 affiliations:
- - La Trobe University
+ - name: La Trobe University
    index: 1
- - Institute for Disease Modeling
+ - name: Institute for Disease Modeling
    index: 2
    
 date: 19 July 2019
