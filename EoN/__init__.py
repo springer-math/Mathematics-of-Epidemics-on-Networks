@@ -45,7 +45,7 @@ We start with a few useful auxiliary functions
 
 '''
 
-__author__ = "Joel C. Miller"
+__author__ = "Joel C. Miller, with tests written by Tony Ting"
 __version__ = "1.0.8"
 def __citation__():
     print("A proper citation should be coming soon\n" + \
@@ -124,8 +124,6 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
     return trans_rate_fxn, rec_rate_fxn
 
 
-
-
 import EoN.auxiliary
 from EoN.auxiliary import *
 import EoN.simulation
@@ -134,6 +132,7 @@ import EoN.analytic
 from EoN.analytic import *
 import EoN.simulation_investigation
 from EoN.simulation_investigation import *
+
 
 '''
 These are the systems I still want to include:

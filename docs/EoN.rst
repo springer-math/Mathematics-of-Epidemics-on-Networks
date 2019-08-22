@@ -178,17 +178,17 @@ curves that might have been calculated by an analytic model, or perhaps
 another simulation.
 
 In general, any of the dynamic simulations will produce a Simulation_Investigation
-object if we pass it ``return_full_data = True``.  
+object if we pass it ``return_full_data = True``. 
 
 Some examples appear in section :ref:`visualization`.
 
-Quick List
+Quick list
 ^^^^^^^^^^
 
 .. currentmodule:: EoN.Simulation_Investigation
 
 .. autosummary::
-   :toctree: functions
+   :toctree: functions/
 
    display
    animate
@@ -212,6 +212,9 @@ Quick List
    sim_update_color_dict
    sim_update_tex
    set_pos
+   
+   
+   
    
 Short description
 ^^^^^^^^^^^^^^^^^
@@ -266,6 +269,8 @@ Short description
   - **sim_update_colordict**
   - **sim_update_tex**
   - **set_pos**
+
+- Plotting of transmission tree
 
 
 
@@ -535,7 +540,7 @@ Quick List
    
    get_time_shift
    subsample
-   
+   hierarchy_pos
 
 
 Short Description
@@ -545,6 +550,8 @@ Short Description
     - **subsample** (allows us to take output given at a stochastic
       set of times and get output at given times - particularly useful
       to allow for averaging multiple simulations)
+    - **hierarchy_pos** (Provides positions that help visualize the transmission 
+      chain from a Simulation_Investigation object)
     
     
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047

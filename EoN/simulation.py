@@ -73,7 +73,7 @@ class myQueue(object):
 #     
 #     I'm leaving it in place, but so far for my tests it is slower than ListDict.
 #     It might do better in cases where the probabilities of events have a wider
-#     range.  
+#     range (in which case the rejection sampling in ListDict would be slow).  
 #     
 #     Since the cases I've tried may have fairly similar probabilities, the rejection
 #     sampling seems to outperform it.  If rejection sampling often resulted in rejections, this
@@ -232,7 +232,7 @@ class _ListDict_(object):
     dictionaries.
     
     I believe this structure I'm describing is similar to a "partial sum tree"
-    or a "Fenwick tree", but they seem different.
+    or a "Fenwick tree", but they seem subtly different from this.
     '''
     def __init__(self, weighted = False):
         self.item_to_position = {}
@@ -934,11 +934,11 @@ def _edge_exists_(u, v, H):
     return H.has_edge(u,v)
 
 def percolation_based_discrete_SIR(G, p, 
-                                            initial_infecteds=None, 
-                                            initial_recovereds = None,
-                                            rho = None, tmin = 0,
-                                            tmax = float('Inf'),
-                                            return_full_data = False, sim_kwargs = None):
+                                    initial_infecteds=None, 
+                                    initial_recovereds = None,
+                                    rho = None, tmin = 0,
+                                    tmax = float('Inf'),
+                                    return_full_data = False, sim_kwargs = None):
     #tested in test_basic_discrete_SIR   
     r'''
     perfoms a simple SIR epidemic but using percolation as the underlying 
@@ -1247,8 +1247,8 @@ def _in_component_(G, target):
 
     '''
     if G.has_node(target):
-        #potential bug if for example G has  nodes like 1, 2, 3, and 
-        #(1,2,3).  Then a target of (1,2,3) is ambiguous
+        #potential bug if for example G has  nodes like 1, 2, 3, and also
+        #(1,2,3).  Then a target of (1,2,3) is ambiguous.
         target_nodes = {target}
     else:
         target_nodes = set(target)

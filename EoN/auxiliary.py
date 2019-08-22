@@ -190,18 +190,15 @@ def get_time_shift(times, L, threshold):
             break
     return t
 
-
-
-
 def hierarchy_pos(G, root=None, width=1., vert_gap = 0.2, vert_loc = 0, leaf_vs_root_factor = 0.5):
 
     '''
-    Based on Joel's answer at https://stackoverflow.com/a/29597209/2966723,
-    but with some modifications.  
-
     If the graph is a tree this will return the positions to plot this in a 
     hierarchical layout.
     
+    Based on Joel's answer at https://stackoverflow.com/a/29597209/2966723,
+    but with some modifications.  
+
     We include this because it may be useful for plotting transmission trees,
     and there is currently no networkx equivalent (though it may be coming soon).
     
@@ -311,3 +308,7 @@ def hierarchy_pos(G, root=None, width=1., vert_gap = 0.2, vert_loc = 0, leaf_vs_
     for node in pos:
         pos[node]= (pos[node][0]*width/xmax, pos[node][1])
     return pos
+
+
+
+
