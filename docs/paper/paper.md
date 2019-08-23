@@ -219,7 +219,8 @@ for cntr in range(10):
     print(cntr)
     print('doing Event-driven simulation')
     t, S, I, R = EoN.fast_nonMarkov_SIR(G, trans_time_fxn = trans_time_fxn,
-                        rec_time_fxn = rec_time_fxn_gamma, trans_time_args = (tau,))
+                                        rec_time_fxn = rec_time_fxn_gamma, 
+                                        trans_time_args = (tau,))
 
     #To reduce file size and make plotting faster, we'll just plot 1000
     #data points.  It's not really needed here, but this demonstrates
@@ -310,9 +311,9 @@ $\psi'(x)$ as well as $\phi_S(0)$, the probability
 an edge from a susceptible node connects to another susceptible node at time 0.
 By default, it assumes there are no recovered individuals at time $0$.
 
-If the population has a Poisson degree distristribution with mean $kave$ and the 
+If the population has a Poisson degree distristribution with mean ``kave`` and the 
 infection is introduced by randomly infecting a proportion ``rho`` of the population
-at time 0, then $\psi(x) = (1-\rho) e^{-rho(1-x)}$, 
+at time 0, then $\psi(x) = (1-\rho) e^{-\rho(1-x)}$, 
 $\psi'(x) = (1-\rho)\rho e^{-\rho(1-x)}$
 and $\phi_S(0) = 1-\rho$.  So
 
@@ -382,6 +383,7 @@ EoN provides a function ``Gillespie_simple_contagion`` which allows a user to
 specify the rules governing an arbitrary simple contagion.
 
 Examples are provided in the documentation, including
+
 - SEIR disease (there is an exposed state before becoming infectious)
 - SIRS disease (recovered individuals eventually become susceptible again)
 - SIRV disease (individuals may get vaccinated) 
@@ -427,7 +429,7 @@ We demonstrate this first with an SEIR example.  To demonstrate some of the
 flexibility we allow some individuals to have a higher rate of transitioning from 
 ``'E'`` to ``'I'`` and some partnerships to have a higher transmission rate. 
 This is done by adding weights to the contact network `G` which scale the 
-rates for those nodes or partners.  The documentation discusses other ways we 
+rates for those individuals or partnerships.  The documentation discusses other ways we 
 can allow for heterogeneity in transition rates.
 
 
@@ -453,8 +455,10 @@ G = nx.fast_gnp_random_graph(N, 5./(N-1))
 node_attribute_dict = {node: 0.5+random.random() for node in G.nodes()}
 edge_attribute_dict = {edge: 0.5+random.random() for edge in G.edges()}
 
-nx.set_node_attributes(G, values=node_attribute_dict, name='expose2infect_weight')
-nx.set_edge_attributes(G, values=edge_attribute_dict, name='transmission_weight')
+nx.set_node_attributes(G, values=node_attribute_dict, 
+                        name='expose2infect_weight')
+nx.set_edge_attributes(G, values=edge_attribute_dict, 
+                        name='transmission_weight')
 #
 #These individual and partnership attributes will be used to scale
 #the transition rates.  When we define `H` and `J`, we provide the name
@@ -470,7 +474,8 @@ H.add_edge('E', 'I', rate = 0.6, weight_label='expose2infect_weight')
 H.add_edge('I', 'R', rate = 0.1)
 
 J = nx.DiGraph()
-J.add_edge(('I', 'S'), ('I', 'E'), rate = 0.1, weight_label='transmission_weight')
+J.add_edge(('I', 'S'), ('I', 'E'), rate = 0.1, 
+            weight_label='transmission_weight')
 IC = defaultdict(lambda: 'S')
 for node in range(200):
     IC[node] = 'I'
@@ -497,8 +502,8 @@ This produces
 ![](SEIR.png)
     
 Now we show two cooperative SIR diseases.  In isolation, each of these diseases
-would be unable to start an epidemic.  However, together, they can, and depending
-on stochastic effects, we can see some interesting osillatory behavior.
+would be unable to start an epidemic.  However, together they can, and depending
+on stochastic effects we can see some interesting osillatory behavior.
 
 To the best of  our knowledge, this oscillatory behavior has not been studied
 previously.
@@ -519,7 +524,8 @@ G = nx.fast_gnp_random_graph(N, 5./(N-1))
 #'RS' means recovered from disease 1 and susceptible to disease 2.
 #etc.
 
-H = nx.DiGraph()  #DiGraph showing possible transitions that don't require an interaction
+H = nx.DiGraph()  #DiGraph showing possible transitions that don't require 
+                  #interaction
 H.add_node('SS')  #we actually don't need to include the 'SS' node in H.
 H.add_edge('SI', 'SR', rate = 1)
 H.add_edge('IS', 'RS', rate = 1)
@@ -529,12 +535,13 @@ H.add_edge('IR', 'RR', rate = 0.5)
 H.add_edge('RI', 'RR', rate = 0.5)
 
 #In the below the edge (('SI', 'SS'), ('SI', 'SI')) means an
-#'SI' individual connected to an 'SS' individual can lead to a transition in which
-#the 'SS' individual becomes 'SI'.  The rate of this transition is 0.2.
+#'SI' individual connected to an 'SS' individual can lead to a transition in 
+#which the 'SS' individual becomes 'SI'.  The rate of this transition is 0.2.
 #
-#Note that `IR` and `RI` individuals are more infectious than other individuals.
+#Note that `IR` and `RI` individuals are more infectious than other 
+#individuals.
 #
-J = nx.DiGraph()    #DiGraph showing transitiona that do require an interaction.
+J = nx.DiGraph()    #DiGraph showing transitions that do require interaction.
 J.add_edge(('SI', 'SS'), ('SI', 'SI'), rate = 0.2)
 J.add_edge(('SI', 'IS'), ('SI', 'II'), rate = 0.2)
 J.add_edge(('SI', 'RS'), ('SI', 'RI'), rate = 0.2)
@@ -563,8 +570,9 @@ for individual in range(initial_size):
     IC[individual] = 'II'
 
 print('doing Gillespie simulation')
-t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses,
-                                        tmax = float('Inf'))
+t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_simple_contagion(G, H, 
+                                                    J, IC, return_statuses,
+                                                    tmax = float('Inf'))
 
 plt.semilogy(t, IS+II+IR, '-.', label = 'Infected with disease 1')
 plt.semilogy(t, SI+II+RI, '-.', label = 'Infected with disease 2')
@@ -607,7 +615,7 @@ have a threshold and must have more than some threshold number of infected
 partners before becoming infected.  The dynamic model in [@miller:contagion] assumed
 that nodes transmit independently of one another, and a recipient accumulates 
 transmissions until reaching a threshold and then switches status.  A given node
-``v`` can only transmit once to a node ``u``.  Although is possible to
+``v`` can only transmit once to a node ``u``.  Although it is possible to
 formulate the model of [@miller:contagion] in a way that is consistent with the assumptions of 
 ``Gillespie_complex_contagion``, it is more difficult.  
 
@@ -630,7 +638,8 @@ def transition_rate(G, node, status, parameters):
     #this function needs to return the rate at which ``node`` changes status
     #
     r = parameters[0]
-    if status[node] == 'S' and len([nbr for nbr in G.neighbors(node) if status[nbr] == 'I'])>1:
+    if status[node] == 'S' and len([nbr for nbr in G.neighbors(node) if 
+                                    status[nbr] == 'I'])>1:
         return 1
     else:  #status[node] might be 0 or length might be 0 or 1.
         return 0
@@ -641,8 +650,8 @@ def transition_choice(G, node, status, parameters):
     #
     #this function could be more elaborate if there were different
     #possible transitions that could happen.  However, for this model,
-    #the 'I' nodes aren't changing status, and the 'S' ones are changing to 'I'
-    #So if we're in this function, the node must be 'S' and becoming 'I'
+    #the 'I' nodes aren't changing status, and the 'S' ones are changing to 
+    #'I'.  So if we're in this function, the node must be 'S' and becoming 'I'
     #
     return 'I'
     
@@ -651,13 +660,15 @@ def get_influence_set(G, node, status, parameters):
     #because ``node`` has just changed status.  That is, which nodes
     #might ``node`` influence?
     #
-    #For our models the only nodes a node might affect are the susceptible neighbors.
+    #For our models the only nodes a node might affect are the susceptible 
+    #neighbors.
 
     return {nbr for nbr in G.neighbors(node) if status[nbr] == 'S'}
     
 parameters = (2,)   #this is the threshold.  Note the comma.  It is needed
-                    #for python to realize this is a 1-tuple, not just a number.
-                    #``parameters`` is sent as a tuple so we need the comma.
+                    #for python to realize this is a 1-tuple, not just a 
+                    #number.   ``parameters`` is sent as a tuple so we need 
+                    #the comma.
                     
 N = 600000
 deg_dist = [2, 4, 6]*int(N/3)
@@ -669,12 +680,14 @@ for rho in np.linspace(3./80, 7./80, 8):   #8 values from 3/80 to 7/80.
     print(rho)
     IC = defaultdict(lambda: 'S')
     for node in G.nodes():
-        if np.random.random()<rho:  #there are faster ways to do this random selection
+        if np.random.random()<rho:  #there are faster ways to do this random 
+                                    #selection
             IC[node] = 'I'
     
     print('doing Gillespie simulation')
-    t, S, I = EoN.Gillespie_complex_contagion(G, transition_rate, transition_choice, 
-                            get_influence_set, IC, return_statuses = ('S', 'I'),
+    t, S, I = EoN.Gillespie_complex_contagion(G, transition_rate, 
+                            transition_choice, get_influence_set, IC, 
+                            return_statuses = ('S', 'I'), 
                             parameters = parameters)
                             
     print('done with simulation, now plotting')
