@@ -1,39 +1,48 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.9rc1
+-----------------
+
+- ``Gillespie_simple_contagion`` should now accept a directed graph ``G``.
+
+- Small bug fix in ``Gillespie_simple_contagion`` which would cause any attempt to
+assign a rate function to crash
+
+
 New in v 1.0.8
 --------------
 
 - Bug fixes in ``basic_discrete_SIS``.
 
-- The ``Simulation_Investigation`` objects can now handle arbitrary statuses,
-    rather than just SIS and SIR.
+- The ``Simulation_Investigation`` objects can now handle arbitrary statuses, 
+  rather than just SIS and SIR.
 
 - The ``display`` and ``animate`` functions now allow an optional 
-    ``statuses_to_plot`` argument, allowing us to leave some statuses out.
-    This may require networkx v2.3 or later to work right.
+  ``statuses_to_plot`` argument, allowing us to leave some statuses out. This 
+  may require networkx v2.3 or later to work right.
 
-- The ``Simulation_Investigation`` code now handles plotting things like
-    ``'S+V'`` if we add a time series appropriately.  The last example of
-    :ref:`visualization` shows this.
+- The ``Simulation_Investigation`` code now handles plotting things like 
+  ``'S+V'`` if we add a time series appropriately.  The last example of 
+  :ref:`visualization` shows this.
 
 - The ``Gillespie_simple_contagion`` and ``Gillespie_complex_contagion`` code 
-    can now handle ``return_full_data=True``.
+  can now handle ``return_full_data=True``.
 
-- ``Gillespie_simple_contagion`` is now more flexible in how it handles heterogeneity.
-    The user can now define a function which will give the 'transmission' rates between
-    a pair of nodes and the 'recovery' rates of individual nodes.  So it can be
-    more general than the original version.  (a heterogeneous SIRS example is now
-    provided)
+- ``Gillespie_simple_contagion`` is now more flexible in how it handles 
+  heterogeneity. The user can now define a function which will give the 
+  'transmission' rates between a pair of nodes and the 'recovery' rates of 
+  individual nodes.  So it can be more general than the original version.  
+  (a heterogeneous SIRS example is now provided)
 
-- There is now a ``hierarchy_pos`` function which allows us to plot transmission
-    trees in a nice way. 
+- There is now a ``hierarchy_pos`` function which allows us to plot 
+  transmission trees in a nice way. 
       
 - Changed the discrete SIS and SIR code so that the initial infections occur 
-    at t=-1 for the ``simulation_investigation`` objects.
+  at t=-1 for the ``simulation_investigation`` objects.
     
-- Small change to the default color for Infected nodes (FF2020->FF2000) in 
-    simulation_investigation
+- Small change to the default color for infected nodes (FF2020->FF2000) in 
+  ``simulation_investigation``
     
 
 

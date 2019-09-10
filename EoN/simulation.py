@@ -3747,7 +3747,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
       
     [for reference, if you look at Fig 4.3 on pg 122 of Kiss, Miller & Simon
     the graphs for **SIS** would be:
-        ``spontaneous_transition_graph``: ``'I'``->``'S'`` with the edge weighted by ``gamma`` and
+        ``spontaneous_transition_graph``: ``'I'``-> ``'S'`` with the edge weighted by ``gamma`` and
         
         ``nbr_induced_transition_graph``: ``('I', 'S')`` -> ``('I', 'I')`` with the edge weighted by ``tau``.
         
@@ -3810,7 +3810,8 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     :Arguments: 
         
     **G** NetworkX Graph
-        The underlying contact network
+        The underlying contact network.  If ``G`` is directed, we assume that
+        "transmissions" can only go in the same direction as the edge.
             
     **spontaneous_transition_graph** Directed networkx graph
         The nodes of this graph are the possible statuses of a node in ``G``.
@@ -4074,7 +4075,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             rf = nbr_induced_transition_graph.adj[transition[0]][transition[1]]['rate_function']
             edges = list(G.edges())            
             get_weight[transition] = {(source, target): rf(G, source, target, **nbr_kwargs) for source, target in edges}
-            if not nx.is_drected(G):
+            if not nx.is_directed(G):
                 get_weight[transition].update({(source, target): rf(G, source, target, **nbr_kwargs) for target, source in edges})
             potential_transitions[transition] = _ListDict_(weighted=True)
         else:
@@ -4170,32 +4171,55 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         #print(potential_transitions[
         for transition in induced_transitions:
             if G.is_directed():
-                raise EoN.EoNError('This code does not yet handle directed networks.  Aborting')
-            #remove edge from any induced lists
-            #add edge to any induced lists
-            for nbr in G.neighbors(modified_node):
-                nbr_status = status[nbr]
-                
-                if (modified_node, nbr) not in get_weight[transition]:
-                    get_weight[transition][(modified_node,nbr)] = get_weight[transition][(nbr,modified_node)]
-                elif (nbr, modified_node) not in get_weight[transition]:
-                    get_weight[transition][(nbr, modified_node)] = get_weight[transition][(modified_node, nbr)]
+                for nbr in G.neighbors(modified_node):
+                    #remove edge from any induced lists
+                    #add edge to any induced lists
+
+                    nbr_status = status[nbr]
                     
-                if transition[0] == (nbr_status, old_status):
+                    if (modified_node, nbr) not in get_weight[transition]:
+                        get_weight[transition][(modified_node,nbr)] = get_weight[transition][(nbr,modified_node)]
+                    if transition[0] == (old_status, nbr_status):
+                        potential_transitions[transition].remove((modified_node, nbr))
+                    if transition[0] == (status[modified_node], nbr_status):
+                        potential_transitions[transition].update((modified_node, nbr), weight_increment = get_weight[transition][(modified_node, nbr)])
+                for pred in G.predecessors(modified_node):
+                    #remove edge from any induced lists
+                    #add edge to any induced lists
+
+                    pred_status = status[pred]
+                    if (pred, modified_node) not in get_weight[transition]:
+                        get_weight[transition][(pred, modified_node)] = get_weight[transition][(pred, modified_node)]
+                    if transition[0] == (pred_status, old_status):
+                        potential_transitions[transition].remove((pred, modified_node))
+                    if transition[0] == (pred_status, status[modified_node]):
+                        potential_transitions[transition].update((pred, modified_node), weight_increment = get_weight[transition][(pred, modified_node)])                    
+            else:
+                for nbr in G.neighbors(modified_node):
+                    #remove edge from any induced lists
+                    #add edge to any induced lists
+                    nbr_status = status[nbr]
+                    
+                    if (modified_node, nbr) not in get_weight[transition]:
+                        get_weight[transition][(modified_node,nbr)] = get_weight[transition][(nbr,modified_node)]
+                    elif (nbr, modified_node) not in get_weight[transition]:
+                        get_weight[transition][(nbr, modified_node)] = get_weight[transition][(modified_node, nbr)]
+                        
+                    if transition[0] == (nbr_status, old_status):
                         potential_transitions[transition].remove((nbr, modified_node))
-                if transition[0] == (old_status, nbr_status):
-                    potential_transitions[transition].remove((modified_node, nbr))
+                    if transition[0] == (old_status, nbr_status):
+                        potential_transitions[transition].remove((modified_node, nbr))
                     
-                if transition[0] == (nbr_status, status[modified_node]):
-                    potential_transitions[transition].update((nbr, modified_node), weight_increment = get_weight[transition][(nbr, modified_node)])
-                if transition[0] == (status[modified_node], nbr_status):
-                    potential_transitions[transition].update((modified_node, nbr), weight_increment = get_weight[transition][(modified_node, nbr)])
+                    if transition[0] == (nbr_status, status[modified_node]):
+                        potential_transitions[transition].update((nbr, modified_node), weight_increment = get_weight[transition][(nbr, modified_node)])
+                    if transition[0] == (status[modified_node], nbr_status):
+                        potential_transitions[transition].update((modified_node, nbr), weight_increment = get_weight[transition][(modified_node, nbr)])
                 
-                #roundoff error can kill the calculation, but it's slow to do this right.
-                #so we'll only deal with it if the value is small enough that roundoff
-                #error might matter.
-                if potential_transitions[transition].total_weight() < 10**(-7) and potential_transitions[transition].total_weight()!=0:
-                    potential_transitions[transition].update_total_weight()
+            #roundoff error can kill the calculation, but it's slow to do this right.
+            #so we'll only deal with it if the value is small enough that roundoff
+            #error might matter.
+            if potential_transitions[transition].total_weight() < 10**(-7) and potential_transitions[transition].total_weight()!=0:
+                potential_transitions[transition].update_total_weight()
         total_rate = sum(rate[transition]*potential_transitions[transition].total_weight() for transition in spontaneous_transitions+induced_transitions)
         if total_rate>0:
             delay = random.expovariate(total_rate)
