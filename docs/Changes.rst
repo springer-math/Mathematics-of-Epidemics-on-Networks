@@ -7,7 +7,7 @@ New in v 1.0.9rc1
 - ``Gillespie_simple_contagion`` should now accept a directed graph ``G``.
 
 - Small bug fix in ``Gillespie_simple_contagion`` which would cause any attempt to
-assign a rate function to crash
+  assign a rate function to crash
 
 
 New in v 1.0.8

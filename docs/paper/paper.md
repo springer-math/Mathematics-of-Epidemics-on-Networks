@@ -294,7 +294,7 @@ For ease of comparison with simulation, and consistency with existing literature
 the output of the model should be interpreted in terms of an expected number of individuals
 in each status, which requires that our values scale with ``N``.  So all of 
 the initial conditions have a factor of ``N``.  
-If we are interested in proportion,we could arbitrarily set ``N=1``, 
+If we are interested in proportion, we could arbitrarily set ``N=1``, 
 and then our solutions would give us the proportion of the population in each 
 status.
 
@@ -312,7 +312,7 @@ an edge from a susceptible node connects to another susceptible node at time 0.
 By default, it assumes there are no recovered individuals at time $0$.
 
 If the population has a Poisson degree distristribution with mean ``kave`` and the 
-infection is introduced by randomly infecting a proportion ``rho`` of the population
+infection is introduced by randomly infecting a proportion $\rho$ of the population
 at time 0, then $\psi(x) = (1-\rho) e^{-\rho(1-x)}$, 
 $\psi'(x) = (1-\rho)\rho e^{-\rho(1-x)}$
 and $\phi_S(0) = 1-\rho$.  So
@@ -391,7 +391,7 @@ Examples are provided in the documentation, including
 - Cooperative SIR diseases (infection with one disease helps spread the other)
 
 The implementation requires the user to separate out two distinct ways that 
-transitions occur.  To help demonstrate consider an "SEIR" epidemic, where 
+transitions occur.  To help demonstrate, consider an "SEIR" epidemic, where 
 individuals begin susceptible, but when they interact with infectious 
 individuals they may enter an exposed state.  They remain in that exposed 
 state for some period of time before transitioning into the infectious state.
@@ -399,25 +399,27 @@ They remain infectious and eventually transition into the recovered state.
 
 We can identify two broad types of transitions:
 
-- Sometimes individuals change status without influence from any other individual.
-  For example, an infected individual may recover, or an exposed individual may 
-  move into the infectious class.  These transitions between statuses can be 
-  represented by a directed graph ``H`` where the nodes are not the original 
-  individuals of the contact network ``G``, but rather the potential statuses 
-  individuals can take.  The edges represent transitions that can occur, and 
-  we weight the edges by the rate.  In the SEIR case we would need the graph 
-  ``H`` to have edges ``'E'``->``'I'`` and ``'I'``->``'R'``.  The
-  edges would be weighted by the transition rates.  Note ``H`` need not have 
-  a node ``'S'`` because susceptible nodes do not change status on their own.
+- **Spontaneous Transitions**  Sometimes individuals change status without 
+  influence from any other individual.  For example, an infected individual 
+  may recover, or an exposed individual may move into the infectious class.  
+  These transitions between statuses can be represented by a directed graph 
+  ``H`` where the nodes are not the original individuals of the contact 
+  network ``G``, but rather the potential statuses individuals can take.  The 
+  edges represent transitions that can occur, and we weight the edges by the 
+  rate.  In the SEIR case we would need the graph ``H`` to have edges 
+  ``'E'``->``'I'`` and ``'I'``->``'R'``.  The edges would be weighted by the 
+  transition rates.  Note ``H`` need not have a node ``'S'`` because 
+  susceptible nodes do not change status on their own.
 
-- Sometimes individuals change status due to the influence of a single partner.
-  For example an infected individual may transmit to a susceptible partner. 
-  So an ``('I', 'S')`` pair may become ``('I', 'I')``.  We can represent these 
-  transitions with a directed graph ``J``.  Here the nodes of ``J`` are pairs 
-  (tuples) of statuses, representing potential statuses of individuals 
-  in a partnership.  An edge represents a possible partner-induced transition.
-  In the SEIR case, there is only a single such transition, represented by the
-  edge ``('I', 'S')`` -> ``('I', 'E')`` with a weight representing the transmission
+- **Induced Transitions** Sometimes individuals change status due to the 
+  influence of a single partner.  For example an infected individual may 
+  transmit to a susceptible partner.  So an ``('I', 'S')`` pair may become 
+  ``('I', 'I')``.  We can represent these transitions with a directed graph 
+  ``J``.  Here the nodes of ``J`` are pairs (tuples) of statuses, representing 
+  potential statuses of individuals in a partnership.  An edge represents a 
+  possible partner-induced transition.  In the SEIR case, there is only a 
+  single such transition, represented by the edge 
+  ``('I', 'S')`` -> ``('I', 'E')`` with a weight representing the transmission
   rate.  No other nodes are required in ``J``.  An edge always represents the
   possibility that a node in the first state can cause the other node to change
   state.  So the first state in the pair remains the same.  The current 
@@ -468,12 +470,12 @@ nx.set_edge_attributes(G, values=edge_attribute_dict,
 #to scale the transmission rates.  More advanced techniques are shown in
 #the documentation
 
-H = nx.DiGraph()
+H = nx.DiGraph() #For the spontaneous transitions
 H.add_node('S') #This line is actually unnecessary.
 H.add_edge('E', 'I', rate = 0.6, weight_label='expose2infect_weight')
 H.add_edge('I', 'R', rate = 0.1)
 
-J = nx.DiGraph()
+J = nx.DiGraph() #for the induced transitions
 J.add_edge(('I', 'S'), ('I', 'E'), rate = 0.1, 
             weight_label='transmission_weight')
 IC = defaultdict(lambda: 'S')
@@ -524,8 +526,7 @@ G = nx.fast_gnp_random_graph(N, 5./(N-1))
 #'RS' means recovered from disease 1 and susceptible to disease 2.
 #etc.
 
-H = nx.DiGraph()  #DiGraph showing possible transitions that don't require 
-                  #interaction
+H = nx.DiGraph()  #DiGraph showing spontaneous transitions (no interaction involved)
 H.add_node('SS')  #we actually don't need to include the 'SS' node in H.
 H.add_edge('SI', 'SR', rate = 1)
 H.add_edge('IS', 'RS', rate = 1)
@@ -541,7 +542,7 @@ H.add_edge('RI', 'RR', rate = 0.5)
 #Note that `IR` and `RI` individuals are more infectious than other 
 #individuals.
 #
-J = nx.DiGraph()    #DiGraph showing transitions that do require interaction.
+J = nx.DiGraph()    #DiGraph showing induced transitions (require interaction).
 J.add_edge(('SI', 'SS'), ('SI', 'SI'), rate = 0.2)
 J.add_edge(('SI', 'IS'), ('SI', 'II'), rate = 0.2)
 J.add_edge(('SI', 'RS'), ('SI', 'RI'), rate = 0.2)
