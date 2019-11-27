@@ -62,8 +62,11 @@ class TestSimSweepParameters:
         [EoN.fast_SIR(G, i, 1.0, initial_infecteds=initial_infections, return_full_data=True, tmax=10) for i in np.arange(0.0, 1.0, 0.1)]
 
     def test_basic_discrete_SIS_sweep_p(self):
-        [EoN.basic_discrete_SIS(G, i, initial_infecteds=initial_infections, rho = None, tmin = 0, tmax = 10, return_full_data = True) for i in np.arange(0.0, 1.0, 0.1)]
+        [EoN.basic_discrete_SIS(G, i, initial_infecteds=initial_infections,
+                                rho = None, tmin = 0, tmax = 10,
+                                return_full_data = True) for i in np.arange(0.0, 1.0, 0.1)]
 
     def test_basic_discrete_SIR_sweep_p(self):
-        [EoN.basic_discrete_SIR(G, i, initial_infecteds=initial_infections, rho = None, tmin = 0, tmax = 10, return_full_data = True) for i in np.arange(0.0, 1.0, 0.1)]
+        [EoN.basic_discrete_SIR(G, i, initial_infecteds=initial_infections,
+                                rho = None, tmin = 0, tmax = 10, return_full_data = True) for i in np.arange(0.0, 1.0, 0.1)]
 
