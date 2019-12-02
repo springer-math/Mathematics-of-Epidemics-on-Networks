@@ -1,6 +1,10 @@
 Changes from v 1.0
 ==================
 
+New in v 1.0.9rc2
+-----------------
+- ``Hierarchy_Pos`` has an extraneous print statement removed.
+
 New in v 1.0.9rc1
 -----------------
 

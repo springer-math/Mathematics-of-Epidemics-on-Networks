@@ -287,7 +287,7 @@ def hierarchy_pos(G, root=None, width=1., vert_gap = 0.2, vert_loc = 0, leaf_vs_
             leaf_count = 1
             leafpos[root]  = (leftmost, vert_loc)
 #        pos[root] = (leftmost + (leaf_count-1)*dx/2., vert_loc)
-        print(leaf_count)
+#        print(leaf_count)
         return rootpos, leafpos, leaf_count
 
     xcenter = width/2.

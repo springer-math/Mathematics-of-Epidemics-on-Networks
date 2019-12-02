@@ -20,10 +20,10 @@ version available through pip (1.0.8).  The easiest way is
     pip install EoN
 
     
-The documentation provided here is for version 1.0.9rc1 which is on GitHub (see
+The documentation provided here is for version 1.0.9rc2 which is on GitHub (see
 `Changes from v1.0 <Changes.html>`_ for any relevant changes).
 
-To **install EoN version 1.0.9rc1** You can clone or download the Github 
+To **install EoN version 1.0.9rc2** You can clone or download the Github 
 version at https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks. 
 
 Then just move into the main directory and run

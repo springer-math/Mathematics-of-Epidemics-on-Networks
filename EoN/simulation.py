@@ -3441,10 +3441,10 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
     
     The complex contagion must be something that all nodes do something simultaneously
     
-    **This is not the same as if node ``v`` primes node ``u`` and later
-    node ``w`` causes ``u`` to transition.  This will require that both ``v`` 
-    and ``w`` have the relevant states at the moment of transition and it has
-    forgotten any previous history.**
+    **This is not the same as if node** ``v`` **primes node** ``u`` **and 
+    later node** ``w`` **causes** ``u`` **to transition.  This will require 
+    that both** ``v`` **and** ``w`` **have the relevant states at the moment**
+    **of transition and it has forgotten any previous history.**
     
     :Arguments: 
         
@@ -3475,14 +3475,14 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
         nodes and chooses which event will happen.  The function should be 
         called [with or without ``parameters``]
         
-        if parameters is None:
-            transition_choice(G, node, status)
+        if ``parameters`` is ``None``:
+            ``transition_choice(G, node, status)``
         else:
-            transition_choice(G, node, status, parameters)
+            ``transition_choice(G, node, status, parameters)``
         
-        where G is the graph, node is the node, status is a dict such that 
-        status[u] returns the status of u, and parameters is the parameters
-        passed to the function.
+        where ``G`` is the graph, ``node` is the node, ``status` is a dict 
+        such that ``status[u]`` returns the status of u, and ``parameters`` is 
+        the parameters passed to the function.
         
         It should return the new status of ``node`` based on the fact that the
         node is changing status.
@@ -3496,10 +3496,10 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
         but it may be faster to leave out any nodes that it wouldn't have
         affected before or after its transition (e.g., R or I neighbors in SIR).
         
-        if parameters is None:
-            get_influence_set(G, node, status)
+        if ``parameters`` is None:
+            ``get_influence_set(G, node, status)``
         else:
-            get_influence_set(G, node, status, parameters) 
+            ``get_influence_set(G, node, status, parameters)``
         
         where G is the graph, node is the node, status is a dict such that 
         status[u] returns the status of u, and parameters is the parameters

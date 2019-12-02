@@ -39,8 +39,8 @@ book *Mathematics of Epidemics on Networks* [@kiss:EoN], and now consists of ove
 
 EoN provides a set of tools for
 
-- Susceptible-Infected-Susceptible (SIS) and Susceptible-Infected-Recovered (SIR)
-disease
+- Susceptible-Infected-Susceptible (SIS) and Susceptible-Infected-Recovered 
+(SIR) disease
   - Stochastic simulation of disease spread in networkx graphs
     - continuous time Markovian
     - continuous time nonMarkovian
@@ -53,29 +53,32 @@ disease
 - Visualization and analysis of stochastic simulations
 
 These algorithms are built on the networkx package [@hagberg2008exploring].
-Here we provide brief descriptions with examples of a few of these tools.
 EoN's documentation is maintained at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/ 
 including numerous examples at 
-https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.
+https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.  In this 
+paper we provide brief descriptions with examples of a few of EoN's tools.
 
-We model spreading processes on a contact network, and it is often useful for
-mathematicians and physicists to formally think of individuals as nodes with 
-their potentially infectious partnerships as edges.  However, for those who 
-come from other backgrounds this abstraction may be less familiar.  Therefore, 
-we will describe a contact network along which an infections process spreads 
-as consisting of "individuals" and "partnerships" rather than "nodes" and 
-"edges".  This has an additional benefit because in the simple contagion code, 
-we need to define some other networks whose nodes represent possible statuses
-and whose edges represent transitions that can occur.  Referring to "individuals" 
-and "partnerships" when discussing the process spreading on the contact network 
-makes it easier to avoid confusion between the different networks.
+We model spreading processes on a contact network.  In this context, many
+mathematicians and physicists are accustomed to thinking of individuals as 
+nodes with their potentially infectious partnerships as edges.  However, for 
+those who come from other backgrounds this abstraction may be less familiar.  
+Therefore, we will describe a contact network along which an infections 
+process spreads as consisting of "individuals" and "partnerships" rather than 
+"nodes" and "edges".  This has an additional benefit because in the simple 
+contagion algorithm (described later), we need to define some other networks 
+whose nodes represent possible statuses and whose edges represent transitions 
+that can occur.  Referring to "individuals" and "partnerships" when discussing
+the process spreading on the contact network makes it easier to avoid 
+confusion between the different networks.
 
 We start with a description of the tools for studying SIS and SIR disease 
 through stochastic simulation and differential equations models.  Then we 
 describe the simple and complex contagions, including examples showing how
 the simple contagion can be used to capture a range of standard disease
-models.  Finally we demonstrate the visualization software.
+models.  Finally we demonstrate the visualization tools.  The examples shown
+are intended to demonstrate the ability of the tools.  The documentation gives
+more detail about how to use them.
 
 ## SIR and SIS disease
 
@@ -93,7 +96,7 @@ It is possible for transition rates to depend on intrinsic properties of
 individuals and of partnerships.
 
 The continuous-time stochastic simulations have two different implementations: a 
-Gillespie implementation [@gillespie1977exact, @doob1945markoff] and an Event-driven
+Gillespie implementation [@gillespie1977exact,@doob1945markoff] and an Event-driven
 implementation.  Both approaches are efficient.  They have similar speed if the 
 dynamics are Markovian (depending on the network and disease parameters either
 may be faster than the other), but the event-driven implementation can also handle 
@@ -104,7 +107,7 @@ from [@holme2014model] and [@cota2017optimized].
 
 The algorithms can typically handle an SIR epidemic spreading on 
 hundreds of thousands of individuals within a few seconds on a laptop.  The SIS 
-versions are slower because the the number of events that can happen is much
+versions are slower because the number of events that can happen is much
 larger in an SIS simulation.
 
 #### Examples
@@ -290,7 +293,7 @@ This produces
 
 ![](SIS_pairwise.png)
 
-For ease of comparison with simulation, and consistency with existing literature,
+For ease of comparison with simulation and consistency with existing literature,
 the output of the model should be interpreted in terms of an expected number of individuals
 in each status, which requires that our values scale with ``N``.  So all of 
 the initial conditions have a factor of ``N``.  
@@ -371,8 +374,8 @@ In a complex contagion however, we permit the rate at which ``u`` changes from
 one status to another to depend on the statuses of others in some more complicated way.
 Two infected individuals may cause a susceptible individual to become infected
 at some higher rate than would result from them acting independently.  This is
-frequently thought to model social contagions where an individual may decide
-to believe something if multiple partners believe it [@centola:cascade].  
+frequently thought to model social contagions where an individual may only 
+believe something if multiple partners believe it [@centola:cascade].  
 
 The simple and complex contagions are currently implemented only in a 
 Gillespie setting, and so they require Markovian assumptions.  
@@ -391,11 +394,17 @@ Examples are provided in the documentation, including
 - Cooperative SIR diseases (infection with one disease helps spread the other)
 
 The implementation requires the user to separate out two distinct ways that 
-transitions occur.  To help demonstrate, consider an "SEIR" epidemic, where 
+transitions occur, those that are intrinsic to an individual's current state
+and those that are induced a partner.  To help demonstrate, consider an 
+"SEIR" epidemic, where 
 individuals begin susceptible, but when they interact with infectious 
-individuals they may enter an exposed state.  They remain in that exposed 
-state for some period of time before transitioning into the infectious state.
-They remain infectious and eventually transition into the recovered state.  
+partners they may enter an exposed state.  They remain in that exposed 
+state for some period of time before transitioning into the infectious state
+independently of the status of any partner.
+They remain infectious and eventually transition into the recovered state, again
+independently of the status of any partner.  Here the "E" to "I" and "I" to "R"
+transitions are intrinsic to the individual's state, while the "S" to "E" 
+transition requires a partner.  
 
 We can identify two broad types of transitions:
 
@@ -427,7 +436,7 @@ We can identify two broad types of transitions:
   
 #### Examples
 
-We demonstrate this first with an SEIR example.  To demonstrate some of the 
+We demonstrate this first with an SEIR example.  To demonstrate additional
 flexibility we allow some individuals to have a higher rate of transitioning from 
 ``'E'`` to ``'I'`` and some partnerships to have a higher transmission rate. 
 This is done by adding weights to the contact network `G` which scale the 
@@ -613,19 +622,21 @@ Previous work [@miller:contagion] considered a dynamic version of the Watts
 Threshold Model [@watts:WTM] spreading through clustered and unclustered 
 networks.  The Watts Threshold Model is like an SI model, except that nodes 
 have a threshold and must have more than some threshold number of infected 
-partners before becoming infected.  The dynamic model in [@miller:contagion] assumed
-that nodes transmit independently of one another, and a recipient accumulates 
-transmissions until reaching a threshold and then switches status.  A given node
-``v`` can only transmit once to a node ``u``.  Although it is possible to
-formulate the model of [@miller:contagion] in a way that is consistent with the assumptions of 
-``Gillespie_complex_contagion``, it is more difficult.  
+partners before becoming infected.  The dynamic model in [@miller:contagion] 
+assumed that nodes transmit independently of one another, and a recipient 
+accumulates transmissions until reaching a threshold and then switches status.  
+An individual ``v`` can only transmit once to a partner ``u``.  Because 
+individuals cannot transmit to the same partner more than once it is not 
+obvious that there is a way to implement this in a way consistent with the 
+memoryless criterion.
 
 Here we use a simpler model that yields the same final state.  Once a node has
 reached its threshold number of infected partners, it transitions at rate 1 to 
 the infected state.  The dynamics are different, but it can be proven that the
 final states in both models are identical and follow deterministically from the
 initial condition.  The following will produce the equivalent of Fig. 2a of 
-[@miller:contagion] for our new dynamic model.
+[@miller:contagion] for our new dynamic model. In that Figure, the threshold
+was ``2``.
 
 
 ```python
@@ -636,34 +647,43 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 
 def transition_rate(G, node, status, parameters):
-    #this function needs to return the rate at which ``node`` changes status
-    #
-    r = parameters[0]
+    '''This function needs to return the rate at which `node` changes status.
+    For the model we are assuming, it should return 1 if `node` has at least
+    2 infected partners and 0 otherwise.  The information the threshold
+    is passed in in the tuple `parameters`.
+    '''
+    
+    r = parameters[0] #the threshold
+    
+    #if susceptible and at least `r` infected partners, then rate is 1
+    
     if status[node] == 'S' and len([nbr for nbr in G.neighbors(node) if 
-                                    status[nbr] == 'I'])>1:
+                                    status[nbr] == 'I'])>=r:
         return 1
-    else:  #status[node] might be 0 or length might be 0 or 1.
+    else:
         return 0
-        
+
 def transition_choice(G, node, status, parameters):
-    #this function needs to return the new status of node.  We assume going
-    #in that we have already calculated it is changing status.
-    #
-    #this function could be more elaborate if there were different
-    #possible transitions that could happen.  However, for this model,
-    #the 'I' nodes aren't changing status, and the 'S' ones are changing to 
-    #'I'.  So if we're in this function, the node must be 'S' and becoming 'I'
-    #
+    '''this function needs to return the new status of node.  We assume going
+    in that we have already calculated it is changing status.
+    
+    this function could be more elaborate if there were different
+    possible transitions that could happen.  However, for this model,
+    the 'I' nodes aren't changing status, and the 'S' ones are changing to 
+    'I'.  So if we're in this function, the node must be 'S' and becoming 'I'
+    '''
+    
     return 'I'
     
 def get_influence_set(G, node, status, parameters):
-    #this function needs to return any node whose rates might change
-    #because ``node`` has just changed status.  That is, which nodes
-    #might ``node`` influence?
-    #
-    #For our models the only nodes a node might affect are the susceptible 
-    #neighbors.
-
+    '''this function needs to return a set containing all nodes whose rates 
+    might change because `node` has just changed status.  That is, which 
+    nodes might `node` influence?
+    
+    For our models the only nodes a node might affect are the susceptible 
+    neighbors.
+    '''
+    
     return {nbr for nbr in G.neighbors(node) if status[nbr] == 'S'}
     
 parameters = (2,)   #this is the threshold.  Note the comma.  It is needed
@@ -733,22 +753,26 @@ clustered network.
 ### Visualization & Analysis
 
 By default the simulations return numpy arrays providing the number of individuals
-with each state at each time.  However by setting a flag ``return_full_data=True``,
-we can know the exact status of each individual at each time, as well as who infected
-whom.  There are also methods which use this data to visualize the epidemic at 
-a specific time, or to create an animation.  
+with each state at each time.  However if we set a flag ``return_full_data=True``,
+then the simulations return a ``Simulation_Investigation`` object.  With the
+``Simulation_Investigation`` object, there are methods which allow us to 
+reconstruct all details of the simulation.  We can know the exact status of 
+each individual at each time, as well as who infected whom.  
 
-There are several visualization tools provided to produce output from the
-full data.  These allow us to produce a snapshot of the network at a given time.
-By default it also include the time series (e.g., S, I, and R) alongside the
-snapshot.  These can be removed, or replaced by other time series, for example
+There are also 
+methods  provided to produce output from the ``Simulation_Investigation`` 
+object.  These allow us to produce a snapshot of the network at a given time.
+By default the visualization also includes the time series (e.g., S, I, and R) 
+plotted beside the network snapshot.  These time series plots 
+can be removed, or replaced by other time series, for example we could plot
 multiple time series in the same axis, or time series generated by one of the
 differential equations models.  With appropriate additional packages needed for
 matplotlib's animation tools, the software can produce animations as well.
 
-For SIR outbreaks, this produces a transmission tree.  For SIS and simple contagions,
-it produces a directed multigraph showing the transmissions that occurred (technically
-this may not be a tree).  However for complex contagions, we cannot determine who
+For SIR outbreaks, the ``Simulation_Investigation`` object includes a 
+transmission tree.  For SIS and simple contagions, it produces a directed 
+multigraph showing the transmissions that occurred (this may not be a tree).  
+However for complex contagions, we cannot determine who
 is responsible for inducing a transition, so the implementation does not provide
 a transmission tree.  The transmission tree is useful for constructing synthetic
 phylogenies as in [@moshiri2018favites].
@@ -767,11 +791,13 @@ import matplotlib.pyplot as plt
 
 G = nx.karate_club_graph()
 
-nx_kwargs = {"with_labels":True}
+nx_kwargs = {"with_labels":True} #optional arguments to be passed on to the 
+                                 #networkx plotting command.
 print('doing Gillespie simulation')
 sim = EoN.Gillespie_SIR(G, 1, 1, return_full_data=True)
 print('done with simulation, now plotting')
-sim.display(time = 1, **nx_kwargs)
+
+sim.display(time = 1, **nx_kwargs) #plot at time 1.
 plt.show()
 ```
 This produces a snapshot at time 1: 
@@ -782,8 +808,8 @@ This produces a snapshot at time 1:
 
 We can access the transmission tree.
 ```python
-T = sim.transmission_tree()
-Tpos = EoN.hierarchy_pos(T)
+T = sim.transmission_tree() #A networkx DiGraph with the transmission tree
+Tpos = EoN.hierarchy_pos(T) #pos for a networkx plot
 
 fig = plt.figure(figsize = (8,5))
 ax = fig.add_subplot(111)
@@ -794,9 +820,9 @@ This plots the transmission tree:
 
 ![](karate_club_transmission_tree.png).
 
-The command ``hierarchy_pos`` is based on [@stackoverflow:29586520]
+The command ``hierarchy_pos`` is based on [@stackoverflow:29586520].
 
-#### Example - Visualizing dynamics of SIR disease with vaccination in a lattice.
+#### Example - Visualizing dynamics of SIR disease with vaccination.
 
 We finally consider an SIRV disease, that is an SIR disease with vaccination. 
 As the disease spreads susceptible individuals get vaccinated randomly, without 
@@ -826,7 +852,7 @@ H.add_edge('Inf', 'Rec', rate = 1.0)
 J = nx.DiGraph()  #the induced transitions
 J.add_edge(('Inf', 'Sus'), ('Inf', 'Inf'), rate = 2.0)
 
-IC = defaultdict(lambda:'Sus') #initial condition
+IC = defaultdict(lambda:'Sus') #a "dict", but by default the value is `Sus`.
 for node in initial_infections:
     IC[node] = 'Inf'
     
@@ -843,7 +869,7 @@ sim = EoN.Gillespie_simple_contagion(G, H, J, IC, return_statuses, tmax=30,
 
 times, D = sim.summary() 
 #
-#imes is a numpy array of times.  D is a dict, whose keys are the entries in
+#times is a numpy array of times.  D is a dict, whose keys are the entries in
 #return_statuses.  The values are numpy arrays giving the number in that 
 #status at the corresponding time.
                       
@@ -886,6 +912,8 @@ scipy
 numpy
 networkx
 matplotlib
+
+# Related Packages
 
 # Funding and Support
 
