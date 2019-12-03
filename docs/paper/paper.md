@@ -915,6 +915,44 @@ matplotlib
 
 # Related Packages
 
+There are several alternative software packages that allow for simulation of 
+epidemics on networks.  Here we briefly review some of these.
+
+
+### epydemic
+
+Epydemic is a python package that can simulate SIS and SIR epidemics in 
+networks.  It is also built on networkx.  It can handle both discrete-time 
+simulations or continuous-time Markovian simulations for which it uses a 
+Gillespie-style algorithm.  It can handle more processes than just SIS or SIR 
+disease.  In fact it can handle any model which can be simulated using the 
+``EoN.simple_contagion``.
+
+The documentation is available at https://pyepydemic.readthedocs.io/en/latest/
+
+
+### Graph-tool
+
+Graph-tool [@peixoto_graph-tool_2014] is a python package that serves as an 
+alternative to networkx.  Many of its underlying processes are written in C++, 
+so it is often much faster than networkx.
+
+Graph-tool has a number of built-in dynamic models, including the SIS, SIR, 
+and SIRS models.  The disease models are currently available only in 
+discrete-time versions.
+
+The documentation for these disease models is available at 
+https://graph-tool.skewed.de/static/doc/dynamics.html.
+
+### EpiModel
+
+EpiModel [@jenness:EpiModel] is an R package that can handle SI, SIS, and SIR 
+disease spread.  It is possible to extend EpiModel to other models.  EpiModel
+is built around the StatNet package.  More details about EpiModel are available
+at https://www.epimodel.org/
+
+
+
 # Funding and Support
 
 This development of EoN has been supported by Global Good and by La Trobe 
