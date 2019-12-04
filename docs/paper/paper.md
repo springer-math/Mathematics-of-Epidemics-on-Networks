@@ -83,7 +83,7 @@ more detail about how to use them.
 ## SIR and SIS disease
 
 ### Stochastic simulation
-The stochastic SIR and SIS simulation tools allow the user to investigate many 
+The stochastic SIR and SIS simulation tools allow the user to investigate  
 standard SIS and SIR dynamics (SEIR/SIRS and other processes are addressed 
 below):
 
@@ -96,7 +96,7 @@ It is possible for transition rates to depend on intrinsic properties of
 individuals and of partnerships.
 
 The continuous-time stochastic simulations have two different implementations: a 
-Gillespie implementation [@gillespie1977exact,@doob1945markoff] and an Event-driven
+Gillespie implementation [@gillespie1977exact; @doob1945markoff] and an Event-driven
 implementation.  Both approaches are efficient.  They have similar speed if the 
 dynamics are Markovian (depending on the network and disease parameters either
 may be faster than the other), but the event-driven implementation can also handle 
@@ -394,19 +394,18 @@ Examples are provided in the documentation, including
 - Cooperative SIR diseases (infection with one disease helps spread the other)
 
 The implementation requires the user to separate out two distinct ways that 
-transitions occur, those that are intrinsic to an individual's current state
-and those that are induced a partner.  To help demonstrate, consider an 
-"SEIR" epidemic, where 
-individuals begin susceptible, but when they interact with infectious 
-partners they may enter an exposed state.  They remain in that exposed 
-state for some period of time before transitioning into the infectious state
-independently of the status of any partner.
+transitions occur: those that are intrinsic to an individual's current state
+and those that are induced by a partner.  To help demonstrate, consider an 
+"SEIR" epidemic, where individuals begin susceptible, but when they interact 
+with infectious partners they may enter an exposed state.  They remain in that 
+exposed state for some period of time before transitioning into the infectious 
+state independently of the status of any partner.
 They remain infectious and eventually transition into the recovered state, again
 independently of the status of any partner.  Here the "E" to "I" and "I" to "R"
 transitions are intrinsic to the individual's state, while the "S" to "E" 
-transition requires a partner.  
+transition is induced by a partner.  
 
-We can identify two broad types of transitions:
+To formalize this, we identify two broad types of transitions:
 
 - **Spontaneous Transitions**  Sometimes individuals change status without 
   influence from any other individual.  For example, an infected individual 
@@ -626,13 +625,14 @@ partners before becoming infected.  The dynamic model in [@miller:contagion]
 assumed that nodes transmit independently of one another, and a recipient 
 accumulates transmissions until reaching a threshold and then switches status.  
 An individual ``v`` can only transmit once to a partner ``u``.  Because 
-individuals cannot transmit to the same partner more than once it is not 
-obvious that there is a way to implement this in a way consistent with the 
-memoryless criterion.
+individuals cannot transmit to the same partner more than once it becomes nontrivial
+to implement this in a way consistent with the 
+memoryless criterion.  
+<!--- to do this, the state of an individual would be indexed by who transmitted to them --->
 
-Here we use a simpler model that yields the same final state.  Once a node has
-reached its threshold number of infected partners, it transitions at rate 1 to 
-the infected state.  The dynamics are different, but it can be proven that the
+Here we use another dynamic model that yields the same final state.  Once a 
+node has reached its threshold number of infected partners, it transitions at 
+rate 1 to the infected state.  The dynamics are different, but it can be proven that the
 final states in both models are identical and follow deterministically from the
 initial condition.  The following will produce the equivalent of Fig. 2a of 
 [@miller:contagion] for our new dynamic model. In that Figure, the threshold
@@ -955,7 +955,7 @@ at https://www.epimodel.org/
 
 # Funding and Support
 
-This development of EoN has been supported by Global Good and by La Trobe 
+The development of EoN has been supported by Global Good and by La Trobe 
 University.
 
 # References
