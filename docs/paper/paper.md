@@ -649,8 +649,8 @@ from collections import defaultdict
 def transition_rate(G, node, status, parameters):
     '''This function needs to return the rate at which `node` changes status.
     For the model we are assuming, it should return 1 if `node` has at least
-    2 infected partners and 0 otherwise.  The information the threshold
-    is passed in in the tuple `parameters`.
+    2 infected partners and 0 otherwise.  The information about the threshold
+    is provided in the tuple `parameters`.
     '''
     
     r = parameters[0] #the threshold
