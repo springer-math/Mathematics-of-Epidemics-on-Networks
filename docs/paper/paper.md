@@ -896,7 +896,9 @@ ani=sim.animate(ts_plots=[['Inf'], ['Sus+Vac', 'Inf+Rec']], node_size = 4)
 ani.save('SIRV_animate.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
 ```
 
-![](SIRV_animate.gif)
+This will create an mp4 file animating previous display over all calculated 
+times.  Depending on the computer installation, ``extra_args`` will need to be
+modified.
 
 ## Discussion
 
