@@ -323,7 +323,7 @@ By default, it assumes there are no recovered individuals at time $0$.
 If the population has a Poisson degree distribution with mean ``kave`` and the 
 infection is introduced by randomly infecting a proportion $\rho$ of the population
 at time 0, then $\psi(x) = (1-\rho) e^{-\langle k\rangle (1-x)}$, 
-$\psi'(x) = (1-\rho)\langle k\rangle e^{-\langle k \rangle(1-x)}$
+$\ \psi'(x) = (1-\rho)\langle k\rangle e^{-\langle k \rangle(1-x)}$
 and $\phi_S(0) = 1-\rho$ where $\langle k \rangle$ denotes ``kave``.  So we have
 
 ```python
@@ -386,7 +386,9 @@ individual may only believe something if multiple partners believe it
 [@centola:cascade].  
 
 The simple and complex contagions are currently implemented only in a 
-Gillespie setting, and so they require Markovian assumptions.  
+Gillespie setting, and so they require Markovian assumptions.  Although they 
+are reasonably fast, it would typically be feasible to make a bespoke algorithm
+that runs significantly faster.
 
 ### Simple contagions
 
@@ -520,11 +522,11 @@ This produces a (stochastic) figure like
 ![](SEIR.png)
     
 Now we show two cooperative SIR diseases.  In isolation, each of these diseases
-would be unable to start an epidemic.  However, together they can, and depending
-on stochastic effects we can see some interesting osillatory behavior.
-
-To the best of  our knowledge, this oscillatory behavior has not been studied
-previously.
+would fail to start an epidemic.  However, together they can, and sometimes they
+exhibit interesting osillatory behavior.  To help stimulate the oscillations, we
+start with an asymmetric initial condition, though oscillations can be induced
+purely by stochastic effects for smaller initial conditions.  To the best of
+our knowledge, this oscillatory behavior has not been studied previously.
 
 ```python
 import EoN
@@ -532,7 +534,7 @@ import networkx as nx
 from collections import defaultdict
 import matplotlib.pyplot as plt
 
-N = 1000000
+N = 300000
 print('generating graph G with {} nodes'.format(N))
 G = nx.fast_gnp_random_graph(N, 5./(N-1))
 
@@ -546,34 +548,34 @@ H = nx.DiGraph()  #DiGraph showing spontaneous transitions (no interaction invol
 H.add_node('SS')  #we actually don't need to include the 'SS' node in H.
 H.add_edge('SI', 'SR', rate = 1)
 H.add_edge('IS', 'RS', rate = 1)
-H.add_edge('II', 'IR', rate = 1)
-H.add_edge('II', 'RI', rate = 1)
+H.add_edge('II', 'IR', rate = 0.5)
+H.add_edge('II', 'RI', rate = 0.5)
 H.add_edge('IR', 'RR', rate = 0.5)
 H.add_edge('RI', 'RR', rate = 0.5)
 
 #In the below the edge (('SI', 'SS'), ('SI', 'SI')) means an
 #'SI' individual connected to an 'SS' individual can lead to a transition in 
-#which the 'SS' individual becomes 'SI'.  The rate of this transition is 0.2.
+#which the 'SS' individual becomes 'SI'.  The rate of this transition is 0.18.
 #
 #Note that `IR` and `RI` individuals are more infectious than other 
 #individuals.
 #
 J = nx.DiGraph()    #DiGraph showing induced transitions (require interaction).
-J.add_edge(('SI', 'SS'), ('SI', 'SI'), rate = 0.2)
-J.add_edge(('SI', 'IS'), ('SI', 'II'), rate = 0.2)
-J.add_edge(('SI', 'RS'), ('SI', 'RI'), rate = 0.2)
-J.add_edge(('II', 'SS'), ('II', 'SI'), rate = 0.2)
-J.add_edge(('II', 'IS'), ('II', 'II'), rate = 0.2)
-J.add_edge(('II', 'RS'), ('II', 'RI'), rate = 0.2)
+J.add_edge(('SI', 'SS'), ('SI', 'SI'), rate = 0.18)
+J.add_edge(('SI', 'IS'), ('SI', 'II'), rate = 0.18)
+J.add_edge(('SI', 'RS'), ('SI', 'RI'), rate = 0.18)
+J.add_edge(('II', 'SS'), ('II', 'SI'), rate = 0.18)
+J.add_edge(('II', 'IS'), ('II', 'II'), rate = 0.18)
+J.add_edge(('II', 'RS'), ('II', 'RI'), rate = 0.18)
 J.add_edge(('RI', 'SS'), ('RI', 'SI'), rate = 1)
 J.add_edge(('RI', 'IS'), ('RI', 'II'), rate = 1)
 J.add_edge(('RI', 'RS'), ('RI', 'RI'), rate = 1)
-J.add_edge(('IS', 'SS'), ('IS', 'IS'), rate = 0.2)
-J.add_edge(('IS', 'SI'), ('IS', 'II'), rate = 0.2)
-J.add_edge(('IS', 'SR'), ('IS', 'IR'), rate = 0.2)
-J.add_edge(('II', 'SS'), ('II', 'IS'), rate = 0.2)
-J.add_edge(('II', 'SI'), ('II', 'II'), rate = 0.2)
-J.add_edge(('II', 'SR'), ('II', 'IR'), rate = 0.2)
+J.add_edge(('IS', 'SS'), ('IS', 'IS'), rate = 0.18)
+J.add_edge(('IS', 'SI'), ('IS', 'II'), rate = 0.18)
+J.add_edge(('IS', 'SR'), ('IS', 'IR'), rate = 0.18)
+J.add_edge(('II', 'SS'), ('II', 'IS'), rate = 0.18)
+J.add_edge(('II', 'SI'), ('II', 'II'), rate = 0.18)
+J.add_edge(('II', 'SR'), ('II', 'IR'), rate = 0.18)
 J.add_edge(('IR', 'SS'), ('IR', 'IS'), rate = 1)
 J.add_edge(('IR', 'SI'), ('IR', 'II'), rate = 1)
 J.add_edge(('IR', 'SR'), ('IR', 'IR'), rate = 1)
@@ -581,10 +583,12 @@ J.add_edge(('IR', 'SR'), ('IR', 'IR'), rate = 1)
 
 return_statuses = ('SS', 'SI', 'SR', 'IS', 'II', 'IR', 'RS', 'RI', 'RR')
 
-initial_size = 650
+initial_size = 250
 IC = defaultdict(lambda: 'SS')
 for individual in range(initial_size):
     IC[individual] = 'II'
+for individual in range(initial_size, 5*initial_size):
+    IC[individual] = 'SI'
 
 print('doing Gillespie simulation')
 t, SS, SI, SR, IS, II, IR, RS, RI, RR = EoN.Gillespie_simple_contagion(G, H, 
