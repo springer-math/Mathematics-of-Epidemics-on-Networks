@@ -57,12 +57,15 @@ EoN's documentation is maintained at
 https://epidemicsonnetworks.readthedocs.io/en/latest/ 
 including numerous examples at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.  In this 
-paper we provide brief descriptions with examples of a few of EoN's tools.
+paper we provide brief descriptions with examples of a few of EoN's tools.  
+The examples shown are intended to demonstrate the ability of the tools.  The 
+online documentation gives more detail about how to use them.
 
 We model spreading processes on a contact network.  In this context, many
 mathematicians and physicists are accustomed to thinking of individuals as 
 nodes with their potentially infectious partnerships as edges.  However, for 
 those who come from other backgrounds this abstraction may be less familiar.  
+
 Therefore, we will describe a contact network along which an infections 
 process spreads as consisting of "individuals" and "partnerships" rather than 
 "nodes" and "edges".  This has an additional benefit because in the simple 
@@ -72,27 +75,26 @@ that can occur.  Referring to "individuals" and "partnerships" when discussing
 the process spreading on the contact network makes it easier to avoid 
 confusion between the different networks.
 
-We start with a description of the tools for studying SIS and SIR disease 
+We start this paper by describing the tools for studying SIS and SIR disease 
 through stochastic simulation and differential equations models.  Then we 
-describe the simple and complex contagions, including examples showing how
+discuss the simple and complex contagions, including examples showing how
 the simple contagion can be used to capture a range of standard disease
-models.  Finally we demonstrate the visualization tools.  The examples shown
-are intended to demonstrate the ability of the tools.  The documentation gives
-more detail about how to use them.
+models.  Finally we demonstrate the visualization tools.
 
 ## SIR and SIS disease
 
 ### Stochastic simulation
 The stochastic SIR and SIS simulation tools allow the user to investigate  
 standard SIS and SIR dynamics (SEIR/SIRS and other processes are addressed 
-below):
+within the simple contagion model):
 
 - Markovian SIS and SIR simulations  (``fast_SIS``, ``Gillespie_SIS``, ``fast_SIR``, and ``Gillespie_SIR``).
 - non-Markovian SIS and SIR simulations (``fast_nonMarkovian_SIS`` and ``fast_nonMarkovian_SIR``).
 - discrete time SIS and SIR simulations where infections last a single time step 
   (``basic_discrete_SIS``, ``basic_discrete_SIR``, and ``discrete_SIR``).
 
-It is possible for transition rates to depend on intrinsic properties of 
+For both Markovian and non-Markovian methods it is possible for the transition 
+rates to depend on intrinsic properties of 
 individuals and of partnerships.
 
 The continuous-time stochastic simulations have two different implementations: a 
@@ -102,8 +104,9 @@ dynamics are Markovian (depending on the network and disease parameters either
 may be faster than the other), but the event-driven implementation can also handle 
 non-Markovian dynamics.  In earlier versions, the event-driven simulations were 
 consistently faster than the Gillespie simulations, and thus they are named 
-`fast_SIR` and `fast_SIS`.  The Gillespie simulations were sped up using ideas
-from [@holme2014model] and [@cota2017optimized].
+`fast_SIR` and `fast_SIS`.  The Gillespie simulations have since reached
+comparable speed using up using ideas from [@holme2014model] and 
+[@cota2017optimized].
 
 The algorithms can typically handle an SIR epidemic spreading on 
 hundreds of thousands of individuals within a few seconds on a laptop.  The SIS 
@@ -135,6 +138,9 @@ gamma = 1.0 #recovery rate
 
 print('doing event-based simulation')
 t1, S1, I1, R1 = EoN.fast_SIR(G, tau, gamma, rho=rho)
+#instead of rho, we could specify a list of nodes as ``initial_infecteds``, or
+#specify neither and a single random node would be chosen as the index case.
+
 print('doing Gillespie simulation')
 t2, S2, I2, R2 = EoN.Gillespie_SIR(G, tau, gamma, rho=rho)
 
@@ -147,14 +153,14 @@ plt.legend()
 plt.show()
 ```
 
-This produces
+This produces a (stochastic) figure like
 
 ![](SIR_sims.png)    
     
 The run-times of ``fast_SIR`` and ``Gillespie_SIR`` are both comparable to the
 time taken to generate the million individual network ``G``.  The epidemics 
 affect around 28 percent of the population.  The differences between the simulations 
-are entirely due to stochastic effects.
+are entirely due to stochasticity.
 
 We can perform similar simulations with an SIS epidemic.  Because SIS epidemics
 take longer to simulate, we use a smaller network and specify the optional 
@@ -188,13 +194,14 @@ plt.legend()
 plt.show()
 ```
 
-This produces
+This produces a (stochastic) figure like
 
 ![](SIS_sims.png)
 
 We now consider an SIR disease spreading with non-Markovian dynamics.  We assume
 that the infection duration is gamma distributed, but the transmission rate is
-constant (yielding an exponential distribution of time to transmission).  
+constant (yielding an exponential distribution of time to transmission).
+
 This follows [@vizi2019monotonic].
 
 ```python
@@ -238,7 +245,7 @@ plt.xlabel('$t$')
 plt.ylabel('Number infected or recovered')
 plt.show()                                                            
 ```    
-This produces
+This produces a (stochastic) figure like
 
 ![](nonMarkov.png)
 
@@ -246,15 +253,15 @@ This produces
 
 EoN also provides a set of tools to numerically solve approximately 20 differential equations
 models for SIS or SIR disease spread in networks.  The various models use different
-amounts of knowledge about the network to make deterministic predictions about
+information about the network to make deterministic predictions about
 the fraction infected at different times.  These use the Scipy integration tools.
 The derivations of the models and explanations of their simplifying assumptions
 are described in [@kiss:EoN].
 
 Depending on the model, we need different information about the network structure.
-The algorithms allow us to provide them as inputs to the model.  However, there
+The algorithms allow us to provide the information as inputs.  However, there
 is also a version of each model which takes a network as an input 
-instead.  This will use the measured properties of the network.
+instead and then measure the network properties.
 
 #### Examples
 
@@ -361,8 +368,9 @@ By setting ``N=1``, we have found the proporitons of the population in each stat
 
 ## Simple and Complex Contagions
 
-There are other spreading processes in networks which have received attention.
-Many of these fall into one of two types, simple contagions and complex contagions.
+There are other contagious processes in networks which have received attention.
+Many of these fall into one of two types, "simple contagions" and "complex 
+contagions".
 
 In a "simple contagion" an individual ``u`` may be induced to change status by
 an interaction with its partner ``v``.  This status change occurs with the same
@@ -370,12 +378,13 @@ rate regardless of the statuses of other partners of ``u`` (although, the other
 partners may cause ``u`` to change to another status first).  SIS and SIR 
 diseases are special cases of simple contagions.
 
-In a complex contagion however, we permit the rate at which ``u`` changes from
-one status to another to depend on the statuses of others in some more complicated way.
-Two infected individuals may cause a susceptible individual to become infected
-at some higher rate than would result from them acting independently.  This is
-frequently thought to model social contagions where an individual may only 
-believe something if multiple partners believe it [@centola:cascade].  
+In a "complex contagion" however, we permit the rate at which ``u`` changes 
+from one status to another to depend on the statuses of others in some more
+complicated way.  Two infected individuals may cause a susceptible individual
+to become infected at some higher rate than would result from them acting 
+independently.  This is frequently thought to model social contagions where an
+individual may only believe something if multiple partners believe it 
+[@centola:cascade].  
 
 The simple and complex contagions are currently implemented only in a 
 Gillespie setting, and so they require Markovian assumptions.  
@@ -385,7 +394,7 @@ Gillespie setting, and so they require Markovian assumptions.
 EoN provides a function ``Gillespie_simple_contagion`` which allows a user to 
 specify the rules governing an arbitrary simple contagion.
 
-Examples are provided in the documentation, including
+Examples are provided in the online documentation, including
 
 - SEIR disease (there is an exposed state before becoming infectious)
 - SIRS disease (recovered individuals eventually become susceptible again)
@@ -407,7 +416,7 @@ transition is induced by a partner.
 
 To formalize this, we identify two broad types of transitions:
 
-- **Spontaneous Transitions**  Sometimes individuals change status without 
+- **Spontaneous Transitions:**  Sometimes individuals change status without 
   influence from any other individual.  For example, an infected individual 
   may recover, or an exposed individual may move into the infectious class.  
   These transitions between statuses can be represented by a directed graph 
@@ -419,14 +428,14 @@ To formalize this, we identify two broad types of transitions:
   transition rates.  Note ``H`` need not have a node ``'S'`` because 
   susceptible nodes do not change status on their own.
 
-- **Induced Transitions** Sometimes individuals change status due to the 
-  influence of a single partner.  For example an infected individual may 
-  transmit to a susceptible partner.  So an ``('I', 'S')`` pair may become 
-  ``('I', 'I')``.  We can represent these transitions with a directed graph 
-  ``J``.  Here the nodes of ``J`` are pairs (tuples) of statuses, representing 
-  potential statuses of individuals in a partnership.  An edge represents a 
-  possible partner-induced transition.  In the SEIR case, there is only a 
-  single such transition, represented by the edge 
+- **Induced Transitions:** Sometimes individuals change status due to the 
+  influence of a single partner.  For example in an SEIR model an infected 
+  individual may transmit to a susceptible partner.  So an ``('I', 'S')`` pair
+  may become ``('I', 'E')``.  We can represent these transitions with a 
+  directed graph ``J``.  Here the nodes of ``J`` are pairs (tuples) of 
+  statuses, representing potential statuses of individuals in a partnership.
+  An edge represents a possible partner-induced transition.  In the SEIR case,
+  there is only a single such transition, represented by the edge 
   ``('I', 'S')`` -> ``('I', 'E')`` with a weight representing the transmission
   rate.  No other nodes are required in ``J``.  An edge always represents the
   possibility that a node in the first state can cause the other node to change
@@ -435,7 +444,8 @@ To formalize this, we identify two broad types of transitions:
   
 #### Examples
 
-We demonstrate this first with an SEIR example.  To demonstrate additional
+We first demonstrate a stochastic simulation of a simple contagion with an
+SEIR example.  To demonstrate additional
 flexibility we allow some individuals to have a higher rate of transitioning from 
 ``'E'`` to ``'I'`` and some partnerships to have a higher transmission rate. 
 This is done by adding weights to the contact network `G` which scale the 
@@ -507,7 +517,7 @@ plt.legend()
 plt.show()
 ```
 
-This produces 
+This produces a (stochastic) figure like 
 
 ![](SEIR.png)
     
@@ -591,7 +601,7 @@ plt.ylabel('Number infected')
 plt.legend()
 plt.show()
 ```
-This produces
+This produces a (stochastic) figure like
 
 ![](coop.png)
 
@@ -604,12 +614,15 @@ will change from one status to another based on the current statuses of its
 neighbors, and not based on previous interactions with some neighbors who may 
 have since changed status.
 
-In the Gillespie implementation, we need a user-defined function which tells us the rate at
-which ``u`` will change status (given knowledge about the current state of the
-system) and another user-defined function which tells us what the new status of 
-``u`` will be if we decide it is changing status.  We finally need a 
-user-defined function that will determine which other nodes have had their 
-rate change due to ``u``'s transition.
+In the Gillespie implementation, we need a user-defined function which 
+calculates the rate at which ``u`` will change status (given knowledge about 
+the current state of the system) and another user-defined function which
+chooses the new status of ``u`` given that it is changing status.  We finally 
+need a user-defined function that will determine which other nodes have their 
+rate change due to ``u``'s transition.  By knowing the rates of all nodes
+the Gillespie algorithm can choose the time of the next transition and which
+node transitions.  Then it finds the new state, and finally it calculates the
+new rates for all nodes affected by the change.
 
 Once these functions are defined, the Gillespie algorithm is able to perform
 the complex contagion simulation.
@@ -770,8 +783,8 @@ differential equations models.  With appropriate additional packages needed for
 matplotlib's animation tools, the software can produce animations as well.
 
 For SIR outbreaks, the ``Simulation_Investigation`` object includes a 
-transmission tree.  For SIS and simple contagions, it produces a directed 
-multigraph showing the transmissions that occurred (this may not be a tree).  
+transmission tree.  For SIS and simple contagions, it includes a directed 
+multigraph showing the transmissions that occurred (this may not be a tree).
 However for complex contagions, we cannot determine who
 is responsible for inducing a transition, so the implementation does not provide
 a transmission tree.  The transmission tree is useful for constructing synthetic
@@ -800,7 +813,7 @@ print('done with simulation, now plotting')
 sim.display(time = 1, **nx_kwargs) #plot at time 1.
 plt.show()
 ```
-This produces a snapshot at time 1: 
+This produces a (stochastic) snapshot at time 1: 
 
 ![](karate_club.png).
 
