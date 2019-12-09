@@ -109,7 +109,7 @@ comparable speed using ideas from [@holme2014model] and [@cota2017optimized].
 
 The algorithms can typically handle an SIR epidemic spreading on 
 hundreds of thousands of individuals in well under a minute on a laptop.  The 
-SIS versions are slower because the number of events that can happen is much
+SIS versions are slower because the number of events that happen is often much
 larger in an SIS simulation.
 
 #### Examples
@@ -322,9 +322,9 @@ By default, it assumes there are no recovered individuals at time $0$.
 
 If the population has a Poisson degree distristribution with mean ``kave`` and the 
 infection is introduced by randomly infecting a proportion $\rho$ of the population
-at time 0, then $\psi(x) = (1-\rho) e^{-kave(1-x)}$, 
-$\psi'(x) = (1-\rho)kave e^{-kave(1-x)}$
-and $\phi_S(0) = 1-\rho$.  So
+at time 0, then $\psi(x) = (1-\rho) e^{-``kave``(1-x)}$, 
+$\psi'(x) = (1-\rho)``kave`` e^{-``kave``(1-x)}$
+and $\phi_S(0) = 1-\rho$.  So we have
 
 ```python
 import networkx as nx
