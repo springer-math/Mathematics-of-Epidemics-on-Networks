@@ -57,7 +57,7 @@ EoN's documentation is maintained at
 https://epidemicsonnetworks.readthedocs.io/en/latest/ 
 including numerous examples at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.  In this 
-paper we provide brief descriptions with examples of a few of EoN's tools.  
+paper we provide brief descriptions with examples of a few of EoN's tools.
 The examples shown are intended to demonstrate the ability of the tools.  The 
 online documentation gives more detail about how to use them.
 
@@ -84,7 +84,7 @@ models.  Finally we demonstrate the visualization tools.
 ## SIR and SIS disease
 
 ### Stochastic simulation
-The stochastic SIR and SIS simulation tools allow the user to investigate  
+The stochastic SIR and SIS simulation tools allow the user to investigate
 standard SIS and SIR dynamics (SEIR/SIRS and other processes are addressed 
 within the simple contagion model):
 
@@ -105,12 +105,11 @@ may be faster than the other), but the event-driven implementation can also hand
 non-Markovian dynamics.  In earlier versions, the event-driven simulations were 
 consistently faster than the Gillespie simulations, and thus they are named 
 `fast_SIR` and `fast_SIS`.  The Gillespie simulations have since reached
-comparable speed using up using ideas from [@holme2014model] and 
-[@cota2017optimized].
+comparable speed using ideas from [@holme2014model] and [@cota2017optimized].
 
 The algorithms can typically handle an SIR epidemic spreading on 
-hundreds of thousands of individuals within a few seconds on a laptop.  The SIS 
-versions are slower because the number of events that can happen is much
+hundreds of thousands of individuals in well under a minute on a laptop.  The 
+SIS versions are slower because the number of events that can happen is much
 larger in an SIS simulation.
 
 #### Examples
@@ -254,14 +253,14 @@ This produces a (stochastic) figure like
 EoN also provides a set of tools to numerically solve approximately 20 differential equations
 models for SIS or SIR disease spread in networks.  The various models use different
 information about the network to make deterministic predictions about
-the fraction infected at different times.  These use the Scipy integration tools.
+the number infected at different times.  These use the Scipy integration tools.
 The derivations of the models and explanations of their simplifying assumptions
 are described in [@kiss:EoN].
 
 Depending on the model, we need different information about the network structure.
 The algorithms allow us to provide the information as inputs.  However, there
 is also a version of each model which takes a network as an input 
-instead and then measure the network properties.
+instead and then measures the network properties.
 
 #### Examples
 
@@ -312,7 +311,7 @@ Our second example uses an Edge-based compartmental model for an SIR disease
 (section 6.5.2 of [@kiss:EoN]).
 This model incorporates information about the degree distribution (i.e., how the
 number of partners is distributed), but assumes that the partnerships are selected
-as randomly as possible given this distribution.  This requires we define the
+as randomly as possible given this distribution.  The model requires we define a
 "generating function" $\psi(x)$ which is equal to the sum 
 $\sum_{k=0}^\infty S_k(0) x^k$ where
 $S_k(0)$ is the proportion of all individuals in the population who both have $k$
@@ -323,8 +322,8 @@ By default, it assumes there are no recovered individuals at time $0$.
 
 If the population has a Poisson degree distristribution with mean ``kave`` and the 
 infection is introduced by randomly infecting a proportion $\rho$ of the population
-at time 0, then $\psi(x) = (1-\rho) e^{-\rho(1-x)}$, 
-$\psi'(x) = (1-\rho)\rho e^{-\rho(1-x)}$
+at time 0, then $\psi(x) = (1-\rho) e^{-kave(1-x)}$, 
+$\psi'(x) = (1-\rho)kave e^{-kave(1-x)}$
 and $\phi_S(0) = 1-\rho$.  So
 
 ```python
@@ -374,7 +373,7 @@ contagions".
 
 In a "simple contagion" an individual ``u`` may be induced to change status by
 an interaction with its partner ``v``.  This status change occurs with the same
-rate regardless of the statuses of other partners of ``u`` (although, the other
+rate regardless of the statuses of other partners of ``u`` (although the other
 partners may cause ``u`` to change to another status first).  SIS and SIR 
 diseases are special cases of simple contagions.
 
@@ -468,9 +467,9 @@ N = 100000
 print('generating graph G with {} nodes'.format(N))
 G = nx.fast_gnp_random_graph(N, 5./(N-1))
 
-#they will vary in the rate of leaving exposed class.
-#and edges will vary in transition rate.
-#there is no variation in recovery rate.
+#We add random variation in the rate of leaving exposed class
+#and in the partnership transmission rate.
+#There is no variation in recovery rate.
 
 node_attribute_dict = {node: 0.5+random.random() for node in G.nodes()}
 edge_attribute_dict = {edge: 0.5+random.random() for edge in G.edges()}
@@ -484,9 +483,8 @@ nx.set_edge_attributes(G, values=edge_attribute_dict,
 #the transition rates.  When we define `H` and `J`, we provide the name
 #of these attributes.
 
-#We show how node and edge attributes in the contact network 'G' can be used
-#to scale the transmission rates.  More advanced techniques are shown in
-#the documentation
+#More advanced techniques to scale the transmission rates are shown in
+#the online documentation
 
 H = nx.DiGraph() #For the spontaneous transitions
 H.add_node('S') #This line is actually unnecessary.
@@ -732,7 +730,7 @@ plt.ylabel('Number infected')
 plt.show()
 ```
 
-We get 
+This produces the (stochastic) figure
 
 ![](cascades.png), 
 
