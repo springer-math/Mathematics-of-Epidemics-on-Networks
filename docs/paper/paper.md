@@ -320,11 +320,11 @@ $\psi'(x)$ as well as $\phi_S(0)$, the probability
 an edge from a susceptible node connects to another susceptible node at time 0.
 By default, it assumes there are no recovered individuals at time $0$.
 
-If the population has a Poisson degree distristribution with mean ``kave`` and the 
+If the population has a Poisson degree distribution with mean ``kave`` and the 
 infection is introduced by randomly infecting a proportion $\rho$ of the population
-at time 0, then $\psi(x) = (1-\rho) e^{-``kave``(1-x)}$, 
-$\psi'(x) = (1-\rho)``kave`` e^{-``kave``(1-x)}$
-and $\phi_S(0) = 1-\rho$.  So we have
+at time 0, then $\psi(x) = (1-\rho) e^{-\langle k\rangle (1-x)}$, 
+$\psi'(x) = (1-\rho)\langle k\rangle e^{-\langle k \rangle(1-x)}$
+and $\phi_S(0) = 1-\rho$ where $\langle k \rangle$ denotes ``kave``.  So we have
 
 ```python
 import networkx as nx
