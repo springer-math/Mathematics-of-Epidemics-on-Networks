@@ -521,6 +521,8 @@ This produces a (stochastic) figure like
 
 ![](SEIR.png)
     
+Interaction between diseases can lead to interesting effects 
+[@grassberger2016phase;@cui2017mutually;@liu2018interactive;@miller:compete].
 Now we show two cooperative SIR diseases.  In isolation, each of these diseases
 would fail to start an epidemic.  However, together they can, and sometimes they
 exhibit interesting osillatory behavior.  To help stimulate the oscillations, we
