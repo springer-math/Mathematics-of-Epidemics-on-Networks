@@ -546,9 +546,12 @@ G = nx.fast_gnp_random_graph(N, 5./(N-1))
 #'RS' means recovered from disease 1 and susceptible to disease 2.
 #etc.
 
-H = nx.DiGraph()  #DiGraph showing spontaneous transitions (no interaction involved)
+H = nx.DiGraph()  #DiGraph showing spontaneous transitions 
+                  #(no interactions between indivdiuals required)
 H.add_node('SS')  #we actually don't need to include the 'SS' node in H.
-H.add_edge('SI', 'SR', rate = 1)
+H.add_edge('SI', 'SR', rate = 1) #An individual who is susceptible to disease
+                                 #1 and infected with disease 2 will recover
+                                 #from disease 2 with rate 1.
 H.add_edge('IS', 'RS', rate = 1)
 H.add_edge('II', 'IR', rate = 0.5)
 H.add_edge('II', 'RI', rate = 0.5)
@@ -585,11 +588,12 @@ J.add_edge(('IR', 'SR'), ('IR', 'IR'), rate = 1)
 
 return_statuses = ('SS', 'SI', 'SR', 'IS', 'II', 'IR', 'RS', 'RI', 'RR')
 
-initial_size = 250
+initial_size = 250 
 IC = defaultdict(lambda: 'SS')
-for individual in range(initial_size):
+for individual in range(initial_size):   #start with some people having both
     IC[individual] = 'II'
-for individual in range(initial_size, 5*initial_size):
+for individual in range(initial_size, 5*initial_size): #and more with only 
+                                                       #the 2nd disease
     IC[individual] = 'SI'
 
 print('doing Gillespie simulation')
