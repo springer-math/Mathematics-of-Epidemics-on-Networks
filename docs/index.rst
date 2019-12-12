@@ -7,7 +7,9 @@ the spread of SIS and SIR diseases in networks.
 
 **Support EoN**:  
   - The best way to support EoN `is to let me know you're using it`_.
-  - This will help my case when applying for grants & promotions and help me justify the time I spend on it. 
+  - The next best option is to cite EoN (a paper expected soon in the Journal
+  of Open Source Software).
+  - Both of these will help my case when applying for grants & promotions and help me justify the time I spend on it. 
 
 **MIT License**:
 See :download:`license.txt<../license.txt>` for 
