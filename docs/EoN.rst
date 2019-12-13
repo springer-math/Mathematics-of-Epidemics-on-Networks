@@ -13,10 +13,14 @@ by Kiss, Miller & Simon
         
 Please cite the book if using these algorithms.
 
-If you use EoN, please `leave a note here`_ 
-so that **I can get promoted / get funding**.  
-Or just do it because it makes me happy when people use the software.  And
-a happy developer will work to improve the software.
+If you use EoN, please 
+- cite the 
+`Journal of Open Source Software publication <https://doi.org/10.21105/joss.01731>`_
+- `leave a note here`_ 
+
+This helps me **get promoted / get funding**, and it makes me happy when 
+people use the software.  A happy developer whose job prospects are improving
+because of all the people using the software will work to improve the software.
 
 For simulations, we assume that input networks are **NetworkX** 
 graphs; see https://networkx.github.io/

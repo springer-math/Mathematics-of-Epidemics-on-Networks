@@ -37,11 +37,13 @@ The documentation provided here is for version 1.1.
 If you want to see changes from previous versions, please see 
 `Changes from v1.0 <Changes.html>`_.
 
-If you use EoN, or publish anything based on it, please
+If you use EoN, or publish anything based on it, please cite the
+`Journal of Open Source Software publication <https://doi.org/10.21105/joss.01731>`_
+
+Also, please
 `let me know <https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/31>`_ 
 so that I can use it for performance reviews and grant applications and generally
-because it makes me happy.  Also you can cite it.  I'm planning to provide a more
-citable version soon.
+because it makes me happy.
 
 QuickStart Guide
 ----------------

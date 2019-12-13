@@ -48,8 +48,9 @@ We start with a few useful auxiliary functions
 __author__ = "Joel C. Miller, with tests written by Tony Ting"
 __version__ = "1.1"
 def __citation__():
-    print("A proper citation should be coming soon\n" + \
-              "Until then consider citing the github page\n" + \
+    print("To cite this software, please use the Journal of Open Source\n" + \
+              " Software publication https://doi.org/10.21105/joss.01731" + \
+              "\n\n" + \
               "If you use one of the ODE models, you should cite\n" + \
               "a source, such as the text:\n\n" + \
               r"@book{kiss:EoN," + "\n" + \
@@ -58,7 +59,7 @@ def __citation__():
               r"    publisher = {Springer}," + "\n" + \
               r"    series = {IAM}," + "\n" + \
               r"    year={2017}" + "\n" + \
-              r"}" + "\n\n"
+              r"}" + "\n\n" + \
               "You should also consider citing networkx:\n\n" + \
               r"@techreport{hagberg2008exploring,"+"\n" + \
               r"    title={Exploring network structure, dynamics, and function using NetworkX},"+"\n" + \
@@ -82,7 +83,7 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
     r'''
     Arguments : 
         G : networkx Graph
-            the graph disease spread on
+            the graph disease spreads on
 
         tau : number
             disease parameter giving edge transmission rate (subject to edge scaling)
@@ -91,6 +92,7 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
             disease parameter giving typical recovery rate, 
         
         transmission_weight : string (default None)
+            The attribute name under which transmission rates are saved.
             `G.adj[u][v][transmission_weight]` scales up or down the recovery rate.
             (note this is G.edge[u][v][..] in networkx 1.x and
             G.edges[u,v][..] in networkx 2.x.

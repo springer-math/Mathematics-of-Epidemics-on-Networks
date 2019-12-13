@@ -6,9 +6,8 @@ Welcome to Epidemics on Networks's documentation!
 the spread of SIS and SIR diseases in networks. 
 
 **Support EoN**:  
-  - The best way to support EoN `is to let me know you're using it`_.
-  - The next best option is to cite EoN (a paper expected soon in the Journal
-  of Open Source Software).
+  - The best way to support EoN is to `cite EoN's publication <https://doi.org/10.21105/joss.01731>`_ 
+  - The next best option `is to let me know you're using it`_.
   - Both of these will help my case when applying for grants & promotions and help me justify the time I spend on it. 
 
 **MIT License**:
