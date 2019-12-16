@@ -1,5 +1,5 @@
 ---
-title: 'EoN (Epidemics on Networks), a fast, flexible Python package for simulation, analytic approximation, and analysis of epidemics on networks'
+title: 'EoN (Epidemics on Networks): a fast, flexible Python package for simulation, analytic approximation, and analysis of epidemics on networks'
 
 tags:
   - SIR
