@@ -61,11 +61,12 @@ def __citation__():
               r"    year={2017}" + "\n" + \
               r"}" + "\n\n" + \
               "You should also consider citing networkx:\n\n" + \
-              r"@techreport{hagberg2008exploring,"+"\n" + \
-              r"    title={Exploring network structure, dynamics, and function using NetworkX},"+"\n" + \
+              r"@inproceedings{hagberg2008exploring,"+"\n" + \
+              r"    title={Exploring network structure, dynamics, and function using NetworkX}," + "\n" + \
+              r"    organization={Citeseer}, "+"\n" + \
               r"    author={Hagberg, Aric and Swart, Pieter and Schult, Daniel},"+"\n" + \
-              r"    year={2008}," + \
-              r"    institution={Los Alamos National Lab.(LANL), Los Alamos, NM (United States)}"+"\n" + \
+              r"    year={2008},"+"\n" + \
+              r"    booktitle={Proceedings of the 7th Python in Science Conference (SciPy)}" + "\n" + \
               r"}")
 
               
