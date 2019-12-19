@@ -31,7 +31,7 @@ bibliography: paper.bib
 
 # Summary
 
-EoN (EpidemicsOnNetworks) is a pure-python package designed to study
+EoN (EpidemicsOnNetworks) is a pure-Python package designed to study
 infectious processes spreading in networks.  It rose out of the 
 book *Mathematics of Epidemics on Networks* [@kiss:EoN], and now consists of over 
 100 user-functions.  EoN relies on the networkx package [@hagberg2008exploring].
@@ -74,7 +74,7 @@ For both Markovian and non-Markovian methods it is possible for the transition
 rates to depend on individual or partnership properties.
 
 The continuous-time stochastic simulations have two implementations: a 
-Gillespie implementation [@gillespie1977exact; @doob1945markoff] and an Event-driven
+Gillespie implementation [@gillespie1977exact; @doob1945markoff] and an event-driven
 implementation.  They have similar speed if the dynamics are Markovian 
 (depending on network and disease parameters either may be faster than the
 other), but the event-driven implementations also handle 
@@ -91,9 +91,9 @@ larger.
 ### Differential Equations Models
 
 EoN also provides tools to numerically solve about 20 differential equations
-models for SIS or SIR disease spread in networks using Scipy integration tools.
+models for SIS or SIR disease spread in networks using SciPy integration tools.
 The models use different information about the network to predict the 
-number infected as a function of time.  Model derivations and explanations of 
+number of infected individuals as a function of time.  Model derivations and explanations of 
 their simplifying assumptions are in [@kiss:EoN].
 
 
@@ -103,13 +103,13 @@ Other contagious processes in networks have received attention.
 Many of these can be classifed as either "simple contagions" or "complex 
 contagions".
 
-In a "simple contagion" an individual ``u`` may be induced to change status by
+In a "simple contagion," an individual ``u`` may be induced to change status by
 an interaction with its partner ``v``.  This status change occurs with the same
 rate regardless of the statuses of other partners of ``u`` (there may be a race
 between partners to determine which transmits first).  SIS, SIR, SEIR, and SIRS
 diseases are special cases of simple contagions.
 
-In "complex contagions" however, the rate at which ``u`` changes 
+In "complex contagions," however, the rate at which ``u`` changes 
 from one status to another may depend on the statuses of others in more
 complex ways.  Two infected individuals may work synergistically to cause a 
 susceptible individual to become infected.  This is frequently thought to 
@@ -122,10 +122,10 @@ typically be feasible to make a bespoke algorithm that runs significantly faster
 
 ### Simple contagions
 
-EoN provides a function ``Gillespie_simple_contagion`` which allows a user to 
+EoN provides a function ``Gillespie_simple_contagion`` that allows a user to 
 specify the rules governing an arbitrary simple contagion.  The implementation 
-requires the user to separate out two distinct ways that 
-transitions occur: those that are occur spontaneously from an individual's current state
+requires the user to separate out two distinct ways in which 
+transitions occur: those that occur spontaneously from an individual's current state
 and those that are induced by a partner.  To help demonstrate, consider an 
 "SEIR" epidemic, where individuals begin susceptible, but when they interact 
 with infectious partners they may enter an exposed state.  They remain in that 
@@ -140,7 +140,7 @@ transition is induced by a partner.
 
 Complex contagions are implemented through ``Gillespie_complex_contagion`` for which 
 the user specifies the rules governing a relatively arbitrary complex 
-contagion.  There is a constraint that there is no memory - an individual 
+contagion.  There is a constraint that there is no memory: an individual 
 will change from one status to another based on the current statuses of its 
 neighbors, and not based on previous interactions with some neighbors who may 
 have since changed status.
@@ -155,8 +155,8 @@ the complex contagion.
 
 ### Visualization & Analysis
 
-By default simulations return numpy arrays providing counts of each state.  
-However if we set a flag ``return_full_data=True``, the simulations return a 
+By default, simulations return NumPy arrays providing counts of each state.  
+However, if we set a flag ``return_full_data=True``, the simulations return a 
 ``Simulation_Investigation`` object.  This provides
 access to complete information about the simulation, including the transmission
 chains.
@@ -165,25 +165,25 @@ The ``Simulation_Investigation`` object can create a snapshot of the network
 at a given time.  By default the visualization includes the time series 
 (e.g., S, I, and R) plotted beside the network snapshot, with flexibility 
 about what (or if) other time series appear.  With appropriate additional 
-packages for matplotlib's animation tools, it can produce animations as well.
+packages for Matplotlib's animation tools, it can produce animations as well.
 
 ## Discussion
 
 EoN provides tools for contagious processes spreading in contact networks, including
-SIR and SIS disease and more generally simple and complex contagions.  It also
+SIR and SIS diseases and more generally simple and complex contagions.  It also
 provides tools for visualizing stochastic simulation output.
 Full documentation is available at https://epidemicsonnetworks.readthedocs.io/en/latest/
 
 # Dependencies:
 
-scipy
-numpy
+Scipy
+NumPy
 networkx
-matplotlib
+Matplotlib
 
 # Related Packages
 
-There are several alternative software packages that allow for simulation of 
+Several alternative software packages allow for simulation of 
 epidemics on networks.  Here we briefly review some of these.
 
 
