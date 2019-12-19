@@ -34,10 +34,10 @@ bibliography: paper.bib
 EoN (EpidemicsOnNetworks) is a pure-python package designed to study
 infectious processes spreading in networks.  It rose out of the 
 book *Mathematics of Epidemics on Networks* [@kiss:EoN], and now consists of over 
-100 user-functions.
+100 user-functions.  EoN relies on the networkx package [@hagberg2008exploring].
 
 
-EoN provides a set of tools for
+EoN provides methods for
 
 - Susceptible-Infected-Susceptible (SIS) and Susceptible-Infected-Recovered 
 (SIR) disease
@@ -52,20 +52,18 @@ EoN provides a set of tools for
 - Stochastic simulation of a wide range of Simple and Complex contagions
 - Visualization and analysis of stochastic simulations
 
-EoN relies on the networkx package [@hagberg2008exploring].
-Its documentation is maintained at 
+The documentation is maintained at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/ 
 including numerous examples at 
-https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.  In this 
-paper we provide brief descriptions of a few of EoN's main tools.  The 
-online documentation gives more detail about how to use them, including examples.
+https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.  This paper
+briefly describes a few of EoN's main tools.  The online documentation gives 
+full detail, including examples.
 
 ## SIR and SIS disease
 
 ### Stochastic simulation
 The main stochastic simulation tools allow the user to investigate
-standard SIS and SIR dynamics (SEIR/SIRS and other processes are addressed 
-within the simple contagion model):
+standard SIS and SIR dynamics:
 
 - Markovian SIS and SIR simulations  (``fast_SIS``, ``Gillespie_SIS``, ``fast_SIR``, and ``Gillespie_SIR``).
 - non-Markovian SIS and SIR simulations (``fast_nonMarkovian_SIS`` and ``fast_nonMarkovian_SIR``).
@@ -75,15 +73,15 @@ within the simple contagion model):
 For both Markovian and non-Markovian methods it is possible for the transition 
 rates to depend on individual or partnership properties.
 
-The continuous-time stochastic simulations have two different implementations: a 
+The continuous-time stochastic simulations have two implementations: a 
 Gillespie implementation [@gillespie1977exact; @doob1945markoff] and an Event-driven
-implementation.  They have similar speed if the 
-dynamics are Markovian (depending on the network and disease parameters either
-may be faster than the other), but the event-driven implementation can also handle 
+implementation.  They have similar speed if the dynamics are Markovian 
+(depending on network and disease parameters either may be faster than the
+other), but the event-driven implementations also handle 
 non-Markovian dynamics.  In earlier versions, the event-driven simulations were 
-consistently faster than the Gillespie simulations, leading to the names
-`fast_SIR` and `fast_SIS`.  The Gillespie simulations have been optimized
-using ideas from [@holme2014model] and [@cota2017optimized].
+consistently faster, leading to the names `fast_SIR` and `fast_SIS`.  The 
+Gillespie simulations have been optimized using ideas from [@holme2014model] 
+and [@cota2017optimized].
 
 The algorithms typically handle an SIR epidemic spreading on 
 hundreds of thousands of individuals in well under a minute on a laptop. 
@@ -94,13 +92,9 @@ larger.
 
 EoN also provides tools to numerically solve about 20 differential equations
 models for SIS or SIR disease spread in networks using Scipy integration tools.
-The various models use different information about the network to predict the 
-number infected at different times.  Model derivations and explanations of 
+The models use different information about the network to predict the 
+number infected as a function of time.  Model derivations and explanations of 
 their simplifying assumptions are in [@kiss:EoN].
-
-The models require different information about the network structure which can
-be provided as inputs.  However, each model has a version which takes an input
-network and measures its properties.
 
 
 ## Simple and Complex Contagions
@@ -112,21 +106,19 @@ contagions".
 In a "simple contagion" an individual ``u`` may be induced to change status by
 an interaction with its partner ``v``.  This status change occurs with the same
 rate regardless of the statuses of other partners of ``u`` (there may be a race
-between partners to determine which transmits first).  SIS and SIR 
+between partners to determine which transmits first).  SIS, SIR, SEIR, and SIRS
 diseases are special cases of simple contagions.
 
-In a "complex contagion" however, the rate at which ``u`` changes 
-from one status to another may depend on the statuses of others in some more
-complicated way.  Two infected individuals may cause a susceptible individual
-to become infected at some higher rate than would result from them acting 
-independently.  This is frequently thought to model social contagions where an
-individual may only believe something if multiple partners believe it 
-[@centola:cascade].  
+In "complex contagions" however, the rate at which ``u`` changes 
+from one status to another may depend on the statuses of others in more
+complex ways.  Two infected individuals may work synergistically to cause a 
+susceptible individual to become infected.  This is frequently thought to 
+model social contagions where an individual may only believe something if 
+multiple partners believe it [@centola:cascade].  
 
 Simple and complex contagions are currently implemented only in a 
-Gillespie setting, and so they require Markovian assumptions.  Although they 
-are reasonably fast, it would typically be feasible to make a bespoke algorithm
-that runs significantly faster.
+Gillespie framework, so they require Markovian assumptions.  It would 
+typically be feasible to make a bespoke algorithm that runs significantly faster.
 
 ### Simple contagions
 
@@ -146,37 +138,34 @@ transition is induced by a partner.
 
 ### Complex contagions
 
-Complex contagions are implemented through ``Gillespie_complex_contagion`` which 
-allows a user to specify the rules governing a relatively arbitrary complex 
-contagion.  The one criteria we note is that there is no memory - an individual 
+Complex contagions are implemented through ``Gillespie_complex_contagion`` for which 
+the user specifies the rules governing a relatively arbitrary complex 
+contagion.  There is a constraint that there is no memory - an individual 
 will change from one status to another based on the current statuses of its 
 neighbors, and not based on previous interactions with some neighbors who may 
 have since changed status.
 
-The Gillespie implementation, requires a user-defined function that 
+The Gillespie implementation requires a user-defined function that 
 calculates the rate at which ``u`` will change status given the current system 
-state and another function which chooses its new status.  It also
-needs a function that determines which nodes have their 
-rate change due to ``u``'s transition. 
-
-Once these functions are defined, the Gillespie algorithm is able to perform
-the complex contagion simulation.
+state and another function which chooses its new status.  It also needs a 
+function that determines which nodes have their  rate change due to ``u``'s 
+transition.  With these functions defined, the Gillespie algorithm can simulate
+the complex contagion.
 
 
 ### Visualization & Analysis
 
-By default simulations return numpy arrays providing the counts of each state.  
-However if we set a flag ``return_full_data=True``,
-then the simulations return a ``Simulation_Investigation`` object.  This provides
+By default simulations return numpy arrays providing counts of each state.  
+However if we set a flag ``return_full_data=True``, the simulations return a 
+``Simulation_Investigation`` object.  This provides
 access to complete information about the simulation, including the transmission
 chains.
 
-The ``Simulation_Investigation`` 
-object can create a snapshot of the network at a given time.
-By default the visualization includes the time series (e.g., S, I, and R) 
-plotted beside the network snapshot, but there is flexibility about what (or if) other
-time series appear.  With appropriate additional packages needed for
-matplotlib's animation tools, it can produce animations as well.
+The ``Simulation_Investigation`` object can create a snapshot of the network 
+at a given time.  By default the visualization includes the time series 
+(e.g., S, I, and R) plotted beside the network snapshot, with flexibility 
+about what (or if) other time series appear.  With appropriate additional 
+packages for matplotlib's animation tools, it can produce animations as well.
 
 ## Discussion
 
