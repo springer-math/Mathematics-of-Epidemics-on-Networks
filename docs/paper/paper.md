@@ -136,18 +136,9 @@ that runs significantly faster.
 ### Simple contagions
 
 EoN provides a function ``Gillespie_simple_contagion`` which allows a user to 
-specify the rules governing an arbitrary simple contagion.
-
-Examples are provided in the online documentation, including
-
-- SEIR disease (there is an exposed state before becoming infectious)
-- SIRS disease (recovered individuals eventually become susceptible again)
-- SIRV disease (individuals may get vaccinated) 
-- Competing SIR diseases (there is cross immunity)
-- Cooperative SIR diseases (infection with one disease helps spread the other)
-
-The implementation requires the user to separate out two distinct ways that 
-transitions occur: those that are intrinsic to an individual's current state
+specify the rules governing an arbitrary simple contagion.  The implementation 
+requires the user to separate out two distinct ways that 
+transitions occur: those that are occur spontaneously from an individual's current state
 and those that are induced by a partner.  To help demonstrate, consider an 
 "SEIR" epidemic, where individuals begin susceptible, but when they interact 
 with infectious partners they may enter an exposed state.  They remain in that 
@@ -155,7 +146,7 @@ exposed state for some period of time before transitioning into the infectious
 state independently of the status of any partner.
 They remain infectious and eventually transition into the recovered state, again
 independently of the status of any partner.  Here the "E" to "I" and "I" to "R"
-transitions are intrinsic to the individual's state, while the "S" to "E" 
+transitions occur spontaneously given the individual's state, while the "S" to "E" 
 transition is induced by a partner.  
 
 ### Complex contagions
