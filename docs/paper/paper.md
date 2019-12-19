@@ -31,8 +31,8 @@ bibliography: paper.bib
 
 # Summary
 
-EoN (EpidemicsOnNetworks) is a pure-python package designed to assist studies of
-infectious processes spreading through networks.  It originally rose out of the 
+EoN (EpidemicsOnNetworks) is a pure-python package designed to study
+infectious processes spreading in networks.  It rose out of the 
 book *Mathematics of Epidemics on Networks* [@kiss:EoN], and now consists of over 
 100 user-functions.
 
@@ -52,20 +52,18 @@ EoN provides a set of tools for
 - Stochastic simulation of a wide range of Simple and Complex contagions
 - Visualization and analysis of stochastic simulations
 
-These algorithms are built on the networkx package [@hagberg2008exploring].
-EoN's documentation is maintained at 
+EoN relies on the networkx package [@hagberg2008exploring].
+Its documentation is maintained at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/ 
 including numerous examples at 
 https://epidemicsonnetworks.readthedocs.io/en/latest/Examples.html.  In this 
-paper we provide brief descriptions with examples of a few of EoN's tools.
-The examples shown are intended to demonstrate the ability of the tools.  The 
-online documentation gives more detail about how to use them.
+paper we provide brief descriptions of a few of EoN's main tools.  The 
+online documentation gives more detail about how to use them, including examples.
 
-We model spreading processes on a contact network.  
 ## SIR and SIS disease
 
 ### Stochastic simulation
-The stochastic SIR and SIS simulation tools allow the user to investigate
+The main stochastic simulation tools allow the user to investigate
 standard SIS and SIR dynamics (SEIR/SIRS and other processes are addressed 
 within the simple contagion model):
 
@@ -75,60 +73,57 @@ within the simple contagion model):
   (``basic_discrete_SIS``, ``basic_discrete_SIR``, and ``discrete_SIR``).
 
 For both Markovian and non-Markovian methods it is possible for the transition 
-rates to depend on intrinsic properties of 
-individuals and of partnerships.
+rates to depend on individual or partnership properties.
 
 The continuous-time stochastic simulations have two different implementations: a 
 Gillespie implementation [@gillespie1977exact; @doob1945markoff] and an Event-driven
-implementation.  Both approaches are efficient.  They have similar speed if the 
+implementation.  They have similar speed if the 
 dynamics are Markovian (depending on the network and disease parameters either
 may be faster than the other), but the event-driven implementation can also handle 
 non-Markovian dynamics.  In earlier versions, the event-driven simulations were 
-consistently faster than the Gillespie simulations, and thus they are named 
-`fast_SIR` and `fast_SIS`.  The Gillespie simulations have since been optimized
+consistently faster than the Gillespie simulations, leading to the names
+`fast_SIR` and `fast_SIS`.  The Gillespie simulations have been optimized
 using ideas from [@holme2014model] and [@cota2017optimized].
 
-The algorithms can typically handle an SIR epidemic spreading on 
-hundreds of thousands of individuals in well under a minute on a laptop.  The 
-SIS versions are slower because the number of events that happen is often much
-larger in an SIS simulation.
+The algorithms typically handle an SIR epidemic spreading on 
+hundreds of thousands of individuals in well under a minute on a laptop. 
+SIS versions are slower because the number of events that happen is typically much
+larger.
 
 ### Differential Equations Models
 
-EoN also provides a set of tools to numerically solve approximately 20 differential equations
-models for SIS or SIR disease spread in networks.  The various models use different
-information about the network to make deterministic predictions about
-the number infected at different times.  These use the Scipy integration tools.
-The derivations of the models and explanations of their simplifying assumptions
-are described in [@kiss:EoN].
+EoN also provides tools to numerically solve about 20 differential equations
+models for SIS or SIR disease spread in networks using Scipy integration tools.
+The various models use different information about the network to predict the 
+number infected at different times.  Model derivations and explanations of 
+their simplifying assumptions are in [@kiss:EoN].
 
-Depending on the model, we need different information about the network structure.
-The algorithms allow us to provide the information as inputs.  However, there
-is also a version of each model which takes a network as an input 
-instead and then measures the network properties.
+The models require different information about the network structure which can
+be provided as inputs.  However, each model has a version which takes an input
+network and measures its properties.
 
 
 ## Simple and Complex Contagions
 
-There are other contagious processes in networks which have received attention.
-Many of these fall into one of two types, "simple contagions" and "complex 
+Other contagious processes in networks have received attention.
+Many of these can be classifed as either "simple contagions" or "complex 
 contagions".
 
 In a "simple contagion" an individual ``u`` may be induced to change status by
 an interaction with its partner ``v``.  This status change occurs with the same
-rate regardless of the statuses of other partners of ``u`` (although the other
-partners may cause ``u`` to change to another status first).  SIS and SIR 
+rate regardless of the statuses of other partners of ``u`` (there may be a race
+between partners to determine which transmits first).  SIS and SIR 
 diseases are special cases of simple contagions.
 
-In a "complex contagion" however, we permit the rate at which ``u`` changes 
-from one status to another to depend on the statuses of others in some more
+In a "complex contagion" however, the rate at which ``u`` changes 
+from one status to another may depend on the statuses of others in some more
 complicated way.  Two infected individuals may cause a susceptible individual
 to become infected at some higher rate than would result from them acting 
 independently.  This is frequently thought to model social contagions where an
 individual may only believe something if multiple partners believe it 
 [@centola:cascade].  
 
-The simple and complex contagions are currently implemented only in a 
+Simple and complex contagions are currently implemented only in a 
 Gillespie setting, and so they require Markovian assumptions.  Although they 
 are reasonably fast, it would typically be feasible to make a bespoke algorithm
 that runs significantly faster.
@@ -158,15 +153,11 @@ will change from one status to another based on the current statuses of its
 neighbors, and not based on previous interactions with some neighbors who may 
 have since changed status.
 
-In the Gillespie implementation, we need a user-defined function which 
-calculates the rate at which ``u`` will change status (given knowledge about 
-the current state of the system) and another user-defined function which
-chooses the new status of ``u`` given that it is changing status.  We finally 
-need a user-defined function that will determine which other nodes have their 
-rate change due to ``u``'s transition.  By knowing the rates of all nodes
-the Gillespie algorithm can choose the time of the next transition and which
-node transitions.  Then it finds the new state, and finally it calculates the
-new rates for all nodes affected by the change.
+The Gillespie implementation, requires a user-defined function that 
+calculates the rate at which ``u`` will change status given the current system 
+state and another function which chooses its new status.  It also
+needs a function that determines which nodes have their 
+rate change due to ``u``'s transition. 
 
 Once these functions are defined, the Gillespie algorithm is able to perform
 the complex contagion simulation.
@@ -174,38 +165,24 @@ the complex contagion simulation.
 
 ### Visualization & Analysis
 
-By default the simulations return numpy arrays providing the number of individuals
-with each state at each time.  However if we set a flag ``return_full_data=True``,
-then the simulations return a ``Simulation_Investigation`` object.  With the
-``Simulation_Investigation`` object, there are methods which allow us to 
-reconstruct all details of the simulation.  We can know the exact status of 
-each individual at each time, as well as who infected whom.  
+By default simulations return numpy arrays providing the counts of each state.  
+However if we set a flag ``return_full_data=True``,
+then the simulations return a ``Simulation_Investigation`` object.  This provides
+access to complete information about the simulation, including the transmission
+chains.
 
-There are also 
-methods  provided to produce output from the ``Simulation_Investigation`` 
-object.  These allow us to produce a snapshot of the network at a given time.
-By default the visualization also includes the time series (e.g., S, I, and R) 
-plotted beside the network snapshot.  These time series plots 
-can be removed, or replaced by other time series, for example we could plot
-multiple time series in the same axis, or time series generated by one of the
-differential equations models.  With appropriate additional packages needed for
-matplotlib's animation tools, the software can produce animations as well.
-
-For SIR outbreaks, the ``Simulation_Investigation`` object includes a 
-transmission tree.  For SIS and simple contagions, it includes a directed 
-multigraph showing the transmissions that occurred (this may not be a tree).
-However for complex contagions, we cannot determine who
-is responsible for inducing a transition, so the implementation does not provide
-a transmission tree.  The transmission tree is useful for constructing synthetic
-phylogenies as in [@moshiri2018favites].
-
+The ``Simulation_Investigation`` 
+object can create a snapshot of the network at a given time.
+By default the visualization includes the time series (e.g., S, I, and R) 
+plotted beside the network snapshot, but there is flexibility about what (or if) other
+time series appear.  With appropriate additional packages needed for
+matplotlib's animation tools, it can produce animations as well.
 
 ## Discussion
 
-EoN provides a number of tools for studying infectious processes spreading in
-contact networks.  The examples given here are intended to demonstrate the
-range of EoN, but they represent only a fraction of the possibilities.
-
+EoN provides tools for contagious processes spreading in contact networks, including
+SIR and SIS disease and more generally simple and complex contagions.  It also
+provides tools for visualizing stochastic simulation output.
 Full documentation is available at https://epidemicsonnetworks.readthedocs.io/en/latest/
 
 # Dependencies:
@@ -223,11 +200,10 @@ epidemics on networks.  Here we briefly review some of these.
 
 ### epydemic
 
-Epydemic is a python package that can simulate SIS and SIR epidemics in 
-networks.  It is also built on networkx.  It can handle both discrete-time 
-simulations or continuous-time Markovian simulations for which it uses a 
-Gillespie-style algorithm.  It can handle more processes than just SIS or SIR 
-disease.  In fact it can handle any model which can be simulated using the 
+The Python package Epydemic simulates SIS and SIR epidemics in 
+networks.  It is built on networkx.  It handles both discrete-time or 
+continuous-time Markovian simulations for which it uses a 
+Gillespie-style algorithm.  It can handle any process which can be simulated using  
 ``EoN.simple_contagion``.
 
 The documentation is available at https://pyepydemic.readthedocs.io/en/latest/
@@ -235,22 +211,22 @@ The documentation is available at https://pyepydemic.readthedocs.io/en/latest/
 
 ### Graph-tool
 
-Graph-tool [@peixoto_graph-tool_2014] is a python package that serves as an 
-alternative to networkx.  Many of its underlying processes are written in C++, 
-so it is often much faster than networkx.
+The Python package Graph-tool [@peixoto_graph-tool_2014] serves as a networkx
+alternative.  Its underlying processes are written in C++, 
+so it is often much faster.
 
 Graph-tool has a number of built-in dynamic models, including the SIS, SIR, 
 and SIRS models.  The disease models are currently available only in 
 discrete-time versions.
 
-The documentation for these disease models is available at 
+The disease model documentation is available at 
 https://graph-tool.skewed.de/static/doc/dynamics.html.
 
 ### EpiModel
 
-EpiModel [@jenness:EpiModel] is an R package that can handle SI, SIS, and SIR 
-disease spread.  It is possible to extend EpiModel to other models.  EpiModel
-is built around the StatNet package.  More details about EpiModel are available
+The R package EpiModel [@jenness:EpiModel] can handle SI, SIS, and SIR 
+disease spread.  It is possible to extend EpiModel to other processes.  EpiModel
+is built around the StatNet package.  More details are available
 at https://www.epimodel.org/
 
 
