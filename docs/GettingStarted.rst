@@ -19,10 +19,12 @@ version available through pip (1.1).  The easiest way is
     pip uninstall EoN
     pip install EoN
 
-    
 
-To **install EoN a later (in development) version** You can clone or download 
-the Github version at 
+If you are using Anaconda, go to the Anaconda command line and use 
+`pip install EoN`    
+
+To **install EoN with a later (in development) version** You can clone or 
+download the Github version at 
 https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks
 
 Then just move into the main directory and run
@@ -31,6 +33,9 @@ Then just move into the main directory and run
 
     python setup.py install
 
+EoN requires ``numpy``, ``scipy``, and ``matplotlib``.  Some of the visualization
+tools provide support for animations, but producing the animations will require 
+installation of something like ``ffmpeg``.
 
 The documentation provided here is for version 1.1.
 

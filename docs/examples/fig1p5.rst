@@ -38,6 +38,6 @@ Figure 1.5
     
     inset = plt.axes([0.3,0.3,0.5,0.5])
     inset.bar(*zip(*H.items()), width = binwidth, linewidth=0)
-    inset.axis(xmin = 300, xmax = 900, yin=0, ymax = 0.03)
+    inset.axis(xmin = 300, xmax = 900, ymin=0, ymax = 0.03)
     
     plt.savefig('fig1p5.png')
