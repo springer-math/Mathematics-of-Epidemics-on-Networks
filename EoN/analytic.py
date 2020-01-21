@@ -1720,7 +1720,7 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
         initial number susceptible
     **I0** number
         initial number infected
-    **n** integer
+    **n** number
         (average) degree of all nodes.
     **tau** positive float
         transmission rate
@@ -1782,8 +1782,8 @@ def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100,
         initial number infected
     **R0** number
         initial number recovered
-    **n** integer
-        degree of each node
+    **n** number
+        (average) degree of each node
     **tau** positive float
         transmission rate
     **gamma** number
