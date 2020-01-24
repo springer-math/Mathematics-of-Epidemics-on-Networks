@@ -6,9 +6,8 @@ import random
 def subsample(report_times, times, status1, status2=None, 
                 status3 = None):
     r'''
-    Given 
-      S, I, and/or R as lists of numbers of nodes of the given status
-      at given times
+    Given a list/array of times to report at, returns the number of nodes of 
+    each status at those times.
 
     returns them 
       subsampled at specific report_times.

@@ -11,13 +11,12 @@ You can **install EoN version 1.1** with pip
     pip install EoN
 
 
-If you have installed a previous version and want to reinstall the most recent
-version available through pip (1.1).  The easiest way is 
+If you have installed a previous version and want to reinstall with the most 
+recent version available through pip (1.1).  The easiest way is 
 
 ::
 
-    pip uninstall EoN
-    pip install EoN
+    pip install EoN --upgrade
 
 
 If you are using Anaconda, go to the Anaconda command line and use 
@@ -33,14 +32,21 @@ Then just move into the main directory and run
 
     python setup.py install
 
-EoN requires ``numpy``, ``scipy``, and ``matplotlib``.  Some of the visualization
-tools provide support for animations, but producing the animations will require 
-installation of something like ``ffmpeg``.
+EoN requires ``numpy``, ``scipy``, and ``matplotlib``.  If you don't have them
+and you install through `pip`, these will automatically be added.  Some of the 
+visualization tools provide support for animations, but producing the 
+animations will require installation of something like ``ffmpeg``.
+
+Current Version
+---------------
 
 The documentation provided here is for version 1.1.
 
 If you want to see changes from previous versions, please see 
 `Changes from v1.0 <Changes.html>`_.
+
+Citing
+------
 
 If you use EoN, or publish anything based on it, please cite the
 `Journal of Open Source Software publication <https://doi.org/10.21105/joss.01731>`_
