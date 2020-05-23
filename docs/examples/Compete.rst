@@ -20,6 +20,7 @@ manifested when the populations are still small.
 Our first plot shows the two diseases competing.  The second plot shows
 what happens if there is just one disease present.
 
+The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_simple_contagion.html#EoN.Gillespie_simple_contagion>`_
 ::
 
 

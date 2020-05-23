@@ -19,6 +19,8 @@ Transmission rates are not always symmetric, so it is not as simple as
 introducing a weight to scale the partnerships.  So we introduce functions 
 to scale the transition rates.
 
+The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_simple_contagion.html#EoN.Gillespie_simple_contagion>`_
+
 :: 
 
     import EoN

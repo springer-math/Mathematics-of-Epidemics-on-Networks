@@ -10,8 +10,8 @@ We consider an SEIR style model, but with contact tracing of identified contacts
 An infected person may be identified, in which case his/her contacts are traced with
 some rate.
 
-We consider a simple model, a separate example shows an SEIR model<SEIR.rst> with
-weighted edges.
+We consider a simple model, a separate example shows an `SEIR model <SEIR.html>`_
+with weighted edges.  The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_simple_contagion.html#EoN.Gillespie_simple_contagion>`_
 ::
 
 

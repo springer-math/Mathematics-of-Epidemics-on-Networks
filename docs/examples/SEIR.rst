@@ -16,6 +16,8 @@ which allow us to scale the transitions by some function of the nodes [this may
 be particularly useful when disease is more infectious in one direction, as in
 many sexually transmitted diseases].
 
+The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_simple_contagion.html#EoN.Gillespie_simple_contagion>`_
+
 ::
 
 

@@ -17,6 +17,8 @@ unrealistic, but could correspond to an individual having a more mild infection
 resulting in the individual remaining active in the population rather than
 self-isolating at home.
 
+The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_simple_contagion.html#EoN.Gillespie_simple_contagion>`_
+
 ::
 
     import EoN

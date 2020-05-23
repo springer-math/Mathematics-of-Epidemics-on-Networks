@@ -38,6 +38,8 @@ in the previous example.  So the "spontaneous transitions" are ``'Suc'`` to
 The "induced transitions" are ``('Inf', 'Sus')`` to ``('Inf', 'Inf')`` with 
 rate ``2.0``.
 
+The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_simple_contagion.html#EoN.Gillespie_simple_contagion>`_
+
 ::
 
     import networkx as nx
