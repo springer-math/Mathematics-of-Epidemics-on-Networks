@@ -200,6 +200,7 @@ Gillespie approach.
    :maxdepth: 1
    
    SEIR (with simple heterogeneities) <examples/SEIR.rst>
+   SEIRT (SEIR + tracing) <examples/SEIRT.rst>
    SIRS <examples/SIRS.rst>
    SIRS (with more complicated heterogeneity) <examples/SIRS_heterogeneous.rst>
    Competing SIR Diseases <examples/Compete.rst>
