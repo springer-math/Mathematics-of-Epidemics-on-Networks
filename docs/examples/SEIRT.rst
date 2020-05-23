@@ -32,7 +32,7 @@ weighted edges.
     H.add_edge('I', 'R', rate = 1./7)
     H.add_edge('I', 'T', rate = 1./10)
     
-    #and the other garph has transitions caused by a neighbor.
+    #and the other graph has transitions caused by a neighbor.
     J = nx.DiGraph()
     J.add_edge(('I', 'S'), ('I', 'E'), rate = 2.5/7)
     J.add_edge(('T', 'I'), ('T', 'T'), rate = 0.2)
