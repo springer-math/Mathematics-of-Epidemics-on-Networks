@@ -564,7 +564,7 @@ def SIS_individual_based(G, tau, gamma, rho = None, Y0=None, nodelist = None, tm
     **recovery_weight** string       (default ``None``)
         a label for a weight given to the nodes to scale their 
         recovery rates so
-        gamma_i = G.node[i][recovery_weight]*gamma
+        gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**       (default False)
         If True, returns times, Ss, Is
@@ -677,7 +677,7 @@ def SIR_individual_based(G, tau, gamma, rho = None, Y0 = None, X0= None,
     **recovery_weight**  string       (default ``None``)
         a label for a weight given to the nodes to scale their 
         recovery rates
-            gamma_i = G.node[i][recovery_weight]*gamma
+            gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**    (default False)
         If True, returns times, S, I, R, Ss, Is, Rs
@@ -810,7 +810,7 @@ def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = No
     **recovery_weight**  string       (default ``None``)
         a label for a weight given to the nodes to scale their 
         recovery rates
-            gamma_i = G.node[i][recovery_weight]*gamma
+            gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**  boolean      (default False)
 
@@ -904,7 +904,7 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
     **recovery_weight**  string       (default ``None``)
         a label for a weight given to the nodes to scale their 
         recovery rates
-            gamma_i = G.node[i][recovery_weight]*gamma
+            gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**  boolean      (default False)
 
@@ -1195,7 +1195,7 @@ def SIS_pair_based(G, tau, gamma, rho = None, nodelist = None,
     **recovery_weight**  string       (default ``None``)
         a label for a weight given to the nodes to scale their 
         recovery rates
-            gamma_i = G.node[i][recovery_weight]*gamma
+            gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**  boolean      (default False)
         if True:
@@ -1333,7 +1333,7 @@ def SIS_pair_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = None,
     **recovery_weight**  string       (default ``None``)
         a label for a weight given to the nodes to scale their 
         recovery rates
-            gamma_i = G.node[i][recovery_weight]*gamma
+            gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**  boolean      (default False)
         if True:
@@ -1500,7 +1500,7 @@ def SIR_pair_based(G, tau, gamma, rho = None, nodelist=None, Y0=None,
     **recovery_weight**  string       (default ``None``)
             a label for a weight given to the nodes to scale their 
             recovery rates
-                gamma_i = G.node[i][recovery_weight]*gamma
+                gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**  boolean      (default False)
             if True:
@@ -1649,7 +1649,7 @@ def SIR_pair_based_pure_IC(G, tau, gamma, initial_infecteds,
     **recovery_weight**  string       (default ``None``)
         a label for a weight given to the nodes to scale their 
         recovery rates
-            gamma_i = G.node[i][recovery_weight]*gamma
+            gamma_i = G.nodes[i][recovery_weight]*gamma
     **return_full_data**  boolean      (default False)
             if True:
                 returns times, S, I, R, Xs, Ys, Zs, XY, XX

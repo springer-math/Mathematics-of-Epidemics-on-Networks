@@ -1984,7 +1984,7 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
     **recovery_weight**   string (default None))
         a label for a weight given to the nodes to scale their 
         recovery rates
-        gamma_i = G.node[i][recovery_weight]*gamma
+        gamma_i = G.nodes[i][recovery_weight]*gamma
 
     **return_full_data**   boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
@@ -2656,7 +2656,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
     **recovery_weight** string       (default None)
         a label for a weight given to the nodes to scale their 
         recovery rates
-        ``gamma_i = G.node[i][recovery_weight]*gamma``
+        ``gamma_i = G.nodes[i][recovery_weight]*gamma``
     
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
@@ -3018,7 +3018,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         
     **recovery_weight** string (default None)
         the string used to define the node attribute for the weight.
-        Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
+        Assumes that the recovery rate is gamma*G.nodes[u][recovery_weight].
         If None, then just uses gamma without scaling.
     
     **transmission_weight** string (default None)
@@ -3084,7 +3084,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     
     if recovery_weight is not None:
         def nodeweight(u):
-            return G.node[u][recovery_weight]
+            return G.nodes[u][recovery_weight]
     else:
         def nodeweight(u):
             return None
@@ -3257,7 +3257,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         
     **recovery_weight** string (default None)
         the string used to define the node attribute for the weight.
-        Assumes that the recovery rate is gamma*G.node[u][recovery_weight].
+        Assumes that the recovery rate is gamma*G.nodes[u][recovery_weight].
         If None, then just uses gamma without scaling.
         
     **transmission_weight** string (default None)
@@ -3318,7 +3318,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     
     if recovery_weight is not None:
         def nodeweight(u):
-            return G.node[u][recovery_weight]
+            return G.nodes[u][recovery_weight]
     else:
         def nodeweight(u):
             return None
@@ -3779,7 +3779,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     
     So for the SIR case, if some people have higher recovery rate, we might 
     define a node attribute ``'recovery_weight'`` for each node in ``G``, and the 
-    recovery would occur with rate G.node[node]['recovery_weight']*gamma.  So
+    recovery would occur with rate G.nodes[node]['recovery_weight']*gamma.  So
     a value of 1.1 would correspond to a 10% increased recovery rate.  Since I
     don't know what name you might choose for the weight label as I write this 
     algorithm, in defining the spontaneous transition graph (H), the ``'I'``->``'R'`` 
@@ -3798,7 +3798,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     
     So for the SIR case if the recovery rate depends on two attributes of a node
     (say, age and gender), we define a function ``rate_function(G,node)`` which
-    will then look at G.node[node]['age'] and G.node[node]['gender'] and then
+    will then look at G.nodes[node]['age'] and G.nodes[node]['gender'] and then
     return a factor which will be multiplied by ``gamma`` to give the recovery 
     rate.  Similarly, if we are considering a neighbor induced transition and
     the rate depends on properties of both nodes we define another function
@@ -3844,7 +3844,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         For a node ``u`` whose status is ``Status1``, the rate at which ``u`` 
         transitions to ``Status2`` is
           - ``rate``    if neither ``weight_label`` nor ``rate_function`` is defined.
-          - ``rate*G.node[u][weight_label]`` if ``weight_label`` is defined.
+          - ``rate*G.nodes[u][weight_label]`` if ``weight_label`` is defined.
           - ``rate*rate_function(G, u, **spont_kwargs)`` if ``rate_function`` is 
              defined.
       
@@ -4023,9 +4023,14 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     C = Counter(status.values())     
     for return_status in return_statuses:
         data[return_status] = [C[return_status]] #
-
-    spontaneous_transitions = list(spontaneous_transition_graph.edges())
-    induced_transitions = list(nbr_induced_transition_graph.edges())
+    try:
+        spontaneous_transitions = sorted(spontaneous_transition_graph.edges())
+        induced_transitions = sorted(nbr_induced_transition_graph.edges())
+    except TypeError:
+        print("note that because your states are not sortable, your simulations "+
+              "may produce different outcomes even if you specify the random seed")
+        spontaneous_transitions = list(spontaneous_transition_graph.edges())
+        induced_transitions = list(nbr_induced_transition_graph.edges())
     potential_transitions = {}
     rate = {}# intrinsic rate of a transition
     #weight_sum = defaultdict(lambda: 0)

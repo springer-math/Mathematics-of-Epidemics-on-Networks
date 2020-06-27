@@ -121,7 +121,7 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
     if recovery_weight is None:
         rec_rate_fxn = lambda x : gamma
     else:
-        rec_rate_fxn = lambda x : gamma*G.node[x][recovery_weight]
+        rec_rate_fxn = lambda x : gamma*G.nodes[x][recovery_weight]
 
 
     return trans_rate_fxn, rec_rate_fxn
