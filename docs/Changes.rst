@@ -1,6 +1,17 @@
 Changes from v 1.0
 ==================
 
+New in v 1.2rc1
+------------------
+- Corrected bug affecting code with rates weighted by node for new networkx.
+  Due to this change, those parts of the code require networkx 2.0 or greater.
+  
+- updated ``Gillespie_simple_contagion`` so that if both random and numpy.random 
+  keys are set, the code will produce reproducible results.
+  
+
+
+
 New in v 1.1
 -----------------
 - ``Hierarchy_Pos`` has an extraneous print statement removed.

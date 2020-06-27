@@ -40,7 +40,7 @@ animations will require installation of something like ``ffmpeg``.
 Current Version
 ---------------
 
-The documentation provided here is for version 1.1.
+The documentation provided here is for version 1.2rc1.
 
 If you want to see changes from previous versions, please see 
 `Changes from v1.0 <Changes.html>`_.

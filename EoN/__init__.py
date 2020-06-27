@@ -46,7 +46,7 @@ We start with a few useful auxiliary functions
 '''
 
 __author__ = "Joel C. Miller, with tests written by Tony Ting"
-__version__ = "1.1"
+__version__ = "1.2rc1"
 def __citation__():
     print("To cite this software, please use the Journal of Open Source\n" + \
               " Software publication https://doi.org/10.21105/joss.01731" + \
