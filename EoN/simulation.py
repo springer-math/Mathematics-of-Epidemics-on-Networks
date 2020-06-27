@@ -2160,7 +2160,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         see rec_time_fxn
 
     **trans_and_rec_time_args** tuple
-        see trans_and_rec_tim_fxn
+        see trans_and_rec_time_fxn
         
     **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
