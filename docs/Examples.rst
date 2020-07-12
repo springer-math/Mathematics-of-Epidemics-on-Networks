@@ -195,6 +195,8 @@ However, you may want something else, such as SEIR or SIRS or maybe more exotic
 things.  If you are willing to assume that events all happen as Poisson processes
 (that is, an event happens at a rate), then it's possible to do this with a
 Gillespie approach.
+
+Note that right now if a node has an edge to itself, this can cause the code to crash.  I will try to fix this soon.
  
 .. toctree::
    :maxdepth: 1
