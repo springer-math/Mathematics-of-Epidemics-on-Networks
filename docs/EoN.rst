@@ -9,7 +9,7 @@ epidemics on networks and solving ODE models of disease spread.
 The algorithms are based on the book
         
 `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_
-by Kiss, Miller & Simon
+by Kiss, Miller & Simon  (possibly freely available for `download here`_ depending on your institutional subscription).
         
 Please cite the book if using these algorithms.
 
@@ -560,4 +560,4 @@ Short Description
     
 .. _Mathematics of epidemics on networks\: from exact to approximate models: http://www.springer.com/us/book/9783319508047
 .. _leave a note here: https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues/31
-
+.. _download here: https://link.springer.com/book/10.1007%2F978-3-319-50806-1
