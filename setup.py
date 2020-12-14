@@ -15,7 +15,7 @@ If this is a "release candidate" (has an "rc" in the version name below), then
 pip will download the previous version - see the download_url below.
 '''
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='EoN',
       packages = ['EoN'], 
