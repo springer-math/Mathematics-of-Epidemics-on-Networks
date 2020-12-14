@@ -275,6 +275,12 @@ class Simulation_Investigation():
             node_times = self._node_history_[node][0]
             node_statuses = self._node_history_[node][1]
             tmin = node_times[0] #should be the same for each node, but hard to choose a single node at start.
+            ## this can happen with contagions on a bipartite
+            ## graph where a subset of nodes do not have an
+            ## infection status
+            if node_statuses[0] not in delta:
+                continue
+
             times.add(tmin)
             delta[node_statuses[0]][tmin]+=1
             for new_status, old_status, time in zip(node_statuses[1:], node_statuses[:-1], node_times[1:]):
