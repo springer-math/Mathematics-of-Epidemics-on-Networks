@@ -12,13 +12,15 @@ If you believe you have found an error:
 
 ## Chapter 1 
 
-Figure 1.4(b) has an error.  The final size should be quite a bit below 1.
+- Figure 1.4(b) has an error.  The final size should be quite a bit below 1.
 
 ## Chapter 2 
 
 - In Proposition 2.4, in equations for k=1,...,N-1, the value Y_2^0 should be interpreted as the same as Y^0 and Y_1^{N}  should be interpreted as the same as Y^N.
 
 ## Chapter 3
+
+- In Equation 3.5(d), there should be an additional 2 terms:  +\gamma_i \<I_iS_j\> + \gamma_j \<S_iI_j\>
 
 ## Chapter 4
 
