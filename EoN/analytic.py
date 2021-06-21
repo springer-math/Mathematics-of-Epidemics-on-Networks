@@ -447,7 +447,7 @@ def estimate_R0(G, tau = None, gamma = None, transmissibility = None):
     '''
     
     if transmissibility is None:
-        if tau is None or beta is None:
+        if tau is None or gamma is None:
             raise EoN.EoNError("not enough information give to estimate transmission probability")
         else:
             transmissibility = tau/(tau+gamma)
