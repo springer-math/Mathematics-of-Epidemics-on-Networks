@@ -8,7 +8,7 @@ If you believe you have found an error:
 
 ## Dedication
 
-- "\epsilon_2" should be "Matilda"
+- $\epsilon_2$ should be "Matilda"
 
 ## Chapter 1 
 
@@ -16,29 +16,31 @@ If you believe you have found an error:
 
 ## Chapter 2 
 
-- In Proposition 2.4, in equations for k=1,...,N-1, the value Y_2^0 should be interpreted as the same as Y^0 and Y_1^{N}  should be interpreted as the same as Y^N.
+- In Proposition 2.4, in equations for $k=1,...,N-1$, the value $Y_2^0$ should be interpreted as the same as $Y^0$ and $Y_1^{N}$  should be interpreted as the same as $Y^N$.
 
 ## Chapter 3
 
-- In Equation 3.5(d), there should be an additional 2 terms:  +\gamma_i \<I_iS_j\> + \gamma_j \<S_iI_j\>
+- In Equation 3.5(d), there should be an additional 2 terms:  $+\gamma_i \<I_iS_j\> + \gamma_j \<S_iI_j\>$.
 
 ## Chapter 4
 
- - In Figure 4.7c: \tau is actually 1.1\tau_c, not 1.2\tau_c
+ - In section 4.2.3 (Clustered pairwise model), the modified scaling factor should be $\frac{n[S]^2 [I][AI]}{([SS][I]+[S][II])[A][SI]}$ instead of $\frac{n[S][I][AI]}{([SS][I]+[S][II])[A][SI]}$.
+ 
+ - In Figure 4.7c: $\tau$ is actually $1.1\tau_c$, not $1.2\tau_c$
 
- - In Figure 4.11: \tau is not 2\tau_c.  It is actually 1.5 \tau_c = 1.5 \gamma/ \<K\>  (the factor of
+ - In Figure 4.11: $\tau$ is not $2\tau_c$.  It is actually $1.5 \tau_c = 1.5 \gamma/ \<K\>$  (the factor of
 2 should be 1.5)
 
 ## Chapter 5 
-- In Figure 5.2c the label 1.2\tau should be 1.1\tau.
+- In Figure 5.2c the label $1.2\tau$ should be $1.1\tau$.
 
 ## Chapter 6 
 
-- In Figure 6.7, it was not made clear that the percolation is performed by taking a single network for each N, giving each edge a weight uniformly in (0,1) and then as $p$ decreases from $1$, removing an edge when $p$ crosses its weight.
+- In Figure 6.7, it was not made clear that the percolation is performed by taking a single network for each $N$, giving each edge a weight uniformly in $(0,1)$ and then as $p$ decreases from $1$, removing an edge when $p$ crosses its weight.
 
-- equation 6.8a, \xi should be \zeta.
+- equation 6.8a, $\xi$ should be $\zeta$.
 
-- In the displayed equation for example 6.3 \xi should be \zeta
+- In the displayed equation for example 6.3 $\xi$ should be $\zeta$
 
 ## Chapter 7
 
