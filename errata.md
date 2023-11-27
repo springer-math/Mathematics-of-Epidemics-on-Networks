@@ -20,7 +20,7 @@ If you believe you have found an error:
 
 ## Chapter 3
 
-- In Equation 3.5(d), there should be an additional 2 terms:  $+\gamma_i \<I_iS_j\> + \gamma_j \<S_iI_j\>$.
+- In Equation 3.5(d), there should be an additional 2 terms:  $+\gamma_i$ < $I_iS_j$ > $+ \gamma_j$ < $S_iI_j$ >.
 
 ## Chapter 4
 
