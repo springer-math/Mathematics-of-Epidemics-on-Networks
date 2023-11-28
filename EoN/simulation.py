@@ -563,7 +563,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G.nodes()), initial_number)
+        initial_infecteds=random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -815,7 +815,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G.nodes()), initial_number)
+        initial_infecteds=random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -1347,7 +1347,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
         initial_recovereds = set(initial_recovereds)
     if initial_infecteds is None:
         while True:
-            node = random.choice(list(G.nodes()))
+            node = random.choice(list(G))
             if node not in initial_recovereds:
                 break
         initial_infecteds=set([node])
@@ -2299,7 +2299,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G.nodes()), initial_number)
+        initial_infecteds=random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -2728,7 +2728,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G.nodes()), initial_number)
+        initial_infecteds=random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
 
@@ -2920,7 +2920,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G.nodes()), initial_number)
+        initial_infecteds=random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
@@ -3125,7 +3125,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G.nodes()), initial_number)
+        initial_infecteds=random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
@@ -3363,7 +3363,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G.nodes()), initial_number)
+        initial_infecteds=random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
