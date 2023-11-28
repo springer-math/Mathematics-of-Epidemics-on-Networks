@@ -492,14 +492,18 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         [note the comma is needed to tell Python that this is really a 
         tuple]
 
-    **initial_infecteds** node or iterable of nodes (default None)
+    **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
+        
         if an iterable, then whole set is initially infected
-        if None, then choose randomly based on rho.  If rho is also
-        None, a random single node is chosen.
+        
+        if None, then choose randomly based on rho.  
+        
+        If rho is also None, a random single node is chosen.
+        
         If both initial_infecteds and rho are assigned, then there
         is an error.
-       
+        
     **initial_recovereds** as for initial_infecteds, but initially 
             recovered nodes.
             
@@ -559,7 +563,7 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
+        initial_infecteds=random.sample(list(G.nodes()), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -661,14 +665,18 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
     **p** number
             transmission probability
             
-    **initial_infecteds**  node or iterable of nodes (default None)
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
-       
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
+        
+        if an iterable, then whole set is initially infected
+        
+        if None, then choose randomly based on rho.  
+        
+        If rho is also None, a random single node is chosen.
+        
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
+        
     **initial_recovereds**  as for initial_infecteds, but for initially 
             recovered nodes.
             
@@ -750,14 +758,18 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     **p** number
             transmission probability
             
-    **initial_infecteds**  node or iterable of nodes (default None)
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
-       
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
+        
+        if an iterable, then whole set is initially infected
+        
+        if None, then choose randomly based on rho.  
+        
+        If rho is also None, a random single node is chosen.
+        
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
+        
     **rho**  number
             initial fraction infected. number is int(round(G.order()*rho))
 
@@ -803,7 +815,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
+        initial_infecteds=random.sample(list(G.nodes()), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -974,14 +986,17 @@ def percolation_based_discrete_SIR(G, p,
     **p** number
             transmission probability
 
-    **initial_infecteds**  node or iterable of nodes (default None)
-            if a single node, then this node is initially infected
-            if an iterable, then whole set is initially infected
-            if None, then choose randomly based on rho.  If rho is also
-            None, a random single node is chosen.
-            If both initial_infecteds and rho are assigned, then there
-            is an error.
-       
+    **initial_infecteds** node or iterable of nodes
+        if a single node, then this node is initially infected
+        
+        if an iterable, then whole set is initially infected
+        
+        if None, then choose randomly based on rho.  
+        
+        If rho is also None, a random single node is chosen.
+        
+        If both initial_infecteds and rho are assigned, then there
+        is an error.
        
     **initial_recovereds**  as for initial_infecteds, but initially 
             recovered nodes.
@@ -1332,7 +1347,7 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
         initial_recovereds = set(initial_recovereds)
     if initial_infecteds is None:
         while True:
-            node = random.choice(G.nodes())
+            node = random.choice(list(G.nodes()))
             if node not in initial_recovereds:
                 break
         initial_infecteds=set([node])
@@ -2284,7 +2299,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
+        initial_infecteds=random.sample(list(G.nodes()), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -2633,12 +2648,17 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
 
     **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
+        
         if an iterable, then whole set is initially infected
-        if None, then choose randomly based on rho.  If rho is also
-        None, a random single node is chosen.
+    
+        if None, then choose randomly based on rho.  
+    
+        If rho is also None, a random single node is chosen.
+    
         If both initial_infecteds and rho are assigned, then there
         is an error.
-       
+        
+        
     **rho** number
         initial fraction infected. number infected is int(round(G.order()*rho))
        
@@ -2708,7 +2728,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
+        initial_infecteds=random.sample(list(G.nodes()), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
 
@@ -2833,15 +2853,19 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
         
     **trans_and_rec_time_args** tuple
         see trans_and_rec_time_fxn
-    
+        
     **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
+        
         if an iterable, then whole set is initially infected
-        if None, then choose randomly based on rho.  If rho is also
-        None, a random single node is chosen.
+    
+        if None, then choose randomly based on rho.  
+    
+        If rho is also None, a random single node is chosen.
+    
         If both initial_infecteds and rho are assigned, then there
         is an error.
-       
+        
     **rho** number
         initial fraction infected. number is int(round(G.order()*rho))
        
@@ -2896,7 +2920,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
+        initial_infecteds=random.sample(list(G.nodes()), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
@@ -2995,12 +3019,16 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     
     **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
+        
         if an iterable, then whole set is initially infected
-        if None, then choose randomly based on rho.  If rho is also
-        None, a random single node is chosen.
+        
+        if None, then choose randomly based on rho.  
+        
+        If rho is also None, a random single node is chosen.
+        
         If both initial_infecteds and rho are assigned, then there
         is an error.
-    
+        
     **initial_recovereds** iterable of nodes (default None)
         this whole collection is made recovered.
         Currently there is no test for consistency with initial_infecteds.
@@ -3097,7 +3125,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
+        initial_infecteds=random.sample(list(G.nodes()), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
@@ -3240,9 +3268,13 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     
     **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
+        
         if an iterable, then whole set is initially infected
-        if None, then choose randomly based on rho.  If rho is also
-        None, a random single node is chosen.
+        
+        if None, then choose randomly based on rho.  
+        
+        If rho is also None, a random single node is chosen.
+        
         If both initial_infecteds and rho are assigned, then there
         is an error.
     
@@ -3331,7 +3363,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(G.nodes(), initial_number)
+        initial_infecteds=random.sample(list(G.nodes()), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
