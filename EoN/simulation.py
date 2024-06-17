@@ -231,7 +231,7 @@ class _ListDict_(object):
     for my purposes.  So for now I'm sticking to the mixture of lists & 
     dictionaries.
     
-    I believe this structure I'm describing is similar to a "partial sum tree"
+    I believe this alternate structure I'm describing is similar to a "partial sum tree"
     or a "Fenwick tree", but they seem subtly different from this.
     '''
     def __init__(self, weighted = False):
@@ -297,8 +297,22 @@ class _ListDict_(object):
                 self.max_weight_count -= 1
                 self.weight[item] = self.weight[item] + weight_increment
                 self._total_weight += weight_increment
-                self.max_weight_count -= 1 
-                if self.max_weight_count == 0:
+                self.max_weight_count -= 1 #this appears to be an bug affecting efficiency which I'm leaving in to make
+                                           #sure I don't break anything.  Notice we have the same command 3 lines higher.
+                                           #The line below used to be
+                                           #if self.max_weight_count==0:
+                                           #so I think this would sometimes jump past 0 to negative and skip the if statement
+                                           #or sometimes it would hit 0 when it should still be positive.
+                                           #That's okay since it would just mean we don't reduce the max weight when we should.
+                                           #so the calculation would run slower than it should because more
+                                           #rejections happen than should have happened (it would be doing the
+                                           #calculation with the max weight ever encountered)
+                                           #I'm leaving this line as is in the (small) chance that this was intentional.
+                                           #ultimately I should assert that it's non-negative and run some tests
+                                           #carefully.  If it was going negative, then we can remove this line. 
+                                           #I've updated next line to update if max_weight_count is ever negative.
+                                           #that would improe things a bit, but we'd spen more time updating than we should.
+                if self.max_weight_count <= 0:
                     self._update_max_weight               
         elif self.weighted:
             raise Exception('if weighted, must assign weight_increment')
@@ -3734,7 +3748,9 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph,
   
 def Gillespie_simple_contagion(G, spontaneous_transition_graph, 
   nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
-  spont_kwargs = None, nbr_kwargs=None, return_full_data = False, sim_kwargs = None):
+  spont_kwargs = None, nbr_kwargs=None, policy_function = None, pf_kwargs = None, 
+  return_full_data = False, 
+  sim_kwargs = None):
     r'''
     Performs simulations for epidemics, allowing more flexibility than SIR/SIS.
     
@@ -3777,7 +3793,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
       in the represents the default transition rate.  The rate may be modified
       by properties of the nodes or the edge in the contact network ``G``.
       
-    [for reference, if you look at Fig 4.3 on pg 122 of Kiss, Miller & Simon
+    [for reference, if you look at Fig 4.3 on pg 122 of edition 1 of Kiss, Miller & Simon
     the graphs for **SIS** would be:
         ``spontaneous_transition_graph``: ``'I'``-> ``'S'`` with the edge weighted by ``gamma`` and
         
@@ -3830,14 +3846,19 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     
     So for the SIR case if the recovery rate depends on two attributes of a node
     (say, age and gender), we define a function ``rate_function(G,node)`` which
-    will then look at G.nodes[node]['age'] and G.nodes[node]['gender'] and then
+    will then look at (e.g.) G.nodes[node]['age'] and G.nodes[node]['gender'] and then
     return a factor which will be multiplied by ``gamma`` to give the recovery 
     rate.  Similarly, if we are considering a neighbor induced transition and
     the rate depends on properties of both nodes we define another function
     ``rate_function(G,u,v)`` which may use attributes of u or v or the edge
     to find the appropriate scaling factor.
     
-    
+    We also allow for optional policy considerations which will provide additional scalings
+    of the rates, potentially in response to the global system state.  An example might be 
+    that things like vaccination rates may change in response
+    to the amount of infection, or contact tracing rates may have capacity constraints.
+    This will require a global function introduced which takes the overall "natural" rates
+    of all of the different transitions, the status of all nodes, and the graph as inputs.
     
     :Arguments: 
         
@@ -3856,7 +3877,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
           - ``'weight_label'``  (optional) [a string, giving the label of 
                             a **node** attribute in the contact network ``G``
                             that scales the transition rate]
-          - ``'rate_function'`` (optional not combinable with ``'weight_label'``
+          - ``'rate_function'`` (optional, not combinable with ``'weight_label'``
                             for some edge.)
                             [a user-defined function of the contact network 
                             and node that will scale the transition rate.
@@ -3962,6 +3983,15 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         they all need to (even if not used).  It's easiest to define the
         function as def f(..., **kwargs) 
            
+    **policy_function(rates, status, G, *kwargs)**  function (default None)
+        this function will adjuts the rates in response to any policy considerations/
+        capacity constraints or other things that may alter the rates based on the
+        global status of the epidemic.  It returns a dictionary `rates` whose keys
+        are the transitions that can happen and whose values are the global rate of that
+        transition.  This will be used to determine the time of the next event and what
+        type of transition will happen.  Once we choose which transition type happens we
+        choose which individual transitions based on the original background rates.
+
     **return_full_data** boolean
         Tells whether to return a Simulation_Investigation object or not
         
@@ -4016,8 +4046,8 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         
         J = nx.DiGraph()
         J.add_edge(('I', 'S'), ('I', 'E'), rate = 0.1, weight_label='transmission_weight')
-        IC = defaultdict(lambda: 'S')
-        for node in range(200):
+        IC = defaultdict(lambda: 'S') #everyone defaults to susceptible
+        for node in range(200):       #set these nodes to infected
             IC[node] = 'I'
         
         return_statuses = ('S', 'E', 'I', 'R')
@@ -4039,9 +4069,13 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         
     if nbr_kwargs is None:
         nbr_kwargs = {}
-        
+    
+    if pf_kwargs is None:
+        pf_kwargs = {}
+
     if sim_kwargs is None:
         sim_kwargs = {}
+    
         
     status = {node: IC[node] for node in G.nodes()}
 
@@ -4055,16 +4089,21 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     C = Counter(status.values())     
     for return_status in return_statuses:
         data[return_status] = [C[return_status]] #
-    try:
+    try:  #we sort these so that outcomes are not dependent on how different python implementations may
+          #create a list of these edges.
         spontaneous_transitions = sorted(spontaneous_transition_graph.edges())
         induced_transitions = sorted(nbr_induced_transition_graph.edges())
     except TypeError:
-        print("note that because your states are not sortable, your simulations "+
-              "may produce different outcomes even if you specify the random seed")
+        print("Warning: because your transitions are not sortable, your simulations "+
+              "may produce different outcomes on different python implementations "+
+              "even if you specify the random seed.")
         spontaneous_transitions = list(spontaneous_transition_graph.edges())
         induced_transitions = list(nbr_induced_transition_graph.edges())
-    potential_transitions = {}
-    rate = {}# intrinsic rate of a transition
+    potential_transitions = {} #This will contain _ListDict_s for each possible transition.
+                               #these will be scaled by rate (below).  If unweighted, then
+                               #this just tracks the count.  If weighted, then this contains
+                               #the weights of each edge.
+    default_rate = {}# default rate of a transition
     #weight_sum = defaultdict(lambda: 0)
     #weights = defaultdict(lambda: None)
     #max_weight = defaultdict(lambda: 0)
@@ -4073,11 +4112,11 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
 
     #SET UP THE POSSIBLE EVENTS, STARTING WITH SPONTANEOUS
     for transition in spontaneous_transitions:
-        rate[transition] = spontaneous_transition_graph.adj[transition[0]][transition[1]]['rate']
+        default_rate[transition] = spontaneous_transition_graph.adj[transition[0]][transition[1]]['rate']
         if 'weight_label' in spontaneous_transition_graph.adj[transition[0]][transition[1]]:
             if 'rate_function' in spontaneous_transition_graph.adj[transition[0]][transition[1]]:
                 raise EoN.EoNError('cannot define both "weight_label" and "rate_function" in',\
-                                    'spontaneous_transitions graph')
+                                    'spontaneous_transitions graph: transition ', transition)
             wl = spontaneous_transition_graph.adj[transition[0]][transition[1]]['weight_label']
             get_weight[transition] = nx.get_node_attributes(G, wl) #This is a dict mapping node to its weight.
             potential_transitions[transition] = _ListDict_(weighted=True)#max_weight[transition] = max(get_weight[transition].values())
@@ -4089,12 +4128,12 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             potential_transitions[transition] = _ListDict_()#max_weight[transition]=1
       
     #print(spontaneous_transitions)
-    #print([rate[transition] for transition in spontaneous_transitions])
+    #print([default_rate[transition] for transition in spontaneous_transitions])
     #CONTINUING SETTING UP POSSIBLE EVENTS, NOW WITH INDUCED TRANSITIONS.      
     for transition in induced_transitions:
         if transition[0][0] != transition[1][0]:
             raise EoN.EoNError("transition {} -> {} not allowed: first node must keep same status".format(transition[0],transition[1]))
-        rate[transition] = nbr_induced_transition_graph.adj[transition[0]][transition[1]]['rate']
+        default_rate[transition] = nbr_induced_transition_graph.adj[transition[0]][transition[1]]['rate']
 
         if 'weight_label' in nbr_induced_transition_graph.adj[transition[0]][transition[1]]:
             if 'rate_function' in nbr_induced_transition_graph.adj[transition[0]][transition[1]]:
@@ -4135,7 +4174,11 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     
     #NOW WE'RE READY TO GET STARTED WITH THE SIMULATING
     
-    total_rate = sum(rate[transition]*potential_transitions[transition].total_weight() for transition in spontaneous_transitions+induced_transitions)
+    rates = {transition:default_rate[transition]*potential_transitions[transition].total_weight() for transition in spontaneous_transitions+induced_transitions}
+    if policy_function is not None:
+        rates = policy_function(rates, status, G, **pf_kwargs)
+    total_rate = sum(rates.values())
+
     if total_rate>0:
         delay = random.expovariate(total_rate)
     else:
@@ -4145,7 +4188,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         times.append(t)
         r = random.random()
         for transition in spontaneous_transitions+induced_transitions:
-            r -= rate[transition]*potential_transitions[transition].total_weight()/total_rate
+            r -= rates[transition]/total_rate
             if r<0:
                 break
         #either node doing spontaneous or edge doing an induced event
@@ -4257,7 +4300,12 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             #error might matter.
             if potential_transitions[transition].total_weight() < 10**(-7) and potential_transitions[transition].total_weight()!=0:
                 potential_transitions[transition].update_total_weight()
-        total_rate = sum(rate[transition]*potential_transitions[transition].total_weight() for transition in spontaneous_transitions+induced_transitions)
+
+        rates = {transition:default_rate[transition]*potential_transitions[transition].total_weight() for transition in spontaneous_transitions+induced_transitions}
+        if policy_function is not None:
+            rates = policy_function(rates, status, G, **pf_kwargs)
+        total_rate = sum(rates.values())
+
         if total_rate>0:
             delay = random.expovariate(total_rate)
         else:
