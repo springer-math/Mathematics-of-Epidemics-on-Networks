@@ -76,8 +76,8 @@ The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_s
     plt.plot(t, SS, '-.', label = 'Susceptible')
     plt.plot(t, IS+II+IR, '-.', label = 'Infected with disease 1')
     plt.plot(t, SI+II+RI, '-.', label = 'Infected with disease 2')
-    plt.plot(t, RS+IR+RR, '-.', label = 'Recovered from disease 1')
-    plt.plot(t, SR+RI+RR, '-.', label = 'Recovered from disease 2')
+    plt.plot(t, RS+RI+RR, '-.', label = 'Recovered from disease 1')
+    plt.plot(t, SR+IR+RR, '-.', label = 'Recovered from disease 2')
     plt.legend(loc = 'center left')
     plt.savefig('Compete_both.png')
     
@@ -88,9 +88,9 @@ The method is built on `Gillespie_simple_contagion <../functions/EoN.Gillespie_s
                                             tmax = float('Inf'))
     
     plt.clf()
-    plt.plot(t, SS, '-', label = 'Susceptible (only disease 1)')
-    plt.plot(t, IS+II+IR, '-', label = 'Infected (only disease 1)')
-    plt.plot(t, RS+IR+RR, '-', label = 'Recovered (only disease 1)')
+    plt.plot(t, SS+SI+SR, '-', label = 'Susceptible to disease 1')
+    plt.plot(t, IS+II+IR, '-', label = 'Infected with disease 1')
+    plt.plot(t, RS+RI+RR, '-', label = 'Recovered from disease 1')
     plt.legend(loc = 'center left')
-    plt.savefig('Compete_just1disease.png')
+    plt.savefig('Compete_justdisease1.png') 
     
