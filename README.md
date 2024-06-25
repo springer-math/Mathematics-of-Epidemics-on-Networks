@@ -25,6 +25,8 @@ To see changes since v1.0, please look at our
 
 We released v1.1 on 13 Dec 2019.  This is the version described in our paper.
 
+We released v1.2 on 25 Jun 2024.  We hope to move on to v1.3 fairly quickly after this long gap.
+
 ## Contributions
 
 We welcome new contributors.  Please help test the code or suggest improvements.
