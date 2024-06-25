@@ -20,9 +20,10 @@ If you use EoN, please
 
 This helps me **get promoted / get funding**, and it makes me happy when 
 people use the software.  A happy developer whose job prospects are improving
-because of all the people using the software will work to improve the software.
+because of all the people using the software will have more time to improve 
+the software.
 
-For simulations, we assume that input networks are **NetworkX** 
+For simulations, we assume that contact networks are **NetworkX** 
 graphs; see https://networkx.github.io/
 
 

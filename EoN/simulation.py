@@ -3937,7 +3937,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
                             It will be called as 
                             ``rate_function(G, source, target, *nbr_kwargs)``]
                             
-        Only one of ``'weight_label'`` and ``'rate_function'`` can be given.  
+        Only one of ``'weight_label'`` and ``'rate_function'`` can be given for a transition.  
         
         In the description below, let's use
         

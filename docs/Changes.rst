@@ -1,15 +1,27 @@
 Changes from v 1.0
 ==================
 
-New in v 1.2rc1
+New in v 1.2
 ------------------
+- When the pandemic hit, I stopped having time to update EoN.  I am now getting back into
+  it.  I'm hoping that v1.2 is replaced soon, but for now I'm putting it in so that some 
+  small changes that have accumulated over time are all implemented.
+  
+- Both networkx and python have moved along quite a bit from the previous version.  So some
+  changes have been needed to keep things compatible.  I may not have found everything.
+
+- Updated ``Gillespie_simple_contagion`` to work with global information about the 
+  epidemic.  This is relevant for implementing policy changes, or any sort of behavior 
+  change that might result from people observing the current state of the system 
+  (or perhaps the time of year).  The initial use case I am looking at is contact tracking
+  with some sort of constraint on how much we can do.
+
+- Updated ``Gillespie_simple_contagion`` so that if both random and numpy.random 
+  keys are set, the code will produce reproducible results.
+
 - Corrected bug affecting code with rates weighted by node for new networkx.
   Due to this change, those parts of the code require networkx 2.0 or greater.
-  
-- updated ``Gillespie_simple_contagion`` so that if both random and numpy.random 
-  keys are set, the code will produce reproducible results.
-  
-
+    
 
 
 New in v 1.1

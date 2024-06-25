@@ -4,7 +4,7 @@ Getting Started
 
 Installation
 ------------
-You can **install EoN version 1.1** with pip
+You can **install EoN version 1.2** with pip
 
 ::
 
@@ -12,7 +12,7 @@ You can **install EoN version 1.1** with pip
 
 
 If you have installed a previous version and want to reinstall with the most 
-recent version available through pip (1.1).  The easiest way is 
+recent version available through pip (1.2).  The easiest way is 
 
 ::
 
@@ -40,7 +40,7 @@ animations will require installation of something like ``ffmpeg``.
 Current Version
 ---------------
 
-The documentation provided here is for version 1.2rc1.
+The documentation provided here is for version 1.2.
 
 If you want to see changes from previous versions, please see 
 `Changes from v1.0 <Changes.html>`_.

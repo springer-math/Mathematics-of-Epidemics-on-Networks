@@ -103,7 +103,7 @@ def _get_rate_functions_(G, tau, gamma, transmission_weight = None,
         recovery_weight : string       (default None)
             a label for a weight given to the nodes to scale their 
             recovery rates
-                `gamma_i = G.node[i][recovery_weight]*gamma`
+                `gamma_i = G.nodes[i][recovery_weight]*gamma`
     Returns : 
         : trans_rate_fxn, rec_rate_fxn
             Two functions such that 
