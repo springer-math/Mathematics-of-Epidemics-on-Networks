@@ -1,4 +1,4 @@
-# Errata for [*Mathematics of Epidemics on Networks*](http://www.springer.com/book/9783319508047)
+# Errata for [*1st edition of Mathematics of Epidemics on Networks*](http://www.springer.com/book/9783319508047)
 
 This errata is limited to errors that are significant enough to cause confusion.
 
