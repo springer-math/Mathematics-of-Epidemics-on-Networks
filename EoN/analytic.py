@@ -485,7 +485,7 @@ def _dSIS_individual_based_(Y, t, G, nodelist, trans_rate_fxn, rec_rate_fxn):
 
 def _dSIR_individual_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, 
                             rec_rate_fxn):
-    '''    <\dot{X}_i> = - tau sum_j g_{ij} <Xi><Yj>
+    r'''    <\dot{X}_i> = - tau sum_j g_{ij} <Xi><Yj>
     <\dot{Y}_i> = tau sum_j g_{ij} <Xi><Yj> - gamma_i <Y_i>
     Z_i = 1-X_i-Y_i
     '''
@@ -513,7 +513,7 @@ def SIS_individual_based(G, tau, gamma, rho = None, Y0=None, nodelist = None, tm
                             tmax = 100, tcount = 1001, transmission_weight=None, 
                             recovery_weight=None, return_full_data = False):
     #tested in test_SIS_individual_based
-    '''Encodes System (3.7) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (3.7) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     See also:
@@ -770,7 +770,7 @@ def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = No
                                     transmission_weight=None, 
                                     recovery_weight=None, 
                                     return_full_data = False):
-    '''Encodes System (3.7) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (3.7) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     The difference between this and SIS_individual_based is that this 
@@ -858,7 +858,7 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
                                     transmission_weight=None, 
                                     recovery_weight=None, 
                                     return_full_data = False):
-    '''Encodes System (3.30) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (3.30) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     The difference between this and SIR_individual_based is that this 
@@ -936,7 +936,7 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
 ########   PAIR BASED
 
 def _dSIS_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate_fxn):
-    '''
+    r'''
     <\dot{Y}_i> = tau \sum_j g_{ij} <XiYj>  -  gamma_i <Yi>
     <\dot{XY}_ij> = tau sum_{k \neq i} g_{jk} <XiXj><XjYk>/<Xj>
                    - tau sum_{k neq j} g_{ik} <YkXi><XiYj>/<Xi>
@@ -1028,7 +1028,7 @@ def _dSIS_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate
     return dV
 
 def _dSIR_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate_fxn):
-    '''
+    r'''
     <\dot{X}_i> = -tau sum_j g_{ij} <XiYj>
     <\dot{Y}_i> = tau \sum_j g_{ij} <XiYj>  -  gamma_i <Y_i>
     <\dot{XY}_ij> = tau sum_{k \neq i} g_{jk} <XiXj><XjYk>/<Xj>
@@ -1702,7 +1702,7 @@ def _dSIR_homogeneous_meanfield_(X, t, n_over_N, tau, gamma):
            
 def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100, 
                                 tcount=1001):
-    '''Encodes System (4.8) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (4.8) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
     
     In the text this is often referred to as the 
@@ -1761,7 +1761,7 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
 
 def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100, 
                                 tcount=1001):
-    '''Encodes System (4.9) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (4.9) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     In the text this is often referred to as the 
@@ -2050,7 +2050,7 @@ def SIS_homogeneous_pairwise(S0, I0, SI0, SS0, n, tau, gamma, tmin = 0,
 def SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin = 0, 
                                 tmax=100, tcount=1001, 
                                 return_full_data=False):
-    '''Encodes System (4.11) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (4.11) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     In the text this is often referred to as the 
@@ -2356,7 +2356,7 @@ def _dSIR_heterogeneous_meanfield_(X, t, S0, Nk, tau, gamma):
 
 def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100, 
                                 tcount=1001, return_full_data=False):
-    '''Encodes System (5.10) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (5.10) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     In the text this is often referred to as the 
@@ -2450,7 +2450,7 @@ def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100,
     
 def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100, 
                                     tcount=1001, return_full_data=False):
-    '''
+    r'''
     Encodes System (5.11) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
@@ -2671,7 +2671,7 @@ def SIR_heterogeneous_meanfield_from_graph(G, tau, gamma,  initial_infecteds=Non
 
 #######      HETEROGENEOUS PAIRWISE
 def _dSIS_heterogeneous_pairwise_(X, t, Nk, NkNl, tau, gamma, Ks):
-    '''
+    r'''
     Gives the derivatives
 
 
@@ -2939,7 +2939,7 @@ def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma,
 def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma, 
                                 tmin = 0, tmax=100, tcount=1001, 
                                 return_full_data=False, Ks = None):
-    '''Encodes System (5.15) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes System (5.15) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     In the text this is often referred to as the 
@@ -3556,7 +3556,7 @@ def SIR_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None,
 
 def _dSIS_super_compact_pairwise_(X, t, tau, gamma, N, k_ave, ksquare_ave, 
                                     kcube_ave):
-    '''    
+    r'''    
     [\dot{I}] = tau [SI] - gamma [I]
     [\dot{SS}] = 2 gamma [SI] - 2 tau [SI] [SS] Q
     [\dot{SI}] = gamma ([II]-[SI]) + tau [SI] ([SS]-[SI])Q - tau [SI]
@@ -3676,7 +3676,7 @@ def SIR_super_compact_pairwise(R0, SS0, SI0,  N, tau, gamma, psihat,
                                 psihatPrime, psihatDPrime, tmin = 0, 
                                 tmax = 100, tcount = 1001, 
                                 return_full_data = False):
-    '''
+    r'''
     Encodes system (5.22) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
@@ -3881,7 +3881,7 @@ def SIR_super_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None
 
 
 def _dSIS_effective_degree_(X, t, original_shape, tau, gamma):
-    '''
+    r'''
     \dot{S}_{s,i} = - tau i S_{s,i} + gamma*I_{s,i}
                     + gamma((i+1)S_{s-1,i+1}-iS_{s,i})
                     + tau[ISS]((s+1)S_{s+1,i-1} - sS_{s,i})/[SS]
@@ -4054,7 +4054,7 @@ def SIS_effective_degree(Ssi0, Isi0, tau, gamma, tmin = 0, tmax=100,
 
 def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100, 
                             tcount=1001, return_full_data=False):
-    '''Encodes system (5.38) of Kiss, Miller, & Simon.  Please cite the
+    r'''Encodes system (5.38) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
     \dot{S}_{s,i} = - tau i S_{s,i}  + gamma((i+1)S_{s,i+1} - i S_{s,i})
@@ -4360,7 +4360,7 @@ def _dSIR_compact_effective_degree_(X, t, N, tau, gamma):
 def SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, tmin=0, 
                                     tmax=100, tcount=1001, 
                                     return_full_data=False):
-    '''
+    r'''
     Encodes system (5.43) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
