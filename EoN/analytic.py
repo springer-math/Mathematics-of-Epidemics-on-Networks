@@ -1920,8 +1920,11 @@ def SIR_homogeneous_meanfield_from_graph(G, tau, gamma, initial_infecteds=None,
             initial_recovereds = []
     elif rho is not None:
         I0 = rho*G.order()
+        initial_recovereds = []
     else:
         I0 = 1.
+        initial_recovereds = []
+        
     R0 = len(initial_recovereds)
         
     S0 = G.order()-I0 - R0
