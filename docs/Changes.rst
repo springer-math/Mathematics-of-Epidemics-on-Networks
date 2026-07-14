@@ -1,7 +1,19 @@
 Changes from v 1.0
 ==================
 
-New in v 1.9
+New in v 1.91
+------------------
+- I made lots of changes to the code related to the second edition of the textbook.  Once I've cleaned everything, I expect to call this v2.0.
+
+- I've added a fast version of the simple contagion code ``fast_simple_contagion``.  This seems to be orders of magnitude faster than the old code.
+
+- The old simple contagion code is in ``Gillespie_simple_contagion``. 
+
+- I have added functions ``Simple_contagion_heterogeneous_pairwise`` and ``Simple_contagion_heterogeneous_pairwise_from_graph`` to calculate the simple_contagion heterogeneous pairwise model.
+
+- I have added examples showing how many of the figures in the second edition were created using EoN.
+
+
 
 New in v 1.2
 ------------------
