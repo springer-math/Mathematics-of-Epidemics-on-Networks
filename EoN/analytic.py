@@ -335,7 +335,7 @@ def get_PGF(Pk):
     :Returns: 
         
     **psi** function
-            :math:`\psi(x) = \sum_k P_k[k] x^k`
+            :math:`\\psi(x) = \\sum_k P_k[k] x^k`
     '''
     maxk = max(Pk.keys())
     ks = np.linspace(0,maxk, maxk+1)
@@ -345,7 +345,7 @@ def get_PGF(Pk):
 def get_PGFPrime(Pk):
     r'''
     Given a degree distribution (as a dict) returns the function
-    :math:`\psi'(x)`
+    :math:`\\psi'(x)`
     
     :Arguments: 
 
@@ -355,7 +355,7 @@ def get_PGFPrime(Pk):
     :Returns: 
 
     **psiPrime** (function)
-        :math:`\psi'(x) = \sum_k k P_k[k] x^{k-1}`
+        :math:`\\psi'(x) = \\sum_k k P_k[k] x^{k-1}`
     '''
     maxk = max(Pk.keys())
     ks = np.linspace(0,maxk, maxk+1)
@@ -366,7 +366,7 @@ def get_PGFPrime(Pk):
 def get_PGFDPrime(Pk):
     r'''
     Given a degree distribution (as a dict) returns the function 
-    :math:`\psi''(x)`
+    :math:`\\psi''(x)`
     
     :Arguments: 
 
@@ -376,7 +376,7 @@ def get_PGFDPrime(Pk):
     :Returns: 
         
     **psiDPrime** function
-        :math:`\psi''(x) = \sum_k k(k-1)P_k[k] x^{k-2}`
+        :math:`\\psi''(x) = \\sum_k k(k-1)P_k[k] x^{k-2}`
     '''
     maxk = max(Pk.keys())
     ks = np.linspace(0,maxk, maxk+1)
@@ -522,7 +522,7 @@ def SIS_individual_based(G, tau, gamma, rho = None, Y0=None, nodelist = None, tm
         strategies against epidemics propagated on contact networks,
     Journal of Theoretical Biology
 
-    <\dot{Y}_i> = tau \sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
+    <\\dot{Y}_i> = tau \\sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
 
     :Arguments: 
 
@@ -777,7 +777,7 @@ def SIS_individual_based_pure_IC(G, tau, gamma, initial_infecteds, nodelist = No
     one assumes a "pure initial condition", that is, we know exactly 
     what the statuses of the nodes are at the initial time.  
     
-    <\dot{Y}_i> = tau \sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
+    <\\dot{Y}_i> = tau \\sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
 
     :Arguments: 
 
@@ -865,7 +865,7 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
     one assumes a "pure initial condition", that is, we know exactly 
     what the statuses of the nodes are at the initial time.
     
-    <\dot{Y}_i> = tau \sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
+    <\\dot{Y}_i> = tau \\sum_j g_{ij} (1-<Y_i>)<Y_j>  -  gamma_i <Y_i>
 
     :Arguments: 
 
@@ -937,14 +937,14 @@ def SIR_individual_based_pure_IC(G, tau, gamma, initial_infecteds,
 
 def _dSIS_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate_fxn):
     '''
-    <\dot{Y}_i> = tau \sum_j g_{ij} <XiYj>  -  gamma_i <Yi>
-    <\dot{XY}_ij> = tau sum_{k \neq i} g_{jk} <XiXj><XjYk>/<Xj>
+    <\\dot{Y}_i> = tau \\sum_j g_{ij} <XiYj>  -  gamma_i <Yi>
+    <\\dot{XY}_ij> = tau sum_{k \neq i} g_{jk} <XiXj><XjYk>/<Xj>
                    - tau sum_{k neq j} g_{ik} <YkXi><XiYj>/<Xi>
                    - tau g_{ij}<XiYj> - gamma_j <XiYj>  
                    + ***gamma_i <YiYj>***
-    <\dot{XX}_ij> = - tau sum_{k\neq i} g_{jk} <XiXj><XjYk>/<Xj>
+    <\\dot{XX}_ij> = - tau sum_{k\neq i} g_{jk} <XiXj><XjYk>/<Xj>
                     - tau sum_{k neq j} g_{ik} <YkXi><XiXj>/<Xi>
-                    + **** \gamma_i <YiXj> + gamma_j <XiYj>****
+                    + **** \\gamma_i <YiXj> + gamma_j <XiYj>****
 
     <Xi>=1-<Yi>
     <YiYj> = 1 - <XiXj> - <XiYj> - <XjYi>
@@ -1029,12 +1029,12 @@ def _dSIS_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate
 
 def _dSIR_pair_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, rec_rate_fxn):
     '''
-    <\dot{X}_i> = -tau sum_j g_{ij} <XiYj>
-    <\dot{Y}_i> = tau \sum_j g_{ij} <XiYj>  -  gamma_i <Y_i>
-    <\dot{XY}_ij> = tau sum_{k \neq i} g_{jk} <XiXj><XjYk>/<Xj>
+    <\\dot{X}_i> = -tau sum_j g_{ij} <XiYj>
+    <\\dot{Y}_i> = tau \\sum_j g_{ij} <XiYj>  -  gamma_i <Y_i>
+    <\\dot{XY}_ij> = tau sum_{k \neq i} g_{jk} <XiXj><XjYk>/<Xj>
                    - tau sum_{k neq j} g_{ik} <YkXi><XiYj>/<Xi>
                    - tau g_{ij}<XiYj> - gamma_j <XiYj> 
-    <\dot{XX}_ij> = -tau sum_{k\neq j} gik <YkXi><XiXj>/<Xi>
+    <\\dot{XX}_ij> = -tau sum_{k\neq j} gik <YkXi><XiXj>/<Xi>
                     -tau sum_{k neq i} gjk <XiXj><XjYk>/<Xj>
     <>
     The equations as coded involve all pairs rather than just the
@@ -1398,7 +1398,7 @@ def _SIR_pair_based_initialize_edge_data(G, edgelist, nodelist, XY0, YX0,
         for index,(u,v) in enumerate(edgelist):
            i_u = index_of_node[u]
            i_v = index_of_node[v]
-           if XY0[index] >X0[i_u]*Y0[i_v] or YX0[index]>Y0[i_u]*X0[I_v] \
+           if XY0[index] >X0[i_u]*Y0[i_v] or YX0[index]>Y0[i_u]*X0[i_v] \
                                 or XX0[index]>X0[i_u]*X0[i_v]:
                raise EoN.EoNError("edge probabilities inconsistent with node \
                                 probabilities")
@@ -1708,9 +1708,9 @@ def SIS_homogeneous_meanfield(S0, I0, n, tau, gamma, tmin=0, tmax=100,
     In the text this is often referred to as the 
     "mean-field model closed at the level of pairs"
 
-       [\dot{S}] = \gamma [I] - tau n[S][I]/N
+       [\\dot{S}] = \\gamma [I] - tau n[S][I]/N
        
-       [\dot{I}] = \tau n[S][I]/N - \gamma [I]
+       [\\dot{I}] = \tau n[S][I]/N - \\gamma [I]
 
     This is the SIS version of the "Kermack-McKendrick equations".
     
@@ -1769,9 +1769,9 @@ def SIR_homogeneous_meanfield(S0, I0, R0, n, tau, gamma, tmin=0, tmax=100,
     
     These are often referred to as the "Kermack-McKendrick equations"
 
-    [\dot{S}] = - tau n[S][I]/N
-    [\dot{I}] = \tau n[S][I]/N - \gamma [I]
-    [\dot{R}] = \gamma [I]
+    [\\dot{S}] = - tau n[S][I]/N
+    [\\dot{I}] = \tau n[S][I]/N - \\gamma [I]
+    [\\dot{R}] = \\gamma [I]
 
 
     :Arguments: 
@@ -1932,12 +1932,12 @@ def SIR_homogeneous_meanfield_from_graph(G, tau, gamma, initial_infecteds=None,
 
 def _dSIS_homogeneous_pairwise_(X, t, N, n, tau, gamma):
     r'''
-    [\dot{S}] = gamma [I] - tau [SI]
-    [\dot{I}] = \tau [SI] - \gamma [I] = -[\dot{S}]
-    [\dot{SI}] = \gamma([II]-[SI])+ \tau ((n-1)/n) [SI]([SS]-[SI])/[S] 
+    [\\dot{S}] = gamma [I] - tau [SI]
+    [\\dot{I}] = \tau [SI] - \\gamma [I] = -[\\dot{S}]
+    [\\dot{SI}] = \\gamma([II]-[SI])+ \tau ((n-1)/n) [SI]([SS]-[SI])/[S] 
                  - \tau [SI]
-    [\dot{SS}] = 2\gamma[SI] - 2\tau ((n-1)/n) [SI][SS]/[S]
-    [\dot{II}] = -2\gamma[II] + 2\tau((n-1)/n) [SI]^2/[S] + 2\tau[SI]
+    [\\dot{SS}] = 2\\gamma[SI] - 2\tau ((n-1)/n) [SI][SS]/[S]
+    [\\dot{II}] = -2\\gamma[II] + 2\tau((n-1)/n) [SI]^2/[S] + 2\tau[SI]
 
     conserved quantities: [S]+[I]
                           [SS]+2[SI]+[II]
@@ -2056,12 +2056,12 @@ def SIR_homogeneous_pairwise(S0, I0, R0, SI0, SS0, n, tau, gamma, tmin = 0,
     In the text this is often referred to as the 
     "mean-field model closed at the level of triples"
 
-    [\dot{S}] = - tau [SI]
-    [\dot{I}] = \tau [SI] - \gamma [I]
-    [\dot{R}] = \gamma [I]    ;    [R] = N-[S]-[I]
-    [\dot{SI}] = -\gamma [SI]+ \tau ((n-1)/n) [SI]([SS]-[SI])/[S] 
+    [\\dot{S}] = - tau [SI]
+    [\\dot{I}] = \tau [SI] - \\gamma [I]
+    [\\dot{R}] = \\gamma [I]    ;    [R] = N-[S]-[I]
+    [\\dot{SI}] = -\\gamma [SI]+ \tau ((n-1)/n) [SI]([SS]-[SI])/[S] 
                  - \tau [SI]
-    [\dot{SS}] = - 2\tau ((n-1)/n) [SI][SS]/[S]
+    [\\dot{SS}] = - 2\tau ((n-1)/n) [SI][SS]/[S]
 
     conserved quantities: [S]+[I]+[R]  also 
                           [SS]+[II]+[RR] + 2([SI] + [SR] + [IR])
@@ -2380,9 +2380,9 @@ def SIS_heterogeneous_meanfield(Sk0, Ik0, tau, gamma, tmin = 0, tmax=100,
     Ik0 is similar to Sk0.
 
 
-    [\dot{S}_k] = \gamma [I_k] - \tau k [S_k] \pi_I
-    [\dot{I}_k] = -(above)
-    \pi_I = \sum_k k [I_k] / \sum_k  k [N_k]
+    [\\dot{S}_k] = \\gamma [I_k] - \tau k [S_k] \\pi_I
+    [\\dot{I}_k] = -(above)
+    \\pi_I = \\sum_k k [I_k] / \\sum_k  k [N_k]
 
 
 
@@ -2464,8 +2464,8 @@ def SIR_heterogeneous_meanfield(Sk0, Ik0, Rk0, tau, gamma, tmin = 0, tmax=100,
 
     [S_k] = [S_k](0) theta^k
     [I_k] = [N_k] - [S_k] - [R_k]
-    [\dot{R}_k] = \gamma [I_k]
-    pi_I = \sum_k k[I_k]
+    [\\dot{R}_k] = \\gamma [I_k]
+    pi_I = \\sum_k k[I_k]
 
 
     :Arguments: 
@@ -2675,12 +2675,12 @@ def _dSIS_heterogeneous_pairwise_(X, t, Nk, NkNl, tau, gamma, Ks):
     Gives the derivatives
 
 
-    [\dot{Sk}] = gamma [Ik] - tau [SkI]
-    [\dot{Ik}] = tau [SkI] - gamma [Ik]   = - [\dot{Sk}]
-    [\dot{SkIl}] = gamma([IkIl] - [SkIl]) + tau([SkSlI] - [ISkIl] 
+    [\\dot{Sk}] = gamma [Ik] - tau [SkI]
+    [\\dot{Ik}] = tau [SkI] - gamma [Ik]   = - [\\dot{Sk}]
+    [\\dot{SkIl}] = gamma([IkIl] - [SkIl]) + tau([SkSlI] - [ISkIl] 
                                                  - [SkIl])
-    [\dot{SkSl}] = gamma([SkIl]+[IkSl]) - tau ([SkSlI] + [ISkSl])
-    [\dot{IkIl}] = -2 gamma[IkIl] + tau ([SkIl]+[IkSl]+[ISkIl]+[IkSlI])
+    [\\dot{SkSl}] = gamma([SkIl]+[IkSl]) - tau ([SkSlI] + [ISkSl])
+    [\\dot{IkIl}] = -2 gamma[IkIl] + tau ([SkIl]+[IkSl]+[ISkIl]+[IkSlI])
     [AlSkI] = ((k-1)/k) [AlSk][SkI]/[Sk]
     [ISkAl] = ((k-1)/k) [ISk][SkAl]/[Sk]
 
@@ -2927,7 +2927,7 @@ def SIS_heterogeneous_pairwise(Sk0, Ik0, SkSl0, SkIl0, IkIl0, tau, gamma,
     Ik = Nk[:,None] - Sk
     I = Ik.sum(axis=0)
     if return_full_data:
-        SkSl = X.T[kcount:kcount+kcaount**2]
+        SkSl = X.T[kcount:kcount+kcount**2]
         SkIl = X.T[kcount+kcount**2:]
         SkSl.shape = (kcount,kcount,tcount)
         SkIl.shape = (kcount,kcount,tcount)
@@ -2945,12 +2945,12 @@ def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma,
     In the text this is often referred to as the 
     "heterogeneous mean-field model closed at the level of triples"
 
-    [\dot{S}_k] = -tau [S_k I]
-    [\dot{I}_k] = tau [S_k I] - gamma [I_k]
-    [\dot{R}_k] = gamma [I_k]  (but using Rk=Nk-Sk-Ik for this equation)
-    [\dot{S_kI_l}] = -gamma[S_k I_l] + tau([S_k S_l I] - [I S_k I_l] 
+    [\\dot{S}_k] = -tau [S_k I]
+    [\\dot{I}_k] = tau [S_k I] - gamma [I_k]
+    [\\dot{R}_k] = gamma [I_k]  (but using Rk=Nk-Sk-Ik for this equation)
+    [\\dot{S_kI_l}] = -gamma[S_k I_l] + tau([S_k S_l I] - [I S_k I_l] 
                                            - [S_k I_l])
-    [\dot{S_kS_l}] = -tau([S_k S_l I] + [I S_k S_l])
+    [\\dot{S_kS_l}] = -tau([S_k S_l I] + [I S_k S_l])
 
     [A_l S_k I] = ((k-1)/k) [A_l S_k] [S_k I]/ [S_k]
     [I S_k A_l] = ((k-1)/k) [I S_k] [S_k A_l]/ [S_k]
@@ -3053,7 +3053,237 @@ def SIR_heterogeneous_pairwise(Sk0, Ik0, Rk0, SkSl0, SkIl0, tau, gamma,
     else:
         return times, S, I, R
 
+def _dSimple_contagion_heterogeneous_pairwise_(X, t, statuses, H, J, status_to_index):
+    r'''
+    :Arguments: 
 
+        X: array
+            The state of the system at time t.
+        t: number
+            The current time.
+        statuses: list of strings
+            statuses[i] is the name of status Q_i as it appears in $H$ and $J$.
+        H: directed graph of spontaneous transitions.
+        J: directed graph of neighbor-induced transitions.
+        status_to_index: dict
+            A mapping from status names to their ordering in X.
+    :Returns: 
+    
+    '''
+    #print(t)
+    m = len(statuses) #number of different statuses.
+    #0 = m^2*K^2 + m*k -len(X)
+    #mK=(-1 pm sqrt(1+4len(x)))/2
+    mK = (-1 + np.sqrt(1 + 4*len(X)))/2
+    K = int(mK/m) #degrees, assumed to be the same for all statuses.
+
+    status = []  #status[i] is a numpy array with status[i][k] giving the number of nodes in status Q_i
+                #with degree k.
+    dstatus_dt = [] #dstatus_dt[i] is the deriative of status[i]
+    for i in range(m):
+        status.append(np.array(X[i*K:(i+1)*K]))
+        dstatus_dt.append(np.zeros(K)) #initialize the derivative for each status.
+    
+    edge_status = []    #edge_status[i][j] is a 2D numpy array with edge_status[i][j][k][l] giving the number of edges
+                        #between status Q_i and status Q_j with degrees k and l.
+    dedge_status_dt = [] #dedge_status_dt[i][j] is the derivative of edge status[i][j]
+    for i in range(m):
+        edge_status.append([])
+        dedge_status_dt.append([])
+        for j in range(m):
+            edge_array = np.array(X[m*K+(i*m+j)*K**2 : m*K+ (i*m+j+1)*K**2]).reshape((K, K))
+            edge_status[i].append(edge_array)
+            dedge_status_dt[i].append(np.zeros((K, K))) #initialize the derivative for each edge status.
+    
+    for source, target in H.edges():
+        #spontaneous transition changes node status
+        #and changes any existing edge containing node
+        aij = H[source][target]['rate']
+        i = status_to_index[source]
+        j = status_to_index[target]
+        dstatus_dt[i] -= aij*status[i]
+        dstatus_dt[j] += aij*status[i]
+        for x in range(m):
+            term_ix = aij*edge_status[i][x]
+            term_xi = aij*edge_status[x][i]
+            dedge_status_dt[i][x] -= term_ix
+            dedge_status_dt[j][x] += term_ix
+            dedge_status_dt[x][i] -= term_xi
+            dedge_status_dt[x][j] += term_xi
+
+    for source, target in J.edges():
+        x = status_to_index[source[0]]
+        i = status_to_index[source[1]]
+        j = status_to_index[target[1]]
+        bijx = J[source][target]['rate']
+        #First the changes to the node counts due to the status change
+        dstatus_dt[i] -= bijx*(edge_status[i][x].sum(axis=1))
+        dstatus_dt[j] += bijx*(edge_status[i][x].sum(axis=1))
+        #Now the changes to the edge counts due to the change within the edge:
+        term_ix = bijx*edge_status[i][x]
+        term_xi = bijx*edge_status[x][i]
+        if (i==0 and j==0):
+            print('i,j', i, j)
+            print(term_ix, term_xi)
+        dedge_status_dt[i][x] -= term_ix
+        dedge_status_dt[j][x] += term_ix
+        dedge_status_dt[x][i] -= term_xi
+        dedge_status_dt[x][j] += term_xi
+    
+    for source, target in J.edges():
+        #now we handle changes to other edges due to neighbor-induced transition
+        z = status_to_index[source[0]] #Q_z causes Q_i to become Q_j
+        i = status_to_index[source[1]]
+        j = status_to_index[target[1]]
+
+        bijz = J[source][target]['rate']  #the transition rate
+        QzQik = np.sum(edge_status[z][i], axis=0) #count of [Q_z Q_{i,[k]}]
+        QikQz = np.sum(edge_status[i][z], axis=1) #count of [Q_{i,[k]} Q^z]
+
+        for x in range(m):
+            QikQxl = edge_status[i][x]   # [Q_{i,[k]} Q_{x,[l]}] count
+            QxlQik = edge_status[x][i]   # [Q_{x,[l]} Q_{i,[k]}] count
+            Qik = status[i]              # [Q_{i,[k]}] count
+            Kvec = np.arange(K)  #degrees, assumed to be the same for all statuses
+
+
+            ################################################################################################
+            #I made an attempt to remove some division by 0 warnings using np.divide.  That resulted
+            #in some weird errors.  I haven't fully diagnosed them, so I've commented out the version with
+            #np.divide and reverted the code
+            ################################################################################################
+
+            #Kfactor = np.divide(Kvec-1, Kvec, where =(Kvec!=0))
+            #Kfactor[Kvec==0] = 0
+            Kfactor = np.where(Kvec==0, 0, (Kvec - 1) / Kvec ) # (k-1)/k for each k in K, except k=0 where it is 0.            
+            
+            #term_ix = np.divide(bijz * Kfactor[:,None] * (QzQik[:,None] * QikQxl) , Qik[:, None], where = (Qik[:,None] != 0))
+            #term_ix[Qik[:,None]==0] = 0
+            term_ix = np.where(Qik[:,None] == 0, 0, bijz * Kfactor[:,None] * (QzQik[:,None] * QikQxl) / Qik[:,None]) #0 where den=0, otherwise using ratio
+
+            #term_xi = np.divide((bijz * Kfactor*(QxlQik*QikQz)), Qik, where= (Qik != 0))
+            #term_xi[Qik==0] = 0
+            term_xi = np.where(Qik == 0, 0, bijz * Kfactor*(QxlQik*QikQz)/ Qik) #0 where den=0, otherwise using ratio
+
+            #term_xi = np.where(Qxl == 0, 0, QikQxl* QxlQz / Qxl) #0 where den=0, otherwise using ratio
+            dedge_status_dt[i][x] -= term_ix  #dot[Q_{i,[k]} Q_{x,[l]}]= ...- b_{ij}^{(z)} ...
+            dedge_status_dt[j][x] += term_ix
+            dedge_status_dt[x][i] -= term_xi
+            dedge_status_dt[x][j] += term_xi
+
+    OneD_dstatus_dt = np.concatenate(dstatus_dt, axis=0)
+    OneD_dedge_status_dt = np.concatenate([arr.flatten() for sublist in dedge_status_dt for arr in sublist], axis=0)
+    dX = np.concatenate([OneD_dstatus_dt, OneD_dedge_status_dt], axis=0)
+    #print(t, dX)
+    return dX
+
+def Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, tmin=0, tmax = 100,
+                                             tcount =1001, return_statuses = None, 
+                                             return_full_data=False
+                                        ):
+    
+    r'''
+    Encodes the system of equations for a simple contagion with heterogeneous
+    mean-field pairwise closure. 
+
+    Note that as of 03/08/2025, the subscripts may not be consistent with the current version of the text.
+    :Arguments: 
+        statuses: list of strings
+            statuses[i] is the name of status Q_i as it appears in $H$ and $J$.
+        IC_Qik: list of numpy arrays
+            IC_Qik[i] is a numpy array with IC_Qik[i][k] giving the number of nodes in status Q_i
+            with degree k.  
+        IC_QikQjl: list of lists of numpy 2D arrays
+            IC_QikQjl[i][j] is a numpy array giving the number of pairs of nodes
+            in status Q_i and Q_j with each degree pair.  
+            if QiQj=IC_QikQjl[i][j], then QiQj[k][l] is the number of edges between degree k status Q_i
+            nodes and degree l status Q_j nodes.
+        H: directed graph 
+            nodes are possible statuses.  Edges give spontaneous transitions, with 
+            H[source][target]['rate'] giving the rate of transition from source status to target status.
+        J: directed graph of neighbor-induced transitions.
+            nodes are pairs of statuses.  Edges give neighbor-induced transitions, with 
+            J[source][target]['rate'] giving the rate of transition from source pair to target pair.
+        tmin:  number (default 0) 
+            minimum time
+        tmax:  number (default 100) 
+            maximum time
+        tcount:  integer (default 1001) 
+            number of report times
+        return_statuses: list of strings (default None)
+            if None, then return all statuses.  If not None, then only return these statuses.
+        return_full_data: boolean (default False)
+            tells whether to just return times, and counts for each status at those times or 
+            all calculated data, which would add the number of each degree.
+'''
+    if return_statuses is None:
+        return_statuses = statuses
+    assert(all(s in statuses for s in return_statuses)), "return_statuses must be a subset of statuses"
+
+    times = np.linspace(tmin, tmax, tcount)
+
+    m = len(statuses) #number of different statuses.
+    
+    if m == 0:
+        raise EoN.EoNError("simple_contagion_heterogeneous_pairwise requires at least one status")
+    status_to_index = {statuses[i]: i for i in range(m)}
+    
+    # Flatten and concatenate IC_Qik
+    oneD_IC_Qik = np.concatenate(IC_Qik, axis=0)#np.concatenate([arr.flatten() for arr in IC_Qik], axis=0)
+    
+    # Flatten and concatenate IC_QikQil
+    oneD_IC_QikQjl = np.concatenate(
+        [arr.flatten() for sublist in IC_QikQjl for arr in sublist], axis=0
+    )
+    
+    # Concatenate both into a single 1D array
+    X0 = np.concatenate([oneD_IC_Qik, oneD_IC_QikQjl], axis=0)
+    #    X0 = np.concatenate(IC_Qik, axis=0) #initial conditions, a 1D array.
+
+    X = _my_odeint_(_dSimple_contagion_heterogeneous_pairwise_, X0, times, args = (statuses, H, J, status_to_index))
+    
+    K = len(IC_Qik[0]) #degrees, assumed to be the same for all statuses.
+    
+    status_counts = []
+    status_counts_by_degree = []
+    for i in range(m):
+        status_i = X[:, i*K:(i+1)*K]
+        if statuses[i] in return_statuses:
+            if return_full_data:
+                status_counts_by_degree.append(status_i)
+            else:
+                status_counts.append(np.sum(status_i, axis=1)) #sum over degrees to get total number in status i at each time.
+    print("return_full_data should return edge counts as well")
+    if return_full_data:
+        return times, status_counts, status_counts_by_degree
+    else:
+        return times, *status_counts
+
+def Simple_contagion_heterogeneous_pairwise_from_graph(G, H, J, IC, statuses, tmin = 0, tmax = 100, 
+                                                        tcount = 1001, return_statuses = None,
+                                                        return_full_data=False):
+    IC_Qik = []
+    IC_QikQjl = []
+    K = maxk = max(dict(G.degree()).values()) + 1 #maximum degree+1 in the graph, +1 to include degree 0.
+    m = len(statuses)
+    for i in range(m):
+        IC_Qik.append(np.zeros(K))
+        IC_QikQjl.append([])
+        for j in range(m):
+            IC_QikQjl[i].append(np.zeros((K, K)))
+    status_to_index = {statuses[i]: i for i in range(m)}
+    for node in G.nodes():
+        IC_Qik[status_to_index[IC[node]]][G.degree(node)] += 1
+        for neighbor in G.neighbors(node):
+            #print(status_to_index[IC[node]])
+            #print(status_to_index[IC[neighbor]])
+            #print(G.degree(node))
+            #print(G.degree(neighbor))
+            IC_QikQjl[status_to_index[IC[node]]][status_to_index[IC[neighbor]]][G.degree(node)][G.degree(neighbor)] += 1
+    
+    return Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, tmin=tmin, 
+                                                    tmax = tmax, tcount = tcount, return_statuses = return_statuses, 
+                                                    return_full_data=return_full_data)
 def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = None,
                                             rho = None, tmin = 0, 
                                             tmax=100, tcount=1001, 
@@ -3557,10 +3787,10 @@ def SIR_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None,
 def _dSIS_super_compact_pairwise_(X, t, tau, gamma, N, k_ave, ksquare_ave, 
                                     kcube_ave):
     '''    
-    [\dot{I}] = tau [SI] - gamma [I]
-    [\dot{SS}] = 2 gamma [SI] - 2 tau [SI] [SS] Q
-    [\dot{SI}] = gamma ([II]-[SI]) + tau [SI] ([SS]-[SI])Q - tau [SI]
-    [\dot{II}] = -2 gamma [II] + 2 tau [SI]^2 Q + 2 tau [SI]
+    [\\dot{I}] = tau [SI] - gamma [I]
+    [\\dot{SS}] = 2 gamma [SI] - 2 tau [SI] [SS] Q
+    [\\dot{SI}] = gamma ([II]-[SI]) + tau [SI] ([SS]-[SI])Q - tau [SI]
+    [\\dot{II}] = -2 gamma [II] + 2 tau [SI]^2 Q + 2 tau [SI]
     
     Q = ((<K^2>(<K^2>-n_S<K>) + <K^3>(n_S-<K>))
         /(n_S(<K^2>-<K>^2)) - 1)/n_S[S]
@@ -3680,7 +3910,7 @@ def SIR_super_compact_pairwise(R0, SS0, SI0,  N, tau, gamma, psihat,
     Encodes system (5.22) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    \dot{theta} = -tau [SI]/N*psihat(theta)
+    \\dot{theta} = -tau [SI]/N*psihat(theta)
 
     [dot{SS}] = -2 tau [SS] [SI] Q
 
@@ -3882,11 +4112,11 @@ def SIR_super_compact_pairwise_from_graph(G, tau, gamma,  initial_infecteds=None
 
 def _dSIS_effective_degree_(X, t, original_shape, tau, gamma):
     '''
-    \dot{S}_{s,i} = - tau i S_{s,i} + gamma*I_{s,i}
+    \\dot{S}_{s,i} = - tau i S_{s,i} + gamma*I_{s,i}
                     + gamma((i+1)S_{s-1,i+1}-iS_{s,i})
                     + tau[ISS]((s+1)S_{s+1,i-1} - sS_{s,i})/[SS]
 
-    \dot{I}_{s,i} = tau i S_{s,i} - gamma I_{s,i}
+    \\dot{I}_{s,i} = tau i S_{s,i} - gamma I_{s,i}
                     + gamma((i+1)I_{s-1,i+1} - iI_{s,i})
                     + tau([ISI]/[SI] + 1)((s+1)I_{s+1,i-1} - sI_{s,i})
     S = sum S_{s,i}
@@ -4057,10 +4287,10 @@ def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100,
     '''Encodes system (5.38) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    \dot{S}_{s,i} = - tau i S_{s,i}  + gamma((i+1)S_{s,i+1} - i S_{s,i})
+    \\dot{S}_{s,i} = - tau i S_{s,i}  + gamma((i+1)S_{s,i+1} - i S_{s,i})
                     + tau [ISS]((s+1)S_{s+1,i-1} - sS_{s,i})/[SS]
-    \dot{R} = gamma I
-    S = \sum_{s,i} S_{s,i}
+    \\dot{R} = gamma I
+    S = \\sum_{s,i} S_{s,i}
     I = N-S-R
 
     :Arguments: 
@@ -4128,7 +4358,129 @@ def SIR_effective_degree(S_si0, I0, R0, tau, gamma, tmin=0, tmax=100,
     else:
         return times, S, I, R
 
+# def _dSimple_contagion_effective_degree_(X, t, status_list, i_vector_list, H, J):
+#     #vector_list is a list of lists of the form [i,(n_1,n_2,...,n_m)]
+#     #giving the indices of Q^{(i)}_\vec{n} in the order they appear in X
 
+#     X_iter = iter(X)
+#     i_vector_list
+
+#     m = len(status_list)
+#     status_to_index = {status_list[i]: i for i in range(m)}
+
+
+#     Qji = []
+#     for j in range(m):
+#         Qji.append([])
+#         for i in range(m):
+#             Qji[j].append(0)
+    
+#     Qlji = []  # [Q^l Q^j Q^i]
+#     for l in range(m):
+#         Qlji.append([])
+#         for j in range(m):
+#             Qlji[l].append([])
+#             for i in range(m):
+#                 Qlji[l][j].append(0)
+
+
+
+#     Qin = []  #[Q^i_vec]
+#     for i in range(m):
+#         Qin.append({})
+#     for i, vec in i_vector_list:        
+#         Qin[i][vec] = X_iter.next()
+
+#     for j in range(m):
+#         for i in range(m):
+#             for vec in Q[i].keys():
+#                 QjQi[j][i] += Qin[i][vec]*vec[j]
+    
+    
+#     for l in range(m):
+#         for x in range(m):
+#             for i in range(m):
+#                 for vec in Qin[x].keys():
+#                     if l==i:
+#                         Qlji[l][x][i] += vec[l]*(vec[l]-1)*Q[i][vec]
+#                     else:
+#                         Qlji[l][x][i] += vec[l]*vec[i]*Q[i][vec]
+
+#     Qljin=[]
+#     for l in range(m):
+#         Qljin.append([])
+#         for j in range(m):
+#             Qljin[l].append([])
+#             for i in range(m):
+#                 Qljin[l][j].append({})
+#                 for vec in Qin[i].keys():
+#                     Qljin[l][j][i][vec] = Qlji[l][j][i]*vec[j]*Qin[i][vec]/QjQi[j][i]
+    
+#     dQin = []
+#     for i in range(m):
+#         dQin.append({})
+
+#     for i, vec in i_vector_list:        
+#         dQin[i][vec] = 0
+#         if H.has_node(i):
+#             for j in H.predecessors(i):
+#                 dQin[i][vec] += aij[j][i]*Qin[j][vec] 
+#             for j in H.neighbors(i):
+#                 dQin[i][vec] -= aij[i][j]*Qin[i][vec] 
+#         #for 
+
+# def Simple_contagion_effective_degree(statuses, IC_Qik, H, J, tmin=0, tmax = 100,
+#                                              tcount =1001, return_statuses = None, 
+#                                              return_full_data=False
+#                                         ):
+#     pass
+# def Simple_contagion_effective_degree_from_graph(G, H, J, IC, statuses, tmin = 0, tmax = 100, 
+#                                                         tcount = 1001, return_statuses = None,
+#                                                         return_full_data=False):
+#     m = len(statuses) #number of different statuses.
+    
+#     if m == 0:
+#         raise EoN.EoNError("Simple_contagion_effective_degree_from_graph requires at least one status")
+#     status_to_index = {statuses[i]: i for i in range(m)}
+    
+#     maxk = max(dict(G.degree()).values())
+
+    
+#     Qi = []
+#     for i in range(m):
+#         Qi.append({}) 
+#     L=[]
+#     L.append(())
+#     for i in range(m):
+#         for vec in L:
+#             Qi[i][vec] = 0
+#     for k in range(1,maxk):  #looks at every possible combination of 
+#         newL = []            #neighbors
+#         for i in range(m):
+#             initial_zeros = []
+#             Delta = np.zeros(m)
+#             Delta[i] = 1
+#             Delta = tuple(Delta)
+#             for vec in L:
+#                 newL.append(vec + Delta)
+#                 if vec[i] ==0:
+#                     initial_zeros.append(vec)
+#             L = initial_zeros
+#         L = newL
+#         for vec in L:
+#             for i in range(m):
+#                 Qi[i][vec] = 0
+    
+#     for node in G.nodes():
+#         i = status_to_index[IC[node]]
+#         vec = np.zeros(m)
+#         for neighbor in G.neighbors(node):
+#             j = status_to_index[IC[neighbor]]
+#             vec[j] += 1
+#         vec = tuple(vec)
+#         Qi[i][vec] += 1
+#     pass
+                    
 def SIS_effective_degree_from_graph(G, tau, gamma, initial_infecteds=None, 
                                     rho = None, tmin = 0, 
                                     tmax=100, tcount=1001, 
@@ -4364,11 +4716,11 @@ def SIR_compact_effective_degree(Skappa0, I0, R0, SI0, tau, gamma, tmin=0,
     Encodes system (5.43) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    \dot{S}_kappa = <I> [-(tau+gamma) kappa S_kappa 
+    \\dot{S}_kappa = <I> [-(tau+gamma) kappa S_kappa 
                          + gamma(kappa+1)S_{kappa+1}
-    [\dot{SI}] = -(tau+gamma)[SI] 
+    [\\dot{SI}] = -(tau+gamma)[SI] 
                 + tau(<I> - 2 <I>^2) sum_{kappa} kappa(kappa-1) S_kappa
-    \dot{R} = gamma I
+    \\dot{R} = gamma I
     <I> = [SI]/sum_kappa kappa S_kappa
     S = sum_kappa S_kappa
     I = N - S - R
@@ -4580,30 +4932,30 @@ def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001,
     r'''Encodes System (6.3) of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
-    The equations are rescaled by setting $u=\gamma T$.  Then it becomes
+    The equations are rescaled by setting $u=\\gamma T$.  Then it becomes
 
-    P = 1- \int_0^\infty \psi(\alpha(u/\gamma)) e^{-u} du
-    alpha_d(u/\gamma) = 1- p(u/\gamma)
-                        + p(u/\gamma)
+    P = 1- \int_0^\infty \\psi(\alpha(u/\\gamma)) e^{-u} du
+    alpha_d(u/\\gamma) = 1- p(u/\\gamma)
+                        + p(u/\\gamma)
                           \int_0^\infty 
-                                (\psiPrime(\alpha(\hat{u}/\gamma))/<K>)
+                                (\\psiPrime(\alpha(\hat{u}/\\gamma))/<K>)
                                 e^{-u}du
 
-    where p(u/\gamma) = 1 - e^{-\tau u/\gamma}
+    where p(u/\\gamma) = 1 - e^{-\tau u/\\gamma}
 
     Define 
-        \hat{p}(u) = p(u/\gamma), and \hat{\alpha}(u) = \alpha(u/\gamma)
+        \hat{p}(u) = p(u/\\gamma), and \hat{\alpha}(u) = \alpha(u/\\gamma)
     and then drop hats to get
 
-    P = 1-\int_0^\infty \psi(\alpha(u)) e^{-u} du
+    P = 1-\int_0^\infty \\psi(\alpha(u)) e^{-u} du
     \alpha(u) = 1-p(u) + p(u) 
                          \int_0^\infty 
-                              (\psiPrime(\alpha(u))/<K>)e^{-u} du
+                              (\\psiPrime(\alpha(u))/<K>)e^{-u} du
 
     with initial guess 
-        \alpha_1(u) = e^{-\tau u/\gamma} 
+        \alpha_1(u) = e^{-\tau u/\\gamma} 
     and 
-        p(u) = 1-e^{-\tau u/\gamma}
+        p(u) = 1-e^{-\tau u/\\gamma}
     
     :Arguments: 
 
@@ -4616,8 +4968,8 @@ def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001,
     **gamma** float
         recovery rate
 
-    **umin** minimal value of \gamma T used in calculation
-    **umax** maximum value of \gamma T used in calculation
+    **umin** minimal value of \\gamma T used in calculation
+    **umax** maximum value of \\gamma T used in calculation
     **ucount** number of points taken for integral.
              So this integrates from umin to umax using simple Riemann 
              sum.
@@ -4633,6 +4985,7 @@ def Epi_Prob_cts_time(Pk, tau, gamma, umin=0, umax = 10, ucount = 1001,
     '''
     psi = get_PGF(Pk)
     psiPrime = get_PGFPrime(Pk)
+    kave = psiPrime(1)
 
     us = np.linspace(umin, umax, ucount) 
     alpha = np.exp(-tau*us/gamma)  #initial guess for alpha(u)
@@ -4654,7 +5007,7 @@ def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
     **Pxidxi** dict
         Pxidxi[xi] is  P(xi)dxi for user-selected xi.  The 
         algorithm will replace the integral with
-        \sum_{xi \in Pxidxi.keys()} \psi(\alpha(xi)) Pxidxi(xi)
+        \\sum_{xi \in Pxidxi.keys()} \\psi(\alpha(xi)) Pxidxi(xi)
 
     **po** a function.
         returns p_o(xi), the probability a node will transmit to a 
@@ -4672,7 +5025,8 @@ def Epi_Prob_non_Markovian(Pk, Pxidxi, po, number_its = 100):
     ks = np.arange(len(Pk))
     psi = get_PGF(Pk)
     psiPrime = get_PGFPrime(Pk)
-    
+    kave = psiPrime(1)
+
     xis = Pxidxi.keys()
     alpha = {xi: 1-po(xi) for xi in xis}
     for counter in range(number_its):
@@ -4788,7 +5142,7 @@ def Attack_rate_discrete_from_graph(G, p, initial_infecteds=None,
         phiR0 = 0
         
     
-    return Attack_rate_discrete(Pk, p, rho = rho, Sk0=Sk0, phiS0=PhiS0, 
+    return Attack_rate_discrete(Pk, p, rho = rho, Sk0=Sk0, phiS0=phiS0, 
                                 phiR0=phiR0, number_its = number_its)
 
 def Attack_rate_cts_time(Pk, tau, gamma, number_its =100, rho = None, 
@@ -4922,7 +5276,7 @@ def Attack_rate_non_Markovian(Pk, Pzetadzeta, pi, number_its = 100):
     **Pzetadzeta** a dict.  
         gives P(zeta)dzeta for user-selected zeta.  The 
         algorithm will replace the integral with
-        \sum_{zeta \in Pzetadzeta.keys()} \psi(\alpha(zeta)) Pzetadzeta(zeta)
+        \\sum_{zeta \in Pzetadzeta.keys()} \\psi(\alpha(zeta)) Pzetadzeta(zeta)
 
     **pi** a function.
         returns p_i(zeta), the probability a node will receive a transmission from 
@@ -4961,7 +5315,7 @@ def EBCM_discrete(N, psihat, psihatPrime, p, phiS0, phiR0=0, R0=0, tmin = 0, tma
     **N**  positive integer
         size of population
     **psihat**   function
-        psihat(x) = \sum_k S(k,0) x^k
+        psihat(x) = \\sum_k S(k,0) x^k
     **psihatPrime**   function
         psihatPrime(x) = d psihat(x)/dx = sum_k k S(k,0) x^{k-1}
     **p**  number
@@ -5127,9 +5481,9 @@ def EBCM_discrete_uniform_introduction(N, psi, psiPrime, p, rho, tmax=100,
     **N** Positive integer
         number of nodes
     **psi** function
-        psi(x) = \sum P(k) x^k
+        psi(x) = \\sum P(k) x^k
     **psiPrime** function
-        psiPrime(x)=d psi(x)/dx = \sum kP(k) x^{k-1}
+        psiPrime(x)=d psi(x)/dx = \\sum kP(k) x^{k-1}
     **p**   float (between 0 and 1)
         per edge transmission probability
     **rho**  number
@@ -5185,7 +5539,7 @@ def EBCM(N, psihat, psihatPrime, tau, gamma, phiS0, phiR0=0, R0=0, tmin=0,
     **N**  positive integer
         size of population
     **psihat**   function
-        psihat(x) = \sum_k S(k,0) x^k
+        psihat(x) = \\sum_k S(k,0) x^k
     **psihatPrime**   function
         psihatPrime(x) = d psihat(x)/dx = sum_k k S(k,0) x^{k-1}
         where S(k,0) is the probability a random node has degree k and 
@@ -5304,7 +5658,7 @@ def EBCM_uniform_introduction(N, psi, psiPrime, tau, gamma, rho, tmin=0,
     **N** positive integer
         size of population
     **psi** function
-        psihat(x) = \sum_k S(k,0) x^k
+        psihat(x) = \\sum_k S(k,0) x^k
     **psiPrime** function
         psihatPrime(x) = d psihat(x)/dx = sum_k k S(k,0) x^{k-1}
     **tau** positive float

@@ -1,6 +1,8 @@
 Changes from v 1.0
 ==================
 
+New in v 1.9
+
 New in v 1.2
 ------------------
 - When the pandemic hit, I stopped having time to update EoN.  I am now getting back into

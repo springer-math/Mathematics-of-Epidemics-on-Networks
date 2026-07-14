@@ -1,8 +1,9 @@
 import networkx as nx
-import random
+#import random
 import heapq
 import numpy as np
 import EoN
+import inspect #for back compatibility, primarily because of new emphasis on using rng for reproducibility.
 from collections import defaultdict
 from collections import Counter
 
@@ -14,12 +15,6 @@ from collections import Counter
 
 
 
-def _truncated_exponential_(rate, T):
-    r'''returns a number between 0 and T from an
-    exponential distribution conditional on the outcome being between 0 and T'''
-    t = random.expovariate(rate)
-    L = int(t/T)
-    return t - L*T
    
 class myQueue(object):
     r'''
@@ -234,9 +229,11 @@ class _ListDict_(object):
     I believe this alternate structure I'm describing is similar to a "partial sum tree"
     or a "Fenwick tree", but they seem subtly different from this.
     '''
-    def __init__(self, weighted = False):
+    def __init__(self, rng, weighted = False):
         self.item_to_position = {}
         self.items = []
+
+        self.rng = rng
 
         self.weighted = weighted
         if self.weighted:
@@ -344,10 +341,11 @@ class _ListDict_(object):
     def choose_random(self):
         # r'''chooses a random node.  If there is a weight, it will use rejection
         # sampling to choose a random node until it succeeds'''
+
         if self.weighted:
             while True:
-                choice = random.choice(self.items)
-                if random.random() < self.weight[choice]/self.max_weight:
+                choice = self.rng.choice(self.items)
+                if self.rng.random() < self.weight[choice]/self.max_weight:
                     break
             # r = random.random()*self.total_weight
             # for item in self.items:
@@ -357,11 +355,12 @@ class _ListDict_(object):
             return choice
 
         else:
-            return random.choice(self.items)
+            return self.rng.choice(self.items)
         
 
     def random_removal(self):
         r'''uses other class methods to choose and then remove a random node'''
+
         choice = self.choose_random()
         self.remove(choice)
         return choice
@@ -422,7 +421,8 @@ def _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = Tru
     epidemics on networks
 '''
 
-def _simple_test_transmission_(u, v, p):
+
+def _simple_test_transmission_(u, v, p, rng = None):
     r'''
     A simple test for whether u transmits to v assuming constant probability p
     
@@ -441,6 +441,9 @@ def _simple_test_transmission_(u, v, p):
         p : number between 0 and 1
             the transmission probability
 
+        rng : random number generator
+            If None, will be set to np.random.default_rng()
+
     :Returns:
         
     
@@ -448,20 +451,25 @@ def _simple_test_transmission_(u, v, p):
             True if u will infect v (given opportunity)
             False otherwise
     '''
+    if rng is None:
+        rng = np.random.default_rng()
 
-    return random.random()<p
+    return rng.random()<p
 
 
-def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(), 
+def discrete_SIR(G, test_transmission, args, 
                 initial_infecteds=None, initial_recovereds = None, 
                 rho = None, tmin = 0, tmax = float('Inf'),
-                return_full_data = False, sim_kwargs = None):
+                *, 
+                rng = None, return_full_data = False, sim_kwargs = None):
     #tested in test_discrete_SIR
     r'''
     Simulates an SIR epidemic on G in discrete time, allowing user-specified transmission rules
     
     From figure 6.8 of Kiss, Miller, & Simon.  Please cite the book
     if using this algorithm.
+
+    See `basic_discrete_SIR` if you want all transmissions to have the same probability.
 
     Return details of epidemic curve from a discrete time simulation.
     
@@ -470,13 +478,8 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
 
     This is defined to handle a user-defined function
     ``test_transmission(node1,node2,*args)``
-    which determines whether transmission occurs.
-
+    which determines whether transmission occurs.  
     So elaborate rules can be created as desired by the user.
-
-    By default it uses 
-    ``_simple_test_transmission_``
-    in which case args should be entered as (p,)
 
     :Arguments: 
 
@@ -488,24 +491,23 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
         (see below for args definition)
         A function that determines whether u transmits to v.
         It returns True if transmission happens and False otherwise.
-        The default will return True with probability p, where args=(p,)
-
+        
         This function can be user-defined.
         It is called like:
         test_transmission(u,v,*args)
         Note that if args is not entered, then args=(), and this call is 
         equivalent to
         test_transmission(u,v)
+        If reproducibility is wanted, one of the args should be rng or equivalent
+
 
     **args** a list or tuple
         The arguments of test_transmission coming after the nodes.  If 
         simply having transmission with probability p it should be 
         entered as 
-        args=(p,)
+        args=(p,rng)
             
-        [note the comma is needed to tell Python that this is really a 
-        tuple]
-
+        
     **initial_infecteds** node or iterable of nodes
         if a single node, then this node is initially infected
         
@@ -530,6 +532,10 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     **tmin** start time
         
     **tmax** stop time (default Infinity). 
+
+    
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
 
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
@@ -569,15 +575,17 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
     '''
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    
+    if rng is None:
+        rng = np.random.default_rng()
 
-    
-    
     if initial_infecteds is None:  #create initial infecteds list if not given
         if rho is None:
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G), initial_number)
+        nodes = list(G)
+        initial_infecteds=rng.choice(nodes, size = initial_number, replace = False).tolist()#random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -621,13 +629,13 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
                     infector[v] = [u]
                 elif return_full_data and v in new_infecteds and test_transmission(u, v, *args):
                     #if ``v`` already infected on this round, consider if it is
-                    #multiply infected this round.
+                    #multiply infected this round.  Only do this if return_full_data is
                     infector[v].append(u)
                     
 
         if return_full_data:
             for v in infector.keys():
-                transmissions.append((t[-1], random.choice(infector[v]), v))
+                transmissions.append((t[-1], rng.choice(infector[v]), v))
             next_time = t[-1]+1
             if next_time <= tmax:
                 for u in infecteds:
@@ -658,7 +666,8 @@ def discrete_SIR(G, test_transmission=_simple_test_transmission_, args=(),
 def basic_discrete_SIR(G, p, initial_infecteds=None, 
                                 initial_recovereds = None, rho = None,
                                 tmin = 0, tmax=float('Inf'), 
-                                return_full_data = False, sim_kwargs = None):
+                                *,
+                                rng = None, return_full_data = False, sim_kwargs = None):
     #tested in test_basic_discrete_SIR   
     r'''
     Performs simple discrete SIR simulation assuming constant transmission 
@@ -706,6 +715,10 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
     **tmax**  float  (default infinity)
         stop time (if not extinct first).  
 
+        
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **return_full_data**  boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
@@ -747,14 +760,18 @@ def basic_discrete_SIR(G, p, initial_infecteds=None,
         #doesn't trigger an epidemic.
 
 '''
-
-    return discrete_SIR(G, _simple_test_transmission_, (p,), 
+    if rng is None:
+        rng = np.random.default_rng()
+    return discrete_SIR(G, _simple_test_transmission_, (p,rng), 
                                     initial_infecteds, initial_recovereds, 
-                                    rho, tmin, tmax, return_full_data, sim_kwargs=sim_kwargs)
+                                    rho, tmin, tmax, 
+                                    rng = rng, return_full_data = return_full_data, sim_kwargs=sim_kwargs)
+
 
 def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
-                                tmin = 0, tmax = 100, return_full_data = False, 
-                                sim_kwargs = None):
+                                tmin = 0, tmax = 100, 
+                                *, 
+                                rng = None, return_full_data = False, sim_kwargs = None):
     
     '''Does a simulation of the simple case of all nodes transmitting
     with probability p independently to each susceptible neighbor and then
@@ -786,6 +803,9 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
         
     **rho**  number
             initial fraction infected. number is int(round(G.order()*rho))
+            
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
 
     **return_full_data**  boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
@@ -823,13 +843,15 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
     
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
+    if rng is None:
+        rng = np.random.default_rng()
 
     if initial_infecteds is None:  #create initial infecteds list if not given
         if rho is None:
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G), initial_number)
+        initial_infecteds=rng.choice(list(G), initial_number, replace = False).tolist()#random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -851,7 +873,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
         infector={}
         for u in infecteds:
             for v in G.neighbors(u):
-                if v not in infecteds and random.random()<p:
+                if v not in infecteds and rng.random()<p:
                     if v not in new_infecteds:
                         new_infecteds.add(v)
                         infector[v] = [u]
@@ -864,7 +886,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
 
         if return_full_data:
             for v in infector.keys():
-                transmissions.append((t[-1], random.choice(infector[v]), v))
+                transmissions.append((t[-1], rng.choice(infector[v]), v)) 
             next_time = t[-1]+1
             if next_time<= tmax:
                 for u in infecteds:
@@ -890,7 +912,7 @@ def basic_discrete_SIS(G, p, initial_infecteds=None, rho = None,
 
     
     
-def percolate_network(G, p):
+def percolate_network(G, p, *, rng = None):
     #tested indirectly in test_basic_discrete_SIR   
 
     r'''
@@ -909,6 +931,9 @@ def percolate_network(G, p):
         The contact network
     **p** number between 0 and 1
         the probability of keeping edge
+
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
 
     :Returns: 
         
@@ -929,11 +954,12 @@ def percolate_network(G, p):
 
         #H is now a graph with about 60% of the edges of G
 '''
-
+    if rng is None:
+        rng = np.random.default_rng()
     H = nx.Graph()
     H.add_nodes_from(G.nodes())
     for edge in G.edges():
-        if random.random()<p:
+        if rng.random()<p:
             H.add_edge(*edge)
     return H
 
@@ -964,7 +990,8 @@ def percolation_based_discrete_SIR(G, p,
                                     initial_recovereds = None,
                                     rho = None, tmin = 0,
                                     tmax = float('Inf'),
-                                    return_full_data = False, sim_kwargs = None):
+                                    *,
+                                    rng = None, return_full_data = False, sim_kwargs = None):
     #tested in test_basic_discrete_SIR   
     r'''
     perfoms a simple SIR epidemic but using percolation as the underlying 
@@ -1022,6 +1049,9 @@ def percolation_based_discrete_SIR(G, p,
         
     **tmax**  stop time (if not extinct first).  Default step is 1.
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **return_full_data**  boolean (default False)
             Tells whether a Simulation_Investigation object should be returned.  
 
@@ -1055,17 +1085,19 @@ def percolation_based_discrete_SIR(G, p,
     may be needed before it's clear, since these are stochastic)
 
 '''
+    if rng is None:
+        rng = np.random.default_rng()
 
-    H = percolate_network(G, p)
+    H = percolate_network(G, p, rng=rng)
     return discrete_SIR(H, test_transmission=H.has_edge, 
                                 initial_infecteds=initial_infecteds, 
                                 initial_recovereds = initial_recovereds,
                                 rho = rho, tmin = tmin, tmax = tmax, 
                                 return_full_data=return_full_data, 
-                                sim_kwargs=sim_kwargs)
+                                sim_kwargs=sim_kwargs, rng=rng)
                                 
 
-def estimate_SIR_prob_size(G, p):
+def estimate_SIR_prob_size(G, p, *, rng = None):
     #tested in test_estimate_SIR_prob_size
     r'''
     Uses percolation to estimate the probability and size of epidemics 
@@ -1093,6 +1125,9 @@ def estimate_SIR_prob_size(G, p):
     **p** number
             transmission probability
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     :Returns: 
         
     **PE, AR**   both floats between 0 and 1 
@@ -1113,13 +1148,16 @@ def estimate_SIR_prob_size(G, p):
         PE, AR = EoN.estimate_SIR_prob_size(G, 0.6)
 
     '''
-    H = percolate_network(G, p)
+    if rng is None:
+        rng = np.random.default_rng()
+
+    H = percolate_network(G, p, rng=rng)
     size = max((len(CC) for CC in nx.connected_components(H)))
     returnval = float(size)/G.order()
     return returnval, returnval
 
 
-def directed_percolate_network(G, tau, gamma, weights = True):
+def directed_percolate_network(G, tau, gamma, weights = True, *, rng = None):
     #indirectly tested in test_estimate_SIR_prob_size
     r'''
     performs directed percolation, assuming that transmission and recovery 
@@ -1153,6 +1191,9 @@ def directed_percolate_network(G, tau, gamma, weights = True):
         if True, then includes information on time to recovery
         and delay to transmission.  If False, just the directed graph.
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     :Returns: 
         :
     **H**   networkx DiGraph  (directed graph)
@@ -1179,20 +1220,22 @@ def directed_percolate_network(G, tau, gamma, weights = True):
     '''
     
     #simply calls directed_percolate_network_with_timing, using markovian rules.
-    
-    def trans_time_fxn(u, v, tau):
+    if rng is None:
+        rng = np.random.default_rng()
+
+    def trans_time_fxn(u, v, tau, rng):
         if tau>0:
-            return random.expovariate(tau)
+            return rng.exponential(1/tau)
         else:
             return float('Inf')
-    trans_time_args = (tau,)
+    trans_time_args = (tau, rng)
     
-    def rec_time_fxn(u, gamma):
+    def rec_time_fxn(u, gamma, rng):
         if gamma>0:
-            return random.expovariate(gamma)
+            return rng.exponential(1/gamma)
         else:
             return float('Inf')
-    rec_time_args = (gamma,)
+    rec_time_args = (gamma, rng)
     
     return nonMarkov_directed_percolate_network_with_timing(G, trans_time_fxn, 
                                                             rec_time_fxn,  
@@ -1291,7 +1334,7 @@ def _in_component_(G, target):
 
 
 def get_infected_nodes(G, tau, gamma, initial_infecteds=None, 
-                initial_recovereds = None):
+                initial_recovereds = None, *, rng = None):
     r'''
     Finds all eventually infected nodes in an SIR simulation, through a 
     percolation approach 
@@ -1334,6 +1377,9 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
         if a single node, then this node is initially recovered
         if an iterable, then whole set is initially recovered
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     :Returns: 
             
     **infected_nodes** set
@@ -1353,6 +1399,8 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
         #finds the nodes infected if 0 and 5 are the initial nodes infected
         #and tau=2, gamma=1
     '''    
+    if rng is None:
+        rng = np.random.default_rng()
     if initial_recovereds is None:
         initial_recovereds = set()
     elif G.has_node(initial_recovereds):
@@ -1360,8 +1408,9 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
     else:
         initial_recovereds = set(initial_recovereds)
     if initial_infecteds is None:
+        nodes = list(G)
         while True:
-            node = random.choice(list(G))
+            node = rng.choice(nodes)
             if node not in initial_recovereds:
                 break
         initial_infecteds=set([node])
@@ -1371,14 +1420,14 @@ def get_infected_nodes(G, tau, gamma, initial_infecteds=None,
         initial_infecteds = set(initial_infecteds)
     if initial_infecteds.intersection(initial_recovereds):
         raise EoN.EoNError("initial infecteds and initial recovereds overlap")
-    H = directed_percolate_network(G, tau, gamma)
+    H = directed_percolate_network(G, tau, gamma, rng=rng)
     for node in initial_recovereds:
         H.remove_node(node)
     infected_nodes = _out_component_(H, initial_infecteds)
     return infected_nodes
 
 
-def estimate_directed_SIR_prob_size(G, tau, gamma):
+def estimate_directed_SIR_prob_size(G, tau, gamma, *, rng = None):
     #tested in test_estimate_SIR_prob_size
     '''
     Predicts probability and attack rate assuming continuous-time Markovian SIR disease on network G
@@ -1401,6 +1450,9 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
     **gamma**   positive float 
         recovery rate
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     :Returns: 
         
     **PE, AR**  numbers (between 0 and 1)
@@ -1421,7 +1473,10 @@ def estimate_directed_SIR_prob_size(G, tau, gamma):
     
     '''
     
-    H = directed_percolate_network(G, tau, gamma)
+    if rng is None:
+        rng = np.random.default_rng()
+        
+    H = directed_percolate_network(G, tau, gamma, rng=rng)
     return estimate_SIR_prob_size_from_dir_perc(H)
 
 def estimate_SIR_prob_size_from_dir_perc(H):
@@ -1491,6 +1546,9 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
     **rec_time_args** tuple
         any additional arguments required by rec_time_fxn
 
+    No random number generator seed is included.  If the input functions use them, and
+    a fixed seed is desired, this should be included in trans_time_args and rec_time_args.
+
     :Returns: 
         
     **PE, AR**  numbers (between 0 and 1)
@@ -1521,11 +1579,11 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
     
         def trans_time_fxn(u,v, tau):
             
-            return random.expovariate(tau)
+            return rng.exponential(1/tau)
             
         def rec_time_fxn(u, gamma):
             
-            return random.expovariate(gamma)
+            return rng.exponential(1/gamma)
         
         PE, AR = EoN.estimate_nonMarkov_SIR_prob_size(G, 
                                                     trans_time_fxn=trans_time_fxn,
@@ -1544,7 +1602,7 @@ def estimate_nonMarkov_SIR_prob_size_with_timing(G,
     return estimate_SIR_prob_size_from_dir_perc(H)
     
     
-def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
+def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission, *, rng = None):
     '''
     Predicts epidemic probability and size using nonMarkov_directed_percolate_network.
     
@@ -1570,6 +1628,9 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
         v.  Returns True or False depending on whether the transmission would
         happen
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     :Returns: 
         
     **PE, AR**  numbers (between 0 and 1)
@@ -1594,7 +1655,7 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
         tau = 2
         gamma = 1
     
-        xi = {node:random.expovariate(gamma) for node in G.nodes()}  
+        xi = {node:rng.exponential(1/gamma) for node in G.nodes()}  
         #xi[node] is duration of infection of node.
         
         zeta = defaultdict(lambda : tau) #every node has zeta=tau, so same 
@@ -1602,7 +1663,7 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
         
         def my_transmission(infection_duration, trans_rate):
             #infect if duration is longer than time to infection.
-            if infection_duration > random.expovariate(trans_rate):
+            if infection_duration > rng.exponential(1/trans_rate):
                 return True
             else:  
                 return False
@@ -1612,8 +1673,10 @@ def estimate_nonMarkov_SIR_prob_size(G, xi, zeta, transmission):
             
 
     '''
-    
-    H = nonMarkov_directed_percolate_network(G, xi, zeta, transmission)
+    if rng is None:
+        rng = np.random.default_rng()
+
+    H = nonMarkov_directed_percolate_network(G, xi, zeta, transmission, rng=rng)
     return estimate_SIR_prob_size_from_dir_perc(H)
         
 def nonMarkov_directed_percolate_network_with_timing(G, 
@@ -1701,7 +1764,7 @@ def nonMarkov_directed_percolate_network_with_timing(G,
                     H.add_edge(u,v)
     return H
 
-def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
+def nonMarkov_directed_percolate_network(G, xi, zeta, transmission, *, rng = None):
     r'''
     performs directed percolation on a network following user-specified rules.
     
@@ -1741,9 +1804,15 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
         zeta[v] gives everything needed about vs susceptibility
 
     **transmission** user-defined function
-        transmission(xi[u], zeta[v]) determines whether u transmits to v.
+        transmission(xi[u], zeta[v]) 
+        or 
+        transmission(xi[u], zeta[v], rng) 
+        determines whether u transmits to v.
         
         returns True if transmission happens and False if it does not
+
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
 
     :Returns: 
         
@@ -1756,12 +1825,27 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
     Look at the sample for estimate_nonMarkov_SIR_prob_size to infer it.
     
 '''
+
+    # Check once whether the (possibly user-defined) transmission function supports rng=...
+    try:
+        sig = inspect.signature(transmission)
+        accepts_rng = 'rng' in sig.parameters  #boolean True/False.
+    except (ValueError, TypeError):
+        accepts_rng = False
+
+    if accepts_rng and rng is None:
+        rng = np.random.default_rng()
+
     H = nx.DiGraph()
     for u in G.nodes():
         H.add_node(u)
         for v in G.neighbors(u):
-            if transmission(xi[u],zeta[v]):
-                H.add_edge(u,v)
+            if accepts_rng:  #if the function takes rng as input, give it
+                if transmission(xi[u],zeta[v], rng):
+                    H.add_edge(u,v)
+            else:
+                if transmission(xi[u],zeta[v]):
+                    H.add_edge(u,v)
     return H
     
     
@@ -1773,6 +1857,8 @@ def nonMarkov_directed_percolate_network(G, xi, zeta, transmission):
 def _find_trans_and_rec_delays_SIR_(node, sus_neighbors, trans_time_fxn, 
                                     rec_time_fxn,  trans_time_args=(),
                                     rec_time_args=()):
+
+    #if the functions take rng as an argument, then the ...args should include it.
 
     rec_delay = rec_time_fxn(node, *rec_time_args)
     trans_delay={}
@@ -1836,7 +1922,7 @@ def _process_trans_SIR_(time, G, source, target, times, S, I, R, Q, status,
 
     '''
 
-    if status[target] == 'S':  #nothing happens if already infected.
+    if status[target] == 'S':  #Don't do anything if already infected.
         status[target] = 'I'
         times.append(time)
         transmissions.append((time, source, target))
@@ -1901,60 +1987,56 @@ def _process_rec_SIR_(time, node, times, S, I, R, status):
     R.append(R[-1]+1) #one more recovered
     status[node] = 'R'
     
-def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rate_fxn):
-    r'''I introduced this with a goal of making the code run faster.  It looks
+def _truncated_exponential_(rate, T, rng = None):
+    r'''returns a number between 0 and T from an
+    exponential distribution conditional on the outcome being between 0 and T'''
+    if rng is None:
+        rng = np.random.default_rng()
+    t = rng.exponential(1/rate)
+    #t = random.expovariate(rate)
+    L = int(t/T)
+    return t - L*T
+
+
+def _trans_and_rec_time_Markovian_const_trans_(node, sus_neighbors, tau, rec_rate_fxn, rng = None):
+    r'''
+    
+    rng : random number generator.  Default None
+        if None, will be set equal to np.random.default_rng()
+    
+    I introduced this with a goal of making the code run faster.  It looks
     like the fancy way of selecting the infectees and then choosing their 
     infection times is slower than just cycling through, finding infection
     times and checking if that time is less than recovery time.  So I've
     commented out the more "sophisticated" approach.
     '''
     
-    duration = random.expovariate(rec_rate_fxn(node))
+    if rng is None:
+        rng = np.random.default_rng()
+    
+    duration = rng.exponential(1/rec_rate_fxn(node))
+    #duration = random.expovariate(rec_rate_fxn(node))
 
         
     trans_prob = 1-np.exp(-tau*duration)
-    number_to_infect = np.random.binomial(len(sus_neighbors),trans_prob)
-        #print(len(suscep_neighbors),number_to_infect,trans_prob, tau, duration)
-    transmission_recipients = random.sample(sus_neighbors,number_to_infect)
-    trans_delay = {}
-    for v in transmission_recipients:
-        trans_delay[v] = _truncated_exponential_(tau, duration)
-    return trans_delay, duration
-#     duration = random.expovariate(rec_rate_fxn(node))
-#     trans_delay = {}
-# 
-#         
-#     for v in sus_neighbors:
-#         if tau == 0:
-#             trans_delay[v] = float('Inf')
-#         else:
-#             trans_delay[v] = random.expovariate(tau)
-# #        if delay<duration:
-# #            trans_delay[v] = delay
-#     return trans_delay, duration
-                
-##slow approach 1:
-#    next_delay = random.expovariate(tau)
-#    index, delay = int(next_delay//duration), next_delay%duration
-#    while index<len(sus_neighbors):
-#        trans_delay[sus_neighbors[index]] = delay
-#        next_delay = random.expovariate(tau)
-#        jump, delay = int(next_delay//duration), next_delay%duration
-#        index += jump
-
-##slow approach 2:
-    #trans_prob = 1-np.exp(-tau*duration)
+    number_to_infect = rng.binomial(len(sus_neighbors), trans_prob)
     #number_to_infect = np.random.binomial(len(sus_neighbors),trans_prob)
         #print(len(suscep_neighbors),number_to_infect,trans_prob, tau, duration)
-    #transmission_recipients = random.sample(sus_neighbors,number_to_infect)
-    #trans_delay = {}
-    #for v in transmission_recipients:
-    #    trans_delay[v] = _truncated_exponential_(tau, duration)
+    transmission_recipient_indices = rng.choice(len(sus_neighbors),size=number_to_infect, replace=False).tolist()
+    # I've had to do a little bit here because if nodes are named by tuples then
+    # rng.choice converts them to np.arrays, which are not hashable.
+    # So instead I'm selecting their indices.
+    trans_delay = {}
+    for v_index in transmission_recipient_indices:
+        v = sus_neighbors[v_index]
+        trans_delay[v] = _truncated_exponential_(tau, duration, rng)
     return trans_delay, duration
 
 def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None, 
                 rho = None, tmin = 0, tmax=float('Inf'), transmission_weight = None, 
-                recovery_weight = None, return_full_data = False, sim_kwargs = None):
+                recovery_weight = None, 
+                *,
+                rng = None, return_full_data = False, sim_kwargs = None):
     r'''
     fast SIR simulation for exponentially distributed infection and 
     recovery times
@@ -2018,11 +2100,13 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
     **return_full_data**   boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
+
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **sim_kwargs** keyword arguments
         Any keyword arguments to be sent to the Simulation_Investigation object
         Only relevant if ``return_full_data=True``
-
-        
     :Returns:
         
     **times, S, I, R** numpy arrays
@@ -2052,26 +2136,32 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
                                     
         plt.plot(t, I)
     '''
+    if rng is None:
+        rng = np.random.default_rng()
+
     #tested in test_SIR_dynamics
+    #print('r',rng.random())
     if transmission_weight is not None or tau*gamma == 0:
         trans_rate_fxn, rec_rate_fxn = EoN._get_rate_functions_(G, tau, gamma, 
                                                     transmission_weight,
                                                     recovery_weight)
-        def trans_time_fxn(source, target, trans_rate_fxn):
+        def trans_time_fxn(source, target, trans_rate_fxn, rng):
             rate = trans_rate_fxn(source, target)
             if rate >0:
-                return random.expovariate(rate)
+                return rng.exponential(1/rate)
+                #return random.expovariate(rate)
             else:
                 return float('Inf')
-        def rec_time_fxn(node, rec_rate_fxn):
+        def rec_time_fxn(node, rec_rate_fxn, rng):
             rate = rec_rate_fxn(node)
             if rate >0:
-                return random.expovariate(rate)
+                return rng.exponential(1/rate)
+                #return random.expovariate(rate)
             else:
                 return float('Inf') 
 
-        trans_time_args = (trans_rate_fxn,)
-        rec_time_args = (rec_rate_fxn,)
+        trans_time_args = (trans_rate_fxn,rng)
+        rec_time_args = (rec_rate_fxn,rng)
         return fast_nonMarkov_SIR(G, trans_time_fxn = trans_time_fxn, 
                         rec_time_fxn = rec_time_fxn,
                         trans_time_args = trans_time_args, 
@@ -2079,7 +2169,8 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
                         initial_infecteds = initial_infecteds, 
                         initial_recovereds = initial_recovereds, 
                         rho=rho, tmin = tmin, tmax = tmax, 
-                        return_full_data = return_full_data, 
+                        rng=rng, 
+                        return_full_data = return_full_data,
                         sim_kwargs=sim_kwargs)
     else:
         #the transmission rate is tau for all edges.  We can use this
@@ -2092,11 +2183,11 @@ def fast_SIR(G, tau, gamma, initial_infecteds = None, initial_recovereds = None,
         
         return fast_nonMarkov_SIR(G, 
                         trans_and_rec_time_fxn=_trans_and_rec_time_Markovian_const_trans_,
-                        trans_and_rec_time_args=(tau, rec_rate_fxn),
+                        trans_and_rec_time_args=(tau, rec_rate_fxn, rng),
                         initial_infecteds = initial_infecteds, 
                         initial_recovereds = initial_recovereds, 
                         rho=rho, tmin = tmin, tmax = tmax, 
-                        return_full_data = return_full_data, 
+                        rng=rng, return_full_data = return_full_data,
                         sim_kwargs=sim_kwargs)
 
 
@@ -2110,7 +2201,8 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
                         initial_infecteds = None,
                         initial_recovereds = None,
                         rho=None, tmin = 0, tmax = float('Inf'), 
-                        return_full_data = False, sim_kwargs = None):
+                        *,
+                        rng = None, return_full_data = False, sim_kwargs = None):
     r'''
     A modification of the algorithm in figure A.3 of Kiss, Miller, & 
     Simon to allow for user-defined rules governing time of 
@@ -2183,7 +2275,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         who receive a transmission and rec_delay is a float.
             
     **trans_time_args** tuple
-        see trans_time_fxn
+        see trans_time_fxn  (if needed to be reproducible should include rng)
         
     **rec_time_args** tuple
         see rec_time_fxn
@@ -2219,9 +2311,14 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
     **tmax** number (default infinity)
         final time
 
+
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
+        
     **sim_kwargs** keyword arguments
         Any keyword arguments to be sent to the Simulation_Investigation object
         Only relevant if ``return_full_data=True``
@@ -2257,7 +2354,7 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
         #set up the code to handle constant transmission rate 
         #with fixed recovery time.
         def trans_time_fxn(source, target, rate):
-            return random.expovariate(rate)
+            return rng.exponential(1/rate)
 
         def rec_time_fxn(node,D):
             return D
@@ -2278,7 +2375,11 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
 
         # initial condition has first 100 nodes in G infected.
     
-    '''                                 
+    '''    
+
+    if rng is None:
+        rng = np.random.default_rng()
+
     if rho and initial_infecteds:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
     if rho and initial_recovereds:
@@ -2313,7 +2414,8 @@ def fast_nonMarkov_SIR(G, trans_time_fxn=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G), initial_number)
+        initial_infecteds=rng.choice(list(G), initial_number, replace=False).tolist()
+        #random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
     #else it is assumed to be a list of nodes.
@@ -2382,7 +2484,7 @@ def _find_trans_and_rec_delays_SIS_(node, neighbors, trans_time_fxn,
 
 def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
                         status, rec_time, infection_times, recovery_times, 
-                        transmissions, trans_rate_fxn, rec_rate_fxn):
+                        transmissions, trans_rate_fxn, rec_rate_fxn, rng ):
     r'''From figure A.6 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
@@ -2421,6 +2523,10 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
     **rec_rate_fxn**    User-defined function
         recovery rate rec_rate_fxn(u) is recovery rate of u.
 
+        
+    **rng** random number generator
+        
+
     :Returns: 
         
     nothing returned
@@ -2436,7 +2542,7 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
     Q : adds recovery and transmission events for target.
 
     '''
-
+    
     if status[target] == 'S':
         status[target] = 'I'
         transmissions.append((time, source, target))
@@ -2445,7 +2551,7 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
         times.append(time)
         rec_rate = rec_rate_fxn(target)
         if rec_rate>0:
-            rec_time[target] = time + random.expovariate(rec_rate_fxn(target))
+            rec_time[target] = time + rng.exponential(1/rec_rate_fxn(target))
         elif rec_rate == 0:
             rec_time[target] = float('Inf')
         else:
@@ -2457,23 +2563,26 @@ def _process_trans_SIS_Markov(time, G, source, target, times, S, I, Q,
         for v in G.neighbors(target): #target plays role of source here
             _find_next_trans_SIS_Markov(Q, time, trans_rate_fxn(target, v), 
                                         target, v, status, rec_time,
-                                        trans_event_args = 
+                                        #trans_event_args = 
                                             (G, target, v, times, S, I, Q, 
                                             status, rec_time, infection_times, 
                                             recovery_times, transmissions, 
-                                            trans_rate_fxn, rec_rate_fxn
-                                            )
+                                            trans_rate_fxn, rec_rate_fxn, rng
+                                            ),
+                                        rng
                                   )
         infection_times[target].append(time)
     if source is not None:
         _find_next_trans_SIS_Markov(Q, time, trans_rate_fxn(source, target), 
-                                source, target, status, rec_time, 
-                                trans_event_args = (G, source, target, times, 
+                                    source, target, status, rec_time, 
+                                    #trans_event_args = 
+                                            (G, source, target, times, 
                                             S, I, Q, status, 
                                             rec_time, infection_times, 
                                             recovery_times, transmissions, 
-                                            trans_rate_fxn, rec_rate_fxn
-                                            )
+                                            trans_rate_fxn, rec_rate_fxn, rng
+                                            ),
+                                    rng
                              )
 
 def _process_trans_SIS_nonMarkov_(time, G, source, target, future_transmissions,
@@ -2567,7 +2676,7 @@ def _process_trans_SIS_nonMarkov_(time, G, source, target, future_transmissions,
 
 
 def _find_next_trans_SIS_Markov(Q, time, tau, source, target, status, rec_time, 
-                            trans_event_args=()):
+                            trans_event_args, rng):
     r'''From figure A.6 of Kiss, Miller, & Simon.  Please cite the
     book if using this algorithm.
 
@@ -2611,7 +2720,7 @@ def _find_next_trans_SIS_Markov(Q, time, tau, source, target, status, rec_time,
     if rec_time[target]<rec_time[source]: 
         #if target is susceptible, then rec_time[target]<time
         if tau>0:
-            delay = random.expovariate(tau)
+            delay = rng.exponential(1/tau)
         elif tau == 0:
             delay = float('Inf')
         else:
@@ -2619,7 +2728,7 @@ def _find_next_trans_SIS_Markov(Q, time, tau, source, target, status, rec_time,
         #transmission_time = max(time, rec_time[target]) + delay
         transmission_time = time + delay
         if transmission_time<rec_time[target]:
-            delay = random.expovariate(tau)
+            delay = rng.exponential(1/tau)
             transmission_time = rec_time[target]+delay
         if transmission_time < rec_time[source] and transmission_time < Q.tmax:
             Q.add(transmission_time, _process_trans_SIS_Markov, 
@@ -2640,7 +2749,8 @@ def _process_rec_SIS_(time, node, times, recovery_times, S, I, status):
 
 def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100, 
                 transmission_weight = None, recovery_weight = None, 
-                return_full_data = False, sim_kwargs = None):
+                *,
+                rng = None, return_full_data = False, sim_kwargs = None):
     r'''Fast SIS simulations for epidemics on weighted or unweighted
     networks, allowing edge and node weights to scale the transmission
     and recovery rates.  Assumes exponentially distributed times to recovery
@@ -2692,6 +2802,10 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         recovery rates
         ``gamma_i = G.nodes[i][recovery_weight]*gamma``
     
+
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
@@ -2730,6 +2844,9 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         plt.plot(t, I)
             
     '''
+    if rng is None:
+        rng = np.random.default_rng()
+        
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
     
@@ -2742,7 +2859,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G), initial_number)
+        initial_infecteds=rng.choice(list(G), initial_number, replace = False).tolist() #random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
 
@@ -2760,7 +2877,7 @@ def fast_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin=0, tmax=100
         Q.add(tmin, _process_trans_SIS_Markov, 
                             args = (G, None, u, times, 
                                     S, I, Q, status, rec_time, infection_times, recovery_times, 
-                                    transmissions, trans_rate_fxn, rec_rate_fxn)
+                                    transmissions, trans_rate_fxn, rec_rate_fxn, rng)
                         )
     while Q:
         Q.pop_and_run()
@@ -2914,6 +3031,10 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 
                         
     '''
+
+    if rng is None:
+        rng = np.random.default_rng()
+        
     if rho  and initial_infecteds:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
     
@@ -2934,7 +3055,7 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G), initial_number)
+        initial_infecteds=rng.choice(list(G), initial_number, replace = False).tolist() #random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
@@ -2976,7 +3097,8 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
         node_history = _transform_to_node_history_(infection_times, recovery_times, tmin, SIR = False)
         if sim_kwargs is None:
             sim_kwargs = {}
-        return EoN.Simulation_Investigation(G, node_history, transmissions, possible_statuses = ['S', 'I'], **sim_kwargs)
+        return EoN.Simulation_Investigation(G, node_history, transmissions, possible_statuses = ['S', 'I'], 
+                                            **sim_kwargs)
 
 
 
@@ -2986,7 +3108,9 @@ def fast_nonMarkov_SIS(G, trans_time_fxn=None, rec_time_fxn=None,
 def Gillespie_SIR(G, tau, gamma, initial_infecteds=None, 
                     initial_recovereds = None, rho = None, tmin = 0, 
                     tmax=float('Inf'), recovery_weight = None, 
-                    transmission_weight = None, return_full_data = False, sim_kwargs = None):
+                    transmission_weight = None,
+                    *,
+                    rng = None, return_full_data = False, sim_kwargs = None):
     #tested in test_SIR_dynamics
     r'''    
     
@@ -3069,6 +3193,9 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
         tau*G.adj[u][v][transmission_weight]
         If None, then just uses tau without scaling.
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
 
@@ -3112,7 +3239,9 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
-    
+    if rng is None:
+        rng = np.random.default_rng()
+
     if return_full_data:
         infection_times = defaultdict(lambda: []) #defaults to an empty list for each node
         recovery_times = defaultdict(lambda: [])
@@ -3139,7 +3268,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G), initial_number)
+        initial_infecteds=rng.choice(list(G), initial_number, replace = False).tolist() #random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
@@ -3166,13 +3295,13 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
             recovery_times[node].append(t)
 
     if recovery_weight is not None:
-        infecteds = _ListDict_(weighted=True)
+        infecteds = _ListDict_(rng = rng, weighted=True)
     else:
-        infecteds = _ListDict_() #unweighted - code is faster for this case
+        infecteds = _ListDict_(rng=rng) #unweighted - code is faster for this case
     if transmission_weight is not None:
-        IS_links = _ListDict_(weighted=True)
+        IS_links = _ListDict_(rng = rng, weighted=True)
     else:
-        IS_links = _ListDict_()
+        IS_links = _ListDict_(rng=rng)
 
     for node in initial_infecteds:
         infecteds.update(node, weight_increment = nodeweight(node)) #weight is none if unweighted
@@ -3186,11 +3315,11 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
     total_transmission_rate = tau*IS_links.total_weight()#IS_weight_sum
         
     total_rate = total_recovery_rate + total_transmission_rate
-    delay = random.expovariate(total_rate)
+    delay = rng.exponential(1/total_rate)
     t += delay
     
     while infecteds and t<tmax:
-        if random.random()<total_recovery_rate/total_rate: #recover
+        if rng.random()<total_recovery_rate/total_rate: #recover
             recovering_node = infecteds.random_removal() #does weighted choice and removes it
             status[recovering_node]='R'
             if return_full_data:
@@ -3229,7 +3358,7 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
                 
         total_rate = total_recovery_rate + total_transmission_rate
         if total_rate>0:
-            delay = random.expovariate(total_rate)
+            delay = rng.exponential(1/total_rate)
         else:
             delay = float('Inf')
         t += delay
@@ -3253,7 +3382,8 @@ def Gillespie_SIR(G, tau, gamma, initial_infecteds=None,
 
 def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
                     tmax=100, recovery_weight=None, transmission_weight = None, 
-                    return_full_data = False, sim_kwargs = None):
+                    *,
+                    rng = None, return_full_data = False, sim_kwargs = None):
     r'''
     Performs SIS simulations for epidemics on networks with or without weighted edges.
     
@@ -3311,6 +3441,9 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
         Assumes that the transmission rate from u to v is 
         tau*G.adj[u][v][transmission_weight]
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **return_full_data** boolean (default False)
         Tells whether a Simulation_Investigation object should be returned.  
         
@@ -3351,6 +3484,9 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     if rho is not None and initial_infecteds is not None:
         raise EoN.EoNError("cannot define both initial_infecteds and rho")
 
+    if rng is None:
+        rng = np.random.default_rng()
+
     if return_full_data:
         infection_times = defaultdict(lambda: []) #defaults to an empty list 
         recovery_times = defaultdict(lambda: [])  #for each node
@@ -3377,7 +3513,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             initial_number = 1
         else:
             initial_number = int(round(G.order()*rho))
-        initial_infecteds=random.sample(list(G), initial_number)
+        initial_infecteds=rng.choice(list(G), initial_number, replace = False).tolist()#random.sample(list(G), initial_number)
     elif G.has_node(initial_infecteds):
         initial_infecteds=[initial_infecteds]
         
@@ -3396,14 +3532,14 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
             transmissions.append((t, None, node))
 
     if recovery_weight is None:
-        infecteds = _ListDict_()
+        infecteds = _ListDict_(rng = rng)
     else:
-        infecteds = _ListDict_(weighted=True)
+        infecteds = _ListDict_(rng = rng, weighted=True)
 
     if transmission_weight is None:
-        IS_links = _ListDict_()
+        IS_links = _ListDict_(rng = rng)
     else:
-        IS_links = _ListDict_(weighted=True)
+        IS_links = _ListDict_(rng = rng, weighted=True)
         
         
     for node in initial_infecteds:
@@ -3417,11 +3553,11 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
     total_transmission_rate = tau*IS_links.total_weight()#IS_weight_sum
             
     total_rate = total_recovery_rate + total_transmission_rate
-    delay = random.expovariate(total_rate)
+    delay = rng.exponential(1/total_rate)
     t = t+delay
     
     while infecteds and t<tmax:
-        if random.random()<total_recovery_rate/total_rate: #recover
+        if rng.random()<total_recovery_rate/total_rate: #recover
             recovering_node = infecteds.random_removal()
             status[recovering_node]='S'
             if return_full_data:
@@ -3464,7 +3600,7 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
 
         total_rate = total_recovery_rate + total_transmission_rate
         if total_rate>0:
-            delay = random.expovariate(total_rate)
+            delay = rng.exponential(1/total_rate)
         else:
             delay = float('Inf')
         t += delay
@@ -3479,7 +3615,8 @@ def Gillespie_SIS(G, tau, gamma, initial_infecteds=None, rho = None, tmin = 0,
 
 def Gillespie_complex_contagion(G, rate_function, transition_choice, 
     get_influence_set, IC, return_statuses, tmin = 0, tmax=100, parameters = None, 
-    return_full_data = False, sim_kwargs = None):
+    *,
+    rng = None, return_full_data = False, sim_kwargs = None):
     
     r''' 
     Initially intended for a complex contagion.  However, this can allow influence
@@ -3571,6 +3708,10 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
             
     **tmax** number (default 100)
         stop time
+
+        
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
             
     **return_full_data** boolean
         currently needs to be False.  True raises an error.
@@ -3655,6 +3796,8 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
     if parameters is None:
         parameters = ()
         
+    if rng is None:
+        rng = np.random.default_rng()
 
     status = {node: IC[node] for node in G.nodes()}
 
@@ -3668,7 +3811,7 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
     for return_status in return_statuses:
         data[return_status] = [C[return_status]]                
 
-    nodes_by_rate = _ListDict_(weighted=True)
+    nodes_by_rate = _ListDict_(rng = rng, weighted=True)
     
     for u in G.nodes():
         rate = rate_function(G, u, status, parameters)
@@ -3676,7 +3819,7 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
             nodes_by_rate.insert(u, weight = rate)
             
     if nodes_by_rate.total_weight()>0:
-        delay = random.expovariate(nodes_by_rate.total_weight())
+        delay = rng.exponential(1/nodes_by_rate.total_weight())
     else:
         delay = float('Inf')
     t += delay
@@ -3710,7 +3853,7 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
             nodes_by_rate.insert(nbr, weight=weight) 
 
         if nodes_by_rate.total_weight()>0:
-            delay = random.expovariate(nodes_by_rate.total_weight())
+            delay = rng.exponential(1/nodes_by_rate.total_weight())
         else:
             delay = float('Inf')
         t += delay
@@ -3729,30 +3872,41 @@ def Gillespie_complex_contagion(G, rate_function, transition_choice,
         return EoN.Simulation_Investigation(G, node_history, possible_statuses = return_statuses, **sim_kwargs)
     
 def Gillespie_Arbitrary(G, spontaneous_transition_graph, 
-  nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
-  spont_kwargs = None, nbr_kwargs=None, return_full_data = False, sim_kwargs = None):
-  r'''Calls Gillespie_simple_contagion.  This is here for legacy reasons.
+    nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
+    spont_kwargs = None, nbr_kwargs=None, 
+    *,
+    rng = None, return_full_data = False, sim_kwargs = None):
+    r'''Calls Gillespie_simple_contagion.  This is here for legacy reasons.
   
-  Gillespie_Arbitrary has been replaced by Gillespie_simple_contagion.  It
-  will be removed in future versions.
-  '''
+    Gillespie_Arbitrary has been replaced by Gillespie_simple_contagion.  It
+    will be removed in future versions.
+    '''
   
-  print("Gillespie_Arbitrary has been replaced by Gillespie_simple_contagion.\n",   
+    print("Gillespie_Arbitrary has been replaced by Gillespie_simple_contagion.\n",   
         "It will be removed in future versions.")
-        
-  return Gillespie_simple_contagion(G, spontaneous_transition_graph, 
+    if rng is None:
+        rng = np.random.default_rng()
+
+
+    return Gillespie_simple_contagion(G, spontaneous_transition_graph, 
                                     nbr_induced_transition_graph, IC, 
                                     return_statuses, tmin = tmin,  tmax=tmax, 
-                                    return_full_data = return_full_data, 
+                                    rng = rng, return_full_data = return_full_data, 
                                     **sim_kwargs)
   
 def Gillespie_simple_contagion(G, spontaneous_transition_graph, 
-  nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
-  spont_kwargs = None, nbr_kwargs=None, policy_function = None, pf_kwargs = None, 
-  return_full_data = False, 
-  sim_kwargs = None):
+    nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
+    spont_kwargs = None, nbr_kwargs=None, policy_function = None, pf_kwargs = None, 
+    *,
+    rng = None, return_full_data = False, sim_kwargs = None):
     r'''
     Performs simulations for epidemics, allowing more flexibility than SIR/SIS.
+    
+    **fast_simple_contagion** is probably a better choice for most scenarios.
+    In my tests, it is orders of magnitude faster than this algorithm (turning 
+    days of calculations into 15 minutes in some examples).
+
+
     
     This does not handle complex contagions.  It assumes that when an individual
     changes status either he/she has received a "transmission" from a *single*
@@ -3865,6 +4019,8 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     **G** NetworkX Graph
         The underlying contact network.  If ``G`` is directed, we assume that
         "transmissions" can only go in the same direction as the edge.
+        If ``G`` has self-loops, the current implementation will break if it encounters a self-loop.  
+        I would like to modify to allow for node to alter itself.
             
     **spontaneous_transition_graph** Directed networkx graph
         The nodes of this graph are the possible statuses of a node in ``G``.
@@ -3958,6 +4114,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         
     **IC** dict
         states the initial status of each node in the network.
+        A defaultdict may be useful if most nodes start off with one state.
             
     **return_statuses** list or other iterable (but not a generator)
         The statuses that we will return information for, in the order
@@ -3992,9 +4149,15 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         type of transition will happen.  Once we choose which transition type happens we
         choose which individual transitions based on the original background rates.
 
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **return_full_data** boolean
         Tells whether to return a Simulation_Investigation object or not
         
+    **rng** random number generator
+        If None, will be set to np.random.default_rng()
+
     **sim_kwargs** keyword arguments
         Any keyword arguments to be sent to the Simulation_Investigation object
         Only relevant if ``return_full_data=True``
@@ -4076,7 +4239,9 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     if sim_kwargs is None:
         sim_kwargs = {}
     
-        
+    if rng is None:
+        rng = np.random.default_rng()
+
     status = {node: IC[node] for node in G.nodes()}
 
     if return_full_data:
@@ -4099,6 +4264,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
               "even if you specify the random seed.")
         spontaneous_transitions = list(spontaneous_transition_graph.edges())
         induced_transitions = list(nbr_induced_transition_graph.edges())
+    
     potential_transitions = {} #This will contain _ListDict_s for each possible transition.
                                #these will be scaled by rate (below).  If unweighted, then
                                #this just tracks the count.  If weighted, then this contains
@@ -4119,13 +4285,13 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
                                     'spontaneous_transitions graph: transition ', transition)
             wl = spontaneous_transition_graph.adj[transition[0]][transition[1]]['weight_label']
             get_weight[transition] = nx.get_node_attributes(G, wl) #This is a dict mapping node to its weight.
-            potential_transitions[transition] = _ListDict_(weighted=True)#max_weight[transition] = max(get_weight[transition].values())
+            potential_transitions[transition] = _ListDict_(rng = rng, weighted=True)#max_weight[transition] = max(get_weight[transition].values())
         elif 'rate_function' in spontaneous_transition_graph.adj[transition[0]][transition[1]]:
             rf = spontaneous_transition_graph.adj[transition[0]][transition[1]]['rate_function']
             get_weight[transition] = {node: rf(G, node, **spont_kwargs) for node in G}#This is a dict mapping node to its weight.
-            potential_transitions[transition] = _ListDict_(weighted=True)
+            potential_transitions[transition] = _ListDict_(rng = rng, weighted=True)
         else:
-            potential_transitions[transition] = _ListDict_()#max_weight[transition]=1
+            potential_transitions[transition] = _ListDict_(rng = rng)#max_weight[transition]=1
       
     #print(spontaneous_transitions)
     #print([default_rate[transition] for transition in spontaneous_transitions])
@@ -4146,16 +4312,16 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             #so we need to add those now.
             if not nx.is_directed(G):
                 get_weight[transition].update({(source, target): G.adj[source][target][wl] for target, source in get_weight[transition]})
-            potential_transitions[transition] = _ListDict_(weighted=True)
+            potential_transitions[transition] = _ListDict_(rng = rng, weighted=True)
         elif 'rate_function' in nbr_induced_transition_graph.adj[transition[0]][transition[1]]:
             rf = nbr_induced_transition_graph.adj[transition[0]][transition[1]]['rate_function']
             edges = list(G.edges())            
             get_weight[transition] = {(source, target): rf(G, source, target, **nbr_kwargs) for source, target in edges}
             if not nx.is_directed(G):
                 get_weight[transition].update({(source, target): rf(G, source, target, **nbr_kwargs) for target, source in edges})
-            potential_transitions[transition] = _ListDict_(weighted=True)
+            potential_transitions[transition] = _ListDict_(rng = rng, weighted=True)
         else:
-            potential_transitions[transition] = _ListDict_()
+            potential_transitions[transition] = _ListDict_(rng = rng)
                 
     #initialize all potential events to start.                
     for node in G.nodes():        
@@ -4180,13 +4346,13 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     total_rate = sum(rates.values())
 
     if total_rate>0:
-        delay = random.expovariate(total_rate)
+        delay = rng.exponential(1/total_rate) #random.expovariate(total_rate)
     else:
         delay = float('Inf')
     t = t+delay
     while total_rate>0 and t<tmax:
         times.append(t)
-        r = random.random()
+        r = rng.random()#random.random()
         for transition in spontaneous_transitions+induced_transitions:
             r -= rates[transition]/total_rate
             if r<0:
@@ -4254,7 +4420,6 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
                 for nbr in G.neighbors(modified_node):
                     #remove edge from any induced lists
                     #add edge to any induced lists
-
                     nbr_status = status[nbr]
                     
                     if (modified_node, nbr) not in get_weight[transition]:
@@ -4266,7 +4431,6 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
                 for pred in G.predecessors(modified_node):
                     #remove edge from any induced lists
                     #add edge to any induced lists
-
                     pred_status = status[pred]
                     if (pred, modified_node) not in get_weight[transition]:
                         get_weight[transition][(pred, modified_node)] = get_weight[transition][(pred, modified_node)]
@@ -4274,7 +4438,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
                         potential_transitions[transition].remove((pred, modified_node))
                     if transition[0] == (pred_status, status[modified_node]):
                         potential_transitions[transition].update((pred, modified_node), weight_increment = get_weight[transition][(pred, modified_node)])                    
-            else:
+            else: #G not directed
                 for nbr in G.neighbors(modified_node):
                     #remove edge from any induced lists
                     #add edge to any induced lists
@@ -4307,7 +4471,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         total_rate = sum(rates.values())
 
         if total_rate>0:
-            delay = random.expovariate(total_rate)
+            delay = rng.exponential(1/total_rate)
         else:
             delay = float('Inf')
             
@@ -4327,4 +4491,420 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
             sim_kwargs = {}
         return EoN.Simulation_Investigation(G, node_history, transmissions, possible_statuses= return_statuses, **sim_kwargs)
 
+
+
+
+def fast_simple_contagion(
+    G,
+    spontaneous_transition_graph,
+    nbr_induced_transition_graph,
+    IC,
+    return_statuses,
+    tmin=0,
+    tmax=100,
+    spont_kwargs=None,
+    nbr_kwargs=None,
+    *,
+    rng=None,
+    return_full_data=False,
+    sim_kwargs=None,
+):
+    r'''
+    Event-driven simulation for Markovian simple contagions on networks.
+
+    This is an event-driven analogue of Gillespie_simple_contagion. It uses
+    the existing myQueue priority queue, following the same general approach
+    as fast_SIR and fast_SIS.
+
+    See Gillespie_simple_contagion for explanation of arguments
+
+    This supports:
+      - spontaneous transitions A -> B
+      - neighbor-induced transitions (A, B) -> (A, C)
+
+    In a neighbor-induced transition, only the second node changes status.
+
+    This version uses two stale-event safeguards:
+
+      node_version:
+        Each node has a version number that increments whenever the node
+        changes status. Queued events store the source and target versions
+        at the time the event was scheduled. If either version has changed
+        by the time the event fires, the event is stale and is ignored.
+
+      scheduled_exit_time:
+        Each node stores the currently scheduled time at which it will leave
+        its present status by a spontaneous transition. When scheduling a
+        neighbor-induced event from source to target, we only add it to the
+        queue if it occurs before source leaves its present status. This avoids
+        adding many events that are guaranteed to become stale.
+
+    Because node_version handles correctness, this function does not require
+    infectious statuses to be immune.
+
+    This function intentionally does not include policy_function. A global
+    policy function that rescales rates based on the whole system state is not
+    compatible with independently scheduled local exponential clocks.
+    '''
+
+    if spont_kwargs is None:
+        spont_kwargs = {}
+
+    if nbr_kwargs is None:
+        nbr_kwargs = {}
+
+    if sim_kwargs is None:
+        sim_kwargs = {}
+
+    if rng is None:
+        rng = np.random.default_rng()
+
+    is_directed = G.is_directed()
+
+    return_statuses = tuple(return_statuses)
+    return_status_set = set(return_statuses)
+
+    status = {node: IC[node] for node in G.nodes()}
+
+    # ------------------------------------------------------------------
+    # Sort transitions where possible, for reproducibility.
+    # ------------------------------------------------------------------
+    try:
+        spontaneous_transitions = sorted(spontaneous_transition_graph.edges())
+        induced_transitions = sorted(nbr_induced_transition_graph.edges())
+    except TypeError:
+        print(
+            "Warning: because your transitions are not sortable, your "
+            "simulations may produce different outcomes on different python "
+            "implementations even if you specify the random seed."
+        )
+        spontaneous_transitions = list(spontaneous_transition_graph.edges())
+        induced_transitions = list(nbr_induced_transition_graph.edges())
+
+    # ------------------------------------------------------------------
+    # Precompute transition data.
+    # ------------------------------------------------------------------
+    default_rate = {}
+
+    spontaneous_by_source = defaultdict(list)
+    induced_by_source_pair = defaultdict(list)
+
+    spont_weight_label = {}
+    spont_rate_function = {}
+
+    induced_weight_label = {}
+    induced_rate_function = {}
+
+    # Spontaneous transitions.
+    for transition in spontaneous_transitions:
+        old_status, new_status = transition
+        edge_data = spontaneous_transition_graph.adj[old_status][new_status]
+
+        if "weight_label" in edge_data and "rate_function" in edge_data:
+            raise EoN.EoNError(
+                'cannot define both "weight_label" and "rate_function" '
+                "in spontaneous_transition_graph: transition {}".format(
+                    transition
+                )
+            )
+
+        default_rate[transition] = edge_data["rate"]
+        spontaneous_by_source[old_status].append(transition)
+
+        spont_weight_label[transition] = edge_data.get("weight_label", None)
+        spont_rate_function[transition] = edge_data.get("rate_function", None)
+
+    # Neighbor-induced transitions.
+    for transition in induced_transitions:
+        old_pair, new_pair = transition
+
+        if old_pair[0] != new_pair[0]:
+            raise EoN.EoNError(
+                "transition {} -> {} not allowed: first node must keep "
+                "same status".format(old_pair, new_pair)
+            )
+
+        edge_data = nbr_induced_transition_graph.adj[old_pair][new_pair]
+
+        if "weight_label" in edge_data and "rate_function" in edge_data:
+            raise EoN.EoNError(
+                'cannot define both "weight_label" and "rate_function" '
+                "in nbr_induced_transition_graph: transition {}".format(
+                    transition
+                )
+            )
+
+        default_rate[transition] = edge_data["rate"]
+        induced_by_source_pair[old_pair].append(transition)
+
+        induced_weight_label[transition] = edge_data.get("weight_label", None)
+        induced_rate_function[transition] = edge_data.get("rate_function", None)
+
+    # ------------------------------------------------------------------
+    # Rate helpers.
+    # ------------------------------------------------------------------
+    def _spontaneous_rate(transition, node):
+        rate = default_rate[transition]
+
+        weight_label = spont_weight_label[transition]
+        rate_function = spont_rate_function[transition]
+
+        if weight_label is not None:
+            rate *= G.nodes[node][weight_label]
+        elif rate_function is not None:
+            rate *= rate_function(G, node, **spont_kwargs)
+
+        if rate < 0:
+            raise EoN.EoNError(
+                "transition rate must be nonnegative, got {}".format(rate)
+            )
+
+        return rate
+
+    def _induced_rate(transition, source, target):
+        rate = default_rate[transition]
+
+        weight_label = induced_weight_label[transition]
+        rate_function = induced_rate_function[transition]
+
+        if weight_label is not None:
+            rate *= G.adj[source][target][weight_label]
+        elif rate_function is not None:
+            rate *= rate_function(G, source, target, **nbr_kwargs)
+
+        if rate < 0:
+            raise EoN.EoNError(
+                "transition rate must be nonnegative, got {}".format(rate)
+            )
+
+        return rate
+
+    # ------------------------------------------------------------------
+    # State bookkeeping for stale-event rejection.
+    # ------------------------------------------------------------------
+    node_version = defaultdict(int)
+
+    # For every node, this stores the currently scheduled time at which the
+    # node leaves its present status by a spontaneous transition. If there is
+    # no scheduled spontaneous exit, this remains infinity.
+    scheduled_exit_time = defaultdict(lambda: float("inf"))
+
+    # ------------------------------------------------------------------
+    # Output bookkeeping.
+    # ------------------------------------------------------------------
+    times = [tmin]
+
+    counts = Counter(status.values())
+    data = {
+        return_status: [counts[return_status]]
+        for return_status in return_statuses
+    }
+
+    if return_full_data:
+        transmissions = []
+        node_history = {
+            node: ([tmin], [status[node]])
+            for node in G.nodes()
+        }
+
+    def _record_change(t, node, old_status, new_status, source=None):
+        status[node] = new_status
+
+        # Any queued event involving this node's previous status episode is
+        # now stale.
+        node_version[node] += 1
+
+        # This will be reset by _schedule_spontaneous_events if the new status
+        # has any spontaneous outgoing transitions.
+        scheduled_exit_time[node] = float("inf")
+
+        times.append(t)
+
+        for return_status in return_statuses:
+            data[return_status].append(data[return_status][-1])
+
+        if old_status in return_status_set:
+            data[old_status][-1] -= 1
+
+        if new_status in return_status_set:
+            data[new_status][-1] += 1
+
+        if return_full_data:
+            node_history[node][0].append(t)
+            node_history[node][1].append(new_status)
+
+            if source is not None:
+                transmissions.append((t, source, node))
+
+    # ------------------------------------------------------------------
+    # Event handlers.
+    #
+    # These functions are put into myQueue. myQueue calls them as
+    # function(t, *args), so the first argument must be t.
+    # ------------------------------------------------------------------
+    def _process_spontaneous_event(t, node, transition, version):
+        old_status, new_status = transition
+
+        # Stale event from an earlier status episode.
+        if node_version[node] != version:
+            return
+
+        if status[node] != old_status:
+            return
+
+        # If this event is not the scheduled exit time for this node, then
+        # another spontaneous transition from the same status occurred earlier.
+        #
+        # Usually node_version would already catch that earlier event, but this
+        # is a cheap extra guard and keeps scheduled_exit_time semantics clear.
+        if t != scheduled_exit_time[node]:
+            return
+
+        _record_change(t, node, old_status, new_status)
+
+        # The node's new status creates new local clocks.
+        _schedule_spontaneous_events(t, node)
+        _schedule_induced_events_around_node(t, node)
+
+    def _process_induced_event(
+        t,
+        source,
+        target,
+        transition,
+        source_version,
+        target_version,
+    ):
+        old_pair, new_pair = transition
+
+        # Stale event from an earlier source or target status episode.
+        if node_version[source] != source_version:
+            return
+
+        if node_version[target] != target_version:
+            return
+
+        if (status[source], status[target]) != old_pair:
+            return
+
+        # Extra safety: this induced event should belong to the source's
+        # current status episode.
+        if t >= scheduled_exit_time[source]:
+            return
+
+        old_status = old_pair[1]
+        new_status = new_pair[1]
+
+        _record_change(t, target, old_status, new_status, source=source)
+
+        # Only the target changes status.
+        _schedule_spontaneous_events(t, target)
+        _schedule_induced_events_around_node(t, target)
+
+    # ------------------------------------------------------------------
+    # Scheduling helpers.
+    # ------------------------------------------------------------------
+    def _schedule_spontaneous_events(t, node):
+        node_status = status[node]
+        version = node_version[node]
+
+        earliest_exit_time = float("inf")
+
+        for transition in spontaneous_by_source[node_status]:
+            rate = _spontaneous_rate(transition, node)
+
+            if rate > 0:
+                event_time = t + rng.exponential(1 / rate)
+
+                if event_time < earliest_exit_time:
+                    earliest_exit_time = event_time
+
+                Q.add(
+                    event_time,
+                    _process_spontaneous_event,
+                    (node, transition, version),
+                )
+
+        # This is defined for every status, not only infectious statuses.
+        scheduled_exit_time[node] = earliest_exit_time
+
+    def _schedule_induced_events_from_oriented_edge(t, source, target):
+        pair = (status[source], status[target])
+
+        source_version = node_version[source]
+        target_version = node_version[target]
+
+        source_exit_time = scheduled_exit_time[source]
+
+        for transition in induced_by_source_pair[pair]:
+            rate = _induced_rate(transition, source, target)
+
+            if rate > 0:
+                event_time = t + rng.exponential(1 / rate)
+
+                # Efficiency check:
+                # If the source leaves its current status before this event,
+                # the event would certainly be stale.
+                if event_time < source_exit_time:
+                    Q.add(
+                        event_time,
+                        _process_induced_event,
+                        (
+                            source,
+                            target,
+                            transition,
+                            source_version,
+                            target_version,
+                        ),
+                    )
+
+    def _schedule_induced_events_around_node(t, node):
+        if is_directed:
+            for nbr in G.successors(node):
+                _schedule_induced_events_from_oriented_edge(t, node, nbr)
+
+            for pred in G.predecessors(node):
+                _schedule_induced_events_from_oriented_edge(t, pred, node)
+
+        else:
+            for nbr in G.neighbors(node):
+                _schedule_induced_events_from_oriented_edge(t, node, nbr)
+                _schedule_induced_events_from_oriented_edge(t, nbr, node)
+
+    # ------------------------------------------------------------------
+    # Initialize queue.
+    # ------------------------------------------------------------------
+    Q = myQueue(tmax=tmax)
+
+    for node in G.nodes():
+        _schedule_spontaneous_events(tmin, node)
+
+    if is_directed:
+        for source, target in G.edges():
+            _schedule_induced_events_from_oriented_edge(tmin, source, target)
+    else:
+        for u, v in G.edges():
+            _schedule_induced_events_from_oriented_edge(tmin, u, v)
+            _schedule_induced_events_from_oriented_edge(tmin, v, u)
+
+    # ------------------------------------------------------------------
+    # Main loop.
+    # ------------------------------------------------------------------
+    while Q:
+        Q.pop_and_run()
+
+    if not return_full_data:
+        returnval = [np.asarray(times)]
+
+        for return_status in return_statuses:
+            returnval.append(np.asarray(data[return_status]))
+
+        return returnval
+
+    return EoN.Simulation_Investigation(
+        G,
+        node_history,
+        transmissions,
+        possible_statuses=return_statuses,
+        **sim_kwargs,
+    )
 
