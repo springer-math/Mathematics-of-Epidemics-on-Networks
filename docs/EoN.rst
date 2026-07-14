@@ -70,6 +70,7 @@ Quick list
    fast_nonMarkov_SIR
    fast_SIS
    fast_nonMarkov_SIS
+   fast_simple_contagion
    Gillespie_SIR
    Gillespie_SIS
    Gillespie_Arbitrary
@@ -103,6 +104,7 @@ Short descriptions
   - **fast_nonMarkov_SIR** 
   - **fast_SIS**
   - **fast_nonMarkov_SIS**
+  - **fast_simple_contagion**
 
 - Gillespie Algorithms
 
@@ -330,6 +332,8 @@ Quick list
    SIR_compact_effective_degree_from_graph
    SIS_compact_effective_degree
    SIS_compact_effective_degree_from_graph
+   Simple_contagion_heterogeneous_pairwise
+   Simple_contagion_heterogeneous_pairwise_from_graph
    Epi_Prob_discrete
    Epi_Prob_cts_time
    Epi_Prob_non_Markovian
