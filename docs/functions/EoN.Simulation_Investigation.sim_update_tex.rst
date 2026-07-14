@@ -1,5 +1,5 @@
-EoN.Simulation_Investigation.sim_update_tex
-===========================================
+﻿EoN.Simulation\_Investigation.sim\_update\_tex
+==============================================
 
 .. currentmodule:: EoN
 

@@ -1,5 +1,5 @@
-EoN.hierarchy_pos
-=================
+﻿EoN.hierarchy\_pos
+==================
 
 .. currentmodule:: EoN
 

@@ -1,5 +1,5 @@
-EoN.Gillespie_simple_contagion
-==============================
+﻿EoN.Gillespie\_simple\_contagion
+================================
 
 .. currentmodule:: EoN
 
