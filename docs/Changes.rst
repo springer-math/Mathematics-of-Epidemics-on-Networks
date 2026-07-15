@@ -1,7 +1,7 @@
 Changes from v 1.0
 ==================
 
-New in v 1.91
+New in v 1.92
 ------------------
 - I made lots of changes to the code related to the second edition of the textbook.  Once I've cleaned everything, I expect to call this v2.0.
 

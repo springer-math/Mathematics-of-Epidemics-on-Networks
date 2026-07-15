@@ -27,7 +27,7 @@ We released v1.1 on 13 Dec 2019.  This is the version described in our paper.
 
 We released v1.2 on 25 Jun 2024.  We hope to move on to v1.3 fairly quickly after this long gap.
 
-We released v1.91 on 15 July 2026.  A bit more cleaning of the code is needed for the second edition of the book at which point this will move to v2.0
+We released v1.92 on 15 July 2026.  A bit more cleaning of the code is needed for the second edition of the book at which point this will move to v2.0
 
 ## Contributions
 
