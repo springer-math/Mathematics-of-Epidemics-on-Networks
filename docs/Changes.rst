@@ -1,6 +1,13 @@
 Changes from v 1.0
 ==================
 
+New in v 2.0
+------------
+- I updated to account for second edition of Mathematics of Epidemics on Networks (See changes for v 1.92 for more details)
+.
+
+- I have added examples showing how many of the figures in the second edition were created using EoN.
+
 New in v 1.92
 ------------------
 - I made lots of changes to the code related to the second edition of the textbook.  Once I've cleaned everything, I expect to call this v2.0.

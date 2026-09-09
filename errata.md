@@ -1,3 +1,32 @@
+# Errata for [*2nd edition of Mathematics of Epidemics on Networks*](https://link.springer.com/book/10.1007/978-3-032-14885-8)
+
+(look below for first edition)
+
+If you believe you have found an error, please check if it is already on this list and if not open a new issue [here](https://github.com/springer-math/Mathematics-of-Epidemics-on-Networks/issues) (use the green "New Issue" button). 
+
+## Chapter 1
+## Chapter 2
+## Chapter 3
+## Chapter 4
+## Chapter 5
+## Chapter 6
+## Chapter 7
+## Chapter 8
+## Chapter 9
+## Chapter 10
+## Chapter 11
+## Chapter 12
+## Chapter 13
+## Chapter 14
+## Chapter 15
+## Appendix
+
+
+
+
+
+
+
 # Errata for [*1st edition of Mathematics of Epidemics on Networks*](http://www.springer.com/book/9783319508047)
 
 This errata is limited to errors that are significant enough to cause confusion.

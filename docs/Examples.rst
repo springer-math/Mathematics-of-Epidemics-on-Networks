@@ -11,8 +11,25 @@ problem you are facing, `Submit an issue`_ or go to `stackoverflow`_ and use the
 If you have an example you think would be useful here, please `submit an issue`_
 or email me.
 
-Reproducing figures from "Mathematics of Epidemics on Networks"
----------------------------------------------------------------
+Examples from the Second Edition of "Mathematics of Epidemics on Networks"
+--------------------------------------------------------------------------
+
+.. toctree::
+   :maxdepth: 1
+   
+   Chapter 1 <examples/Volume2/Chap1_figs>
+   Chapter 2 <examples/Volume2/Chap2_figs>
+   Chapter 3 <examples/Volume2/Chap3_figs>
+   Chapter 4 <examples/Volume2/Chap4_figs>
+   Chapter 5 <examples/Volume2/Chap5_figs>
+   Chapter 7 <examples/Volume2/Chap7_figs>
+   Contact tracing <examples/Volume2/ContactTracing>
+   Watts Threshold Model <examples/Volume2/WTM>
+   Chapter 13 <examples/Volume2/Chap13_figs>
+
+
+Reproducing figures from the First Edition of "Mathematics of Epidemics on Networks"
+------------------------------------------------------------------------------------
 
 Here are examples to generate (close approximations to) many of the figures in 
 `Mathematics of Epidemics on Networks: from Exact to Approximate Models`_.  

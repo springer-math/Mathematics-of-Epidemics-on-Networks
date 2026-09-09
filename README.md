@@ -29,6 +29,8 @@ We released v1.2 on 25 Jun 2024.  We hope to move on to v1.3 fairly quickly afte
 
 We released v1.92 on 15 July 2026.  A bit more cleaning of the code is needed for the second edition of the book at which point this will move to v2.0
 
+We released v2.0 on 9 September 2026.  Some rough edges still exist in the documentation.
+
 ## Contributions
 
 We welcome new contributors.  Please help test the code or suggest improvements.
