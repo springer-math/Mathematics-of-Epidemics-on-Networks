@@ -485,8 +485,8 @@ def _dSIS_individual_based_(Y, t, G, nodelist, trans_rate_fxn, rec_rate_fxn):
 
 def _dSIR_individual_based_(V, t, G, nodelist, index_of_node, trans_rate_fxn, 
                             rec_rate_fxn):
-    '''    <\dot{X}_i> = - tau sum_j g_{ij} <Xi><Yj>
-    <\dot{Y}_i> = tau sum_j g_{ij} <Xi><Yj> - gamma_i <Y_i>
+    '''    <\\dot{X}_i> = - tau sum_j g_{ij} <Xi><Yj>
+    <\\dot{Y}_i> = tau sum_j g_{ij} <Xi><Yj> - gamma_i <Y_i>
     Z_i = 1-X_i-Y_i
     '''
     N = len(nodelist)
@@ -3177,7 +3177,7 @@ def _dSimple_contagion_heterogeneous_pairwise_(X, t, statuses, H, J, status_to_i
     #print(t, dX)
     return dX
 
-def Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, tmin=0, tmax = 100,
+def Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, spontaneous_transition_graph, nbr_induced_transition_graph, tmin=0, tmax = 100,
                                              tcount =1001, return_statuses = None, 
                                              return_full_data=False
                                         ):
@@ -3189,7 +3189,7 @@ def Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, t
     Note that as of 03/08/2025, the subscripts may not be consistent with the current version of the text.
     :Arguments: 
         statuses: list of strings
-            statuses[i] is the name of status Q_i as it appears in $H$ and $J$.
+            statuses[i] is the name of status Q_i as it appears in the two transition graphs
         IC_Qik: list of numpy arrays
             IC_Qik[i] is a numpy array with IC_Qik[i][k] giving the number of nodes in status Q_i
             with degree k.  
@@ -3198,12 +3198,12 @@ def Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, t
             in status Q_i and Q_j with each degree pair.  
             if QiQj=IC_QikQjl[i][j], then QiQj[k][l] is the number of edges between degree k status Q_i
             nodes and degree l status Q_j nodes.
-        H: directed graph 
+        spontaneous_transition_graph: directed graph 
             nodes are possible statuses.  Edges give spontaneous transitions, with 
-            H[source][target]['rate'] giving the rate of transition from source status to target status.
-        J: directed graph of neighbor-induced transitions.
+            spontaneous_transition_graph[source][target]['rate'] giving the rate of transition from source status to target status.
+        nbr_induced_transition_graph: directed graph of neighbor-induced transitions.
             nodes are pairs of statuses.  Edges give neighbor-induced transitions, with 
-            J[source][target]['rate'] giving the rate of transition from source pair to target pair.
+            nbr_induced_transition_graph[source][target]['rate'] giving the rate of transition from source pair to target pair.
         tmin:  number (default 0) 
             minimum time
         tmax:  number (default 100) 
@@ -3239,8 +3239,10 @@ def Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, t
     # Concatenate both into a single 1D array
     X0 = np.concatenate([oneD_IC_Qik, oneD_IC_QikQjl], axis=0)
     #    X0 = np.concatenate(IC_Qik, axis=0) #initial conditions, a 1D array.
-
-    X = _my_odeint_(_dSimple_contagion_heterogeneous_pairwise_, X0, times, args = (statuses, H, J, status_to_index))
+    
+    H = spontaneous_transition_graph
+    J = nbr_induced_transition_graph
+    X = _my_odeint_(_dSimple_contagion_heterogeneous_pairwise_, X0, times, args = (statuses, spontaneous_transition_graph, nbr_induced_transition_graph, status_to_index))
     
     K = len(IC_Qik[0]) #degrees, assumed to be the same for all statuses.
     
@@ -3259,7 +3261,7 @@ def Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, t
     else:
         return times, *status_counts
 
-def Simple_contagion_heterogeneous_pairwise_from_graph(G, H, J, IC, statuses, tmin = 0, tmax = 100, 
+def Simple_contagion_heterogeneous_pairwise_from_graph(G, spontaneous_transition_graph, nbr_induced_transition_graph, IC, statuses, tmin = 0, tmax = 100, 
                                                         tcount = 1001, return_statuses = None,
                                                         return_full_data=False):
     IC_Qik = []
@@ -3281,7 +3283,7 @@ def Simple_contagion_heterogeneous_pairwise_from_graph(G, H, J, IC, statuses, tm
             #print(G.degree(neighbor))
             IC_QikQjl[status_to_index[IC[node]]][status_to_index[IC[neighbor]]][G.degree(node)][G.degree(neighbor)] += 1
     
-    return Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, H, J, tmin=tmin, 
+    return Simple_contagion_heterogeneous_pairwise(statuses, IC_Qik, IC_QikQjl, spontaneous_transition_graph, nbr_induced_transition_graph, tmin=tmin, 
                                                     tmax = tmax, tcount = tcount, return_statuses = return_statuses, 
                                                     return_full_data=return_full_data)
 def SIS_heterogeneous_pairwise_from_graph(G, tau, gamma, initial_infecteds = None,
@@ -5575,6 +5577,15 @@ def EBCM(N, psihat, psihatPrime, tau, gamma, phiS0, phiR0=0, R0=0, tmin=0,
     if ...== True
         returns **t, S, I, R** and **theta**, all numpy arrays
     '''
+    if not isinstance(N, (int, np.integer)) or N <= 0:
+        raise EoN.EoNError('N must be a positive integer')
+
+    if tcount < 2:
+        raise EoN.EoNError('tcount must be at least 2')
+    if tmax <= tmin:
+        raise EoN.EoNError('tmax must be greater than tmin')
+
+
     times = np.linspace(tmin, tmax, tcount)
     X0 = np.array([1, R0])
     X = integrate.odeint(_dEBCM_, X0, times, 
@@ -5927,3 +5938,524 @@ def EBCM_pref_mix_discrete_from_graph(G, p, rho = None, tmin = 0, tmax = 100, re
     Pnk = get_Pnk(G)
     return EBCM_pref_mix_discrete(N, Pk, Pnk, p, rho=rho, tmin=tmin, tmax=tmax, return_full_data=return_full_data)
     
+
+def _EBCM_simple_contagion_rate_(edge_data, transition, graph_name):
+    r'''Returns the constant rate associated with a transition.'''
+    if 'weight_label' in edge_data or 'rate_function' in edge_data:
+        raise EoN.EoNError(
+            'EBCM_simple_contagion does not allow "weight_label" or '
+            '"rate_function" in {}: transition {}'.format(
+                graph_name, transition
+            )
+        )
+    if 'rate' not in edge_data:
+        raise EoN.EoNError(
+            'transition {} in {} has no "rate" attribute'.format(
+                transition, graph_name
+            )
+        )
+
+    rate = edge_data['rate']
+    if not np.isscalar(rate) or not np.isfinite(rate) or rate < 0:
+        raise EoN.EoNError(
+            'transition rate must be a finite nonnegative number, got '
+            '{} for transition {}'.format(rate, transition)
+        )
+    return rate
+
+
+def _EBCM_simple_contagion_setup_(H, J, rho):
+    r'''Checks model assumptions and prepares rate dictionaries.'''
+    
+    if not H.is_directed():
+        raise EoN.EoNError('spontaneous_transition_graph must be directed')
+    if not J.is_directed():
+        raise EoN.EoNError('nbr_induced_transition_graph must be directed')
+
+    if not hasattr(rho, 'keys'):
+        raise EoN.EoNError('rho must be a dict-like object indexed by status')
+
+    statuses = list(rho.keys())
+    status_set = set(statuses)
+
+    if len(statuses) == 0:
+        raise EoN.EoNError('rho must contain at least one status')
+
+    if any(rho[status] < 0 for status in statuses):
+        raise EoN.EoNError('entries of rho must be nonnegative')
+    if not np.isclose(sum(rho.values()), 1.):
+        raise EoN.EoNError('entries of rho must sum to 1')
+
+    for status in H.nodes():
+        if status not in status_set:
+            raise EoN.EoNError(
+                'status {} occurs in spontaneous_transition_graph but not '
+                'in rho'.format(status)
+            )
+
+    susceptible_set = set()
+    for source_pair, target_pair in J.edges():
+        if (not isinstance(source_pair, tuple) or len(source_pair) != 2 or
+                not isinstance(target_pair, tuple) or len(target_pair) != 2):
+            raise EoN.EoNError(
+                'nodes involved in transitions in '
+                'nbr_induced_transition_graph must be length-2 tuples'
+            )
+
+        inducing_status, old_status = source_pair
+        target_inducing_status, new_status = target_pair
+
+        if inducing_status != target_inducing_status:
+            raise EoN.EoNError(
+                'nbr_induced_transition_graph transition {} -> {} changes '
+                'the first node.  EBCM_simple_contagion assumes only the '
+                'second node changes status'.format(source_pair, target_pair)
+            )
+
+        for status in (inducing_status, old_status, new_status):
+            if status not in status_set:
+                raise EoN.EoNError(
+                    'status {} occurs in nbr_induced_transition_graph but '
+                    'not in rho'.format(status)
+                )
+
+        if old_status != new_status:
+            susceptible_set.add(old_status)
+
+    susceptible = [status for status in statuses
+                   if status in susceptible_set]
+    nonsusceptible = [status for status in statuses
+                      if status not in susceptible_set]
+
+    # This EBCM class assumes that once an individual leaves the set of
+    # susceptible statuses, it can never enter a susceptible status.
+    for old_status, new_status in H.edges():
+        if new_status in susceptible_set:
+            raise EoN.EoNError(
+                'transition {} -> {} enters susceptible status {}.  '
+                'EBCM_simple_contagion requires that individuals cannot '
+                'transition into a susceptible status'.format(
+                    old_status, new_status, new_status
+                )
+            )
+
+    for source_pair, target_pair in J.edges():
+        new_status = target_pair[1]
+        if new_status in susceptible_set:
+            raise EoN.EoNError(
+                'transition {} -> {} enters susceptible status {}.  '
+                'EBCM_simple_contagion requires that individuals cannot '
+                'transition into a susceptible status'.format(
+                    source_pair, target_pair, new_status
+                )
+            )
+
+    a = defaultdict(float)
+    for old_status, new_status in H.edges():
+        transition = (old_status, new_status)
+        edge_data = H.adj[old_status][new_status]
+        a[transition] = _EBCM_simple_contagion_rate_(
+            edge_data, transition, 'spontaneous_transition_graph'
+        )
+
+    # b[old_status, new_status, inducing_status] is the rate denoted
+    # b_{old_status,new_status}^{(inducing_status)} in the equations.
+    b = defaultdict(float)
+    for source_pair, target_pair in J.edges():
+        inducing_status, old_status = source_pair
+        new_status = target_pair[1]
+        transition = (source_pair, target_pair)
+        edge_data = J.adj[source_pair][target_pair]
+        b[old_status, new_status, inducing_status] = \
+            _EBCM_simple_contagion_rate_(
+                edge_data, transition, 'nbr_induced_transition_graph'
+            )
+
+    return statuses, susceptible, nonsusceptible, a, b
+
+
+def _dEBCM_simple_contagion_(V, t, rho, psi, psiPrime, psiDPrime,
+                             mean_degree, statuses, susceptible,
+                             nonsusceptible, a, b, A, pair_hazard,
+                             Q_index, phi_index, theta_index, tmin):
+    r'''Right hand side for EBCM_simple_contagion.'''
+    elapsed_time = t-tmin
+
+    theta = {}
+    for status in susceptible:
+        theta[status] = V[theta_index[status]]
+
+    Q = {}
+    for status in nonsusceptible:
+        Q[status] = V[Q_index[status]]
+    for status in susceptible:
+        Q[status] = rho[status] * np.exp(-A[status]*elapsed_time) \
+                    * psi(theta[status])
+
+    # phi[neighbor_status, initial_test_status]
+    phi = {}
+    for test_status in susceptible:
+        for neighbor_status in nonsusceptible:
+            phi[neighbor_status, test_status] = \
+                V[phi_index[neighbor_status, test_status]]
+
+        for neighbor_status in susceptible:
+            phi[neighbor_status, test_status] = \
+                rho[neighbor_status] \
+                * psiPrime(theta[neighbor_status]) / mean_degree \
+                * np.exp(
+                    -pair_hazard[neighbor_status, test_status]
+                    * elapsed_time
+                )
+
+    dV = np.zeros(len(V))
+
+    # Equations for Q_z, where z is nonsusceptible.
+    for new_status in nonsusceptible:
+        dQ = 0.
+
+        for old_status in susceptible:
+            dQ += a[old_status, new_status] * Q[old_status]
+
+            induced_rate = sum(
+                b[old_status, new_status, neighbor_status]
+                * phi[neighbor_status, old_status]
+                for neighbor_status in statuses
+            )
+            dQ += rho[old_status] \
+                  * np.exp(-A[old_status]*elapsed_time) \
+                  * psiPrime(theta[old_status]) \
+                  * induced_rate
+
+        for old_status in nonsusceptible:
+            dQ += a[old_status, new_status] * Q[old_status]
+            dQ -= a[new_status, old_status] * Q[new_status]
+
+        dV[Q_index[new_status]] = dQ
+
+    # Equations for phi_z^(x), where x is susceptible and z is not.
+    for test_status in susceptible:
+        for new_status in nonsusceptible:
+            dphi = 0.
+
+            for old_status in susceptible:
+                dphi += (
+                    a[old_status, new_status]
+                    + b[old_status, new_status, test_status]
+                ) * phi[old_status, test_status]
+
+                induced_rate = sum(
+                    phi[neighbor_status, old_status]
+                    * b[old_status, new_status, neighbor_status]
+                    for neighbor_status in statuses
+                )
+
+                dphi += rho[old_status] \
+                        * np.exp(
+                            -pair_hazard[old_status, test_status]
+                            * elapsed_time
+                        ) \
+                        * psiDPrime(theta[old_status]) \
+                        * induced_rate / mean_degree
+
+            for old_status in nonsusceptible:
+                dphi += a[old_status, new_status] \
+                        * phi[old_status, test_status]
+                dphi -= a[new_status, old_status] \
+                        * phi[new_status, test_status]
+
+            dphi -= phi[new_status, test_status] * sum(
+                b[test_status, target_status, new_status]
+                for target_status in nonsusceptible
+            )
+
+            dV[phi_index[new_status, test_status]] = dphi
+
+    # Equations for theta^(x).
+    for test_status in susceptible:
+        dV[theta_index[test_status]] = -sum(
+            b[test_status, new_status, neighbor_status]
+            * phi[neighbor_status, test_status]
+            for neighbor_status in statuses
+            for new_status in nonsusceptible
+        )
+
+    return dV
+
+
+def EBCM_simple_contagion(N, psi, psiPrime, psiDPrime,
+                          spontaneous_transition_graph,
+                          nbr_induced_transition_graph, rho,
+                          return_statuses, tmin=0, tmax=100, tcount=1001,
+                          return_full_data=False):
+    r'''
+    Performs EBCM calculations for a class of simple contagions.
+
+    This uses the same transition-graph representation as
+    Gillespie_simple_contagion and fast_simple_contagion.  A status is called
+    susceptible if it can be changed by a neighbor-induced transition.  This
+    function assumes that no spontaneous or neighbor-induced transition can
+    enter a susceptible status.
+
+    Initial status is assumed to be independent of degree.  Transition rates
+    must be homogeneous: ``weight_label`` and ``rate_function`` attributes are
+    not supported.
+
+    :Arguments:
+
+    **N** positive integer
+        size of population
+
+    **psi** function
+        probability generating function for the degree distribution
+
+    **psiPrime** function
+        first derivative of psi
+
+    **psiDPrime** function
+        second derivative of psi
+
+    **spontaneous_transition_graph** Directed networkx graph
+        As in Gillespie_simple_contagion.  An edge from status ``A`` to
+        status ``B`` represents a spontaneous transition from ``A`` to ``B``.
+        Each edge must have a ``'rate'`` attribute.
+
+    **nbr_induced_transition_graph** Directed networkx graph
+        As in Gillespie_simple_contagion.  An edge from ``('A','B')`` to
+        ``('A','C')`` represents a transition of the second individual from
+        ``B`` to ``C`` induced by a neighbor of status ``A``.  Each edge must
+        have a ``'rate'`` attribute.
+
+    **rho** dict
+        ``rho[status]`` is the probability that a randomly chosen node has
+        the given status at the initial time.  The values must sum to 1.
+
+    **return_statuses** list or other iterable
+        statuses whose expected numbers are returned, in the order given
+
+    **tmin** number (default 0)
+        start time
+
+    **tmax** number (default 100)
+        stop time
+
+    **tcount** positive integer (default 1001)
+        number of distinct times to calculate
+
+    **return_full_data** boolean (default False)
+        if False, return times and expected numbers in each requested status.
+        If True, also return dictionaries containing theta and phi.
+
+    :Returns:
+
+    if return_full_data == False:
+        returns ``(times, status1, status2, ...)``.  Each status array gives
+        the expected number of nodes in the corresponding status.
+
+    if return_full_data == True:
+        returns ``(times, status1, status2, ..., theta, phi)``, where
+        ``theta[x]`` is the probability that a neighbor has not transmitted
+        to a test node initially in susceptible status x, and
+        ``phi[y,x]`` is the probability that the neighbor has status y and
+        has not transmitted to that test node.
+
+    :SAMPLE USE:
+
+    An SEIR epidemic can be specified by
+
+    ::
+
+        import networkx as nx
+        import numpy as np
+        import EoN
+
+        N = 10000
+        beta = 0.6
+        sigma = 0.4
+        gamma = 0.2
+        rho0 = 0.01
+        kmean = 4.0
+
+        # Poisson degree distribution
+        psi = lambda x: np.exp(kmean*(x-1))
+        psiPrime = lambda x: kmean*np.exp(kmean*(x-1))
+        psiDPrime = lambda x: kmean**2*np.exp(kmean*(x-1))
+
+        # Spontaneous transitions: E -> I -> R
+        H = nx.DiGraph()
+        H.add_edge('E', 'I', rate=sigma)
+        H.add_edge('I', 'R', rate=gamma)
+
+        # Neighbor-induced transition: I causes S -> E
+        J = nx.DiGraph()
+        J.add_edge(('I', 'S'), ('I', 'E'), rate=beta)
+
+        rho = {
+            'S': 1-rho0,
+            'E': 0.,
+            'I': rho0,
+            'R': 0.
+        }
+
+        t, S, E, I, R = EoN.EBCM_simple_contagion(
+            N,
+            psi,
+            psiPrime,
+            psiDPrime,
+            H,
+            J,
+            rho,
+            ('S', 'E', 'I', 'R'),
+            tmax=50,
+            tcount=1001
+        )
+    '''
+    if not isinstance(N, (int, np.integer)) or N <= 0:
+        raise EoN.EoNError('N must be a positive integer')
+
+    if tcount < 2:
+        raise EoN.EoNError('tcount must be at least 2')
+    if tmax <= tmin:
+        raise EoN.EoNError('tmax must be greater than tmin')
+
+    statuses, susceptible, nonsusceptible, a, b = \
+        _EBCM_simple_contagion_setup_(
+            spontaneous_transition_graph,
+            nbr_induced_transition_graph,
+            rho
+        )
+
+    return_statuses = list(return_statuses)
+    for status in return_statuses:
+        if status not in rho:
+            raise EoN.EoNError(
+                'return status {} is not represented in rho'.format(status)
+            )
+
+    if not np.isclose(psi(1.), 1.):
+        raise EoN.EoNError('psi(1) must equal 1')
+
+    mean_degree = psiPrime(1.)
+    if not np.isfinite(mean_degree) or mean_degree <= 0:
+        raise EoN.EoNError('psiPrime(1) must be finite and positive')
+
+    # A[x] is the total spontaneous rate at which a susceptible status x
+    # is lost.  By assumption every destination is nonsusceptible.
+    A = {}
+    for status in susceptible:
+        A[status] = sum(
+            a[status, new_status]
+            for new_status in nonsusceptible
+        )
+
+    # Total rate at which an edge ceases to have susceptible endpoint
+    # statuses (neighbor_status, test_status) without an external neighbor.
+    pair_hazard = {}
+    for neighbor_status in susceptible:
+        for test_status in susceptible:
+            pair_hazard[neighbor_status, test_status] = sum(
+                a[neighbor_status, new_status]
+                + b[test_status, new_status, neighbor_status]
+                + b[neighbor_status, new_status, test_status]
+                for new_status in nonsusceptible
+            )
+
+    Q_index = {}
+    phi_index = {}
+    theta_index = {}
+    index = 0
+
+    for status in nonsusceptible:
+        Q_index[status] = index
+        index += 1
+
+    for test_status in susceptible:
+        for neighbor_status in nonsusceptible:
+            phi_index[neighbor_status, test_status] = index
+            index += 1
+
+    for status in susceptible:
+        theta_index[status] = index
+        index += 1
+
+    V0 = np.zeros(index)
+
+    for status in nonsusceptible:
+        V0[Q_index[status]] = rho[status]
+
+    for test_status in susceptible:
+        for neighbor_status in nonsusceptible:
+            V0[phi_index[neighbor_status, test_status]] = \
+                rho[neighbor_status]
+
+    for status in susceptible:
+        V0[theta_index[status]] = 1.
+
+    times = np.linspace(tmin, tmax, tcount)
+    V = integrate.odeint(
+        _dEBCM_simple_contagion_, V0, times,
+        args=(rho, psi, psiPrime, psiDPrime, mean_degree,
+              statuses, susceptible, nonsusceptible, a, b, A,
+              pair_hazard, Q_index, phi_index, theta_index, tmin)
+    )
+
+    theta = {}
+    for status in susceptible:
+        theta[status] = V.T[theta_index[status]]
+
+    data = {}
+    for status in nonsusceptible:
+        data[status] = N * V.T[Q_index[status]]
+
+    elapsed_time = times-tmin
+    for status in susceptible:
+        psi_values = np.array([psi(value) for value in theta[status]])
+        data[status] = N * rho[status] \
+                       * np.exp(-A[status]*elapsed_time) \
+                       * psi_values
+
+    returnval = [times]
+    for status in return_statuses:
+        returnval.append(data[status])
+
+    if not return_full_data:
+        return tuple(returnval)
+
+    phi = {}
+    for test_status in susceptible:
+        for neighbor_status in nonsusceptible:
+            phi[neighbor_status, test_status] = \
+                V.T[phi_index[neighbor_status, test_status]]
+
+        for neighbor_status in susceptible:
+            psiPrime_values = np.array(
+                [psiPrime(value) for value in theta[neighbor_status]]
+            )
+            phi[neighbor_status, test_status] = \
+                rho[neighbor_status] * psiPrime_values / mean_degree \
+                * np.exp(
+                    -pair_hazard[neighbor_status, test_status]
+                    * elapsed_time
+                )
+
+    returnval.extend([theta, phi])
+    return tuple(returnval)
+
+
+def Simple_contagion_EBCM_from_graph(G, spontaneous_transition_graph, nbr_induced_transition_graph, IC, statuses, tmin = 0, tmax = 100, 
+                                                        tcount = 1001, return_statuses = None,
+                                                        return_full_data=False):
+             
+    N = G.order()
+    Pk = get_Pk(G)
+    psi = lambda x: sum(Pk[k]*x**k for k in Pk)
+    psiPrime = lambda x: sum(k*Pk[k]*x**(k-1) for k in Pk)
+    psiDPrime = lambda x: sum(k*(k-1)*Pk[k]*x**(k-2) for k in Pk)
+
+    return EBCM_simple_contagion(N, psi, psiPrime, psiDPrime,
+                          spontaneous_transition_graph,
+                          nbr_induced_transition_graph, rho,
+                          return_statuses, tmin=0, tmax=100, tcount=1001,
+                          return_full_data=False)
+ 
+       

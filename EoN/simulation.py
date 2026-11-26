@@ -3895,10 +3895,10 @@ def Gillespie_Arbitrary(G, spontaneous_transition_graph,
                                     **sim_kwargs)
   
 def Gillespie_simple_contagion(G, spontaneous_transition_graph, 
-    nbr_induced_transition_graph, IC, return_statuses, tmin = 0,  tmax=100, 
+    nbr_induced_transition_graph, IC=None, return_statuses=None, tmin = 0,  tmax=100, 
     spont_kwargs = None, nbr_kwargs=None, policy_function = None, pf_kwargs = None, 
     *,
-    rng = None, return_full_data = False, sim_kwargs = None):
+    rho=None, rng = None, return_full_data = False, sim_kwargs = None):
     r'''
     Performs simulations for epidemics, allowing more flexibility than SIR/SIS.
     
@@ -4115,6 +4115,7 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     **IC** dict
         states the initial status of each node in the network.
         A defaultdict may be useful if most nodes start off with one state.
+        The later argument rho provides an alternative way to assign these.
             
     **return_statuses** list or other iterable (but not a generator)
         The statuses that we will return information for, in the order
@@ -4149,14 +4150,16 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
         type of transition will happen.  Once we choose which transition type happens we
         choose which individual transitions based on the original background rates.
 
+    **rho** dict or None (default None)
+        If IC is not given, then we can use rho to randomly assign initial statuses.
+        This should be a dict such that rho[status] is the fraction of nodes that
+        start with that status.  The sum of the values of rho should be 1.
+
     **rng** random number generator
         If None, will be set to np.random.default_rng()
 
     **return_full_data** boolean
         Tells whether to return a Simulation_Investigation object or not
-        
-    **rng** random number generator
-        If None, will be set to np.random.default_rng()
 
     **sim_kwargs** keyword arguments
         Any keyword arguments to be sent to the Simulation_Investigation object
@@ -4226,6 +4229,11 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
 
         plt.savefig('SEIR.png')       
 '''
+    if return_statuses is None:
+        raise EoN.EoNError("return_statuses must be provided")
+
+    if (IC is None) == (rho is None):
+        raise EoN.EoNError("Provide exactly one of IC and rho")
 
     if spont_kwargs is None:
         spont_kwargs = {}
@@ -4242,8 +4250,16 @@ def Gillespie_simple_contagion(G, spontaneous_transition_graph,
     if rng is None:
         rng = np.random.default_rng()
 
-    status = {node: IC[node] for node in G.nodes()}
-
+    if IC is not None:
+        status = {node: IC[node] for node in G.nodes()}
+    elif rho is not None:
+            statuses = list(rho.keys())
+            indices = rng.choice(len(statuses),
+                             size=G.number_of_nodes(),
+                             p=list(rho.values()))
+            status = {node: statuses[i]
+                  for node, i in zip(G.nodes(), indices)}    
+            
     if return_full_data:
         transmissions = []
         node_history = {node:([tmin], [status[node]]) for node in G.nodes()}
@@ -4498,13 +4514,14 @@ def fast_simple_contagion(
     G,
     spontaneous_transition_graph,
     nbr_induced_transition_graph,
-    IC,
-    return_statuses,
+    IC=None,
+    return_statuses=None,
     tmin=0,
     tmax=100,
     spont_kwargs=None,
     nbr_kwargs=None,
     *,
+    rho=None,
     rng=None,
     return_full_data=False,
     sim_kwargs=None,
@@ -4546,7 +4563,12 @@ def fast_simple_contagion(
     policy function that rescales rates based on the whole system state is not
     compatible with independently scheduled local exponential clocks.
     '''
+    if return_statuses is None:
+        raise EoN.EoNError("return_statuses must be provided")
 
+    if (IC is None) == (rho is None):
+        raise EoN.EoNError("Provide exactly one of IC and rho")
+    
     if spont_kwargs is None:
         spont_kwargs = {}
 
@@ -4564,8 +4586,15 @@ def fast_simple_contagion(
     return_statuses = tuple(return_statuses)
     return_status_set = set(return_statuses)
 
-    status = {node: IC[node] for node in G.nodes()}
-
+    if IC is not None:
+        status = {node: IC[node] for node in G.nodes()}
+    elif rho is not None:
+        statuses = list(rho.keys())
+        indices = rng.choice(len(statuses),
+                         size=G.number_of_nodes(),
+                         p=list(rho.values()))
+        status = {node: statuses[i]
+              for node, i in zip(G.nodes(), indices)}
     # ------------------------------------------------------------------
     # Sort transitions where possible, for reproducibility.
     # ------------------------------------------------------------------
